@@ -1,0 +1,10 @@
+sphinx>=6.0
+sphinx-rtd-theme
+sphinx-panels
+sphinxcontrib-applehelp
+sphinxcontrib-devhelp
+sphinxcontrib-htmlhelp
+sphinxcontrib-jquery
+sphinxcontrib-jsmath
+sphinxcontrib-qthelp
+sphinxcontrib-serializinghtml
