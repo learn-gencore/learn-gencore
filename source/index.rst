@@ -1,4 +1,4 @@
-NYUAD Core Bioinformatics
+NYU/NYUAD Core Bioinformatics
 =========================
 
 The Core Bioinformatics
