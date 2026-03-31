@@ -9,8 +9,6 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Bioinformatics Website
-
    introduction
 
    transcriptomics/index
