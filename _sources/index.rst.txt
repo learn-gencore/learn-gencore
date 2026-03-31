@@ -1,5 +1,5 @@
-NYU/NYUAD Core Bioinformatics
-=========================
+NYUNY/NYUAD Core Bioinformatics
+===============================
 
 The Core Bioinformatics
 
@@ -8,7 +8,7 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Bioinformatics Workflows
+   :caption: Bioinformatics Website
 
    introduction
 
