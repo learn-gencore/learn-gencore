@@ -1,6 +1,6 @@
-project = 'Core BioInformatics  NYU Abu Dhabi'
-copyright = '2026, Core Bioinformatics | NYU Abu Dhabi'
-author = 'Core Bioinformatics NYU Abu Dhabi'
+project = 'Core BioInformatics  NYUNY/NYUAD'
+copyright = '2026, Core Bioinformatics | NYUNY/NYUAD'
+author = 'Core Bioinformatics NYUNY/NYUAD'
 release = '1.0'
 
 
