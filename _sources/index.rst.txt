@@ -9,7 +9,8 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   introduction
+   :caption: Introduction
+
 
    transcriptomics/index
    variant_detection/index
