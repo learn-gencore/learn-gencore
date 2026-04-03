@@ -6,6 +6,6 @@ Work in progress
 
 .. code:: bash
 
-python test.py
+    python test.py
 
 
