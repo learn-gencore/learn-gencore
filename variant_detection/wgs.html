@@ -11,7 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
       <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
-      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=cfec5322" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
 
   
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
@@ -49,7 +49,51 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Variant Detection &amp; Annotation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">WGS</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">WGS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preprocessing">Preprocessing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#index-the-reference">Index the reference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#align-with-bwa-mem">Align with BWA-MEM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sort-and-convert-to-bam">Sort and convert to BAM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mark-duplicates">Mark duplicates</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bootstrapped-bqsr">Bootstrapped BQSR</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#why-base-quality-recalibration">Why base-quality recalibration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-bqsr-works">How BQSR works</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#why-we-bootstrap-for-non-model-organisms">Why we bootstrap for non-model organisms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-first-pass-variant-calling">Step 1 - first-pass variant calling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-split-and-hard-filter">Step 2 - split and hard-filter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-recalibrate">Step 3 - recalibrate</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#variant-calling">Variant calling</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#choosing-an-output-mode">Choosing an output mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hard-filtering">Hard filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation">Annotation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#normalize-before-annotating">Normalize before annotating</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#find-and-download-a-database">Find and download a database</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#annotate">Annotate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chromosome-naming-mismatches">Chromosome naming mismatches</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alternatives">Alternatives</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#post-filter-qc">Post-filter QC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualization-in-igv">Visualization in IGV</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#called-vs-uncalled-snps">Called vs. uncalled SNPs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#homozygous-vs-heterozygous-snps">Homozygous vs. heterozygous SNPs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pass-vs-filtered-variants">PASS vs. filtered variants</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#snps-in-the-cystatin-c-gene-cst3">SNPs in the cystatin C gene (CST3)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-for-non-model-organisms">Notes for non-model organisms</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="wes.html">WES</a></li>
 </ul>
 </li>
@@ -85,7 +129,671 @@
              
   <section id="wgs">
 <h1>WGS<a class="headerlink" href="#wgs" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+<p>Germline short-variant calling (SNPs and small indels) from whole-genome
+sequencing of <strong>non-model organisms</strong>, run on locally installed HPC modules.</p>
+<p>Because non-model organisms rarely have a trusted known-variants VCF
+(dbSNP, 1000 Genomes, etc.), this pipeline departs from the standard
+Broad Best Practices in two specific ways:</p>
+<ul class="simple">
+<li><p><strong>Bootstrapped BQSR.</strong> We generate our own “known-sites” VCF by first
+calling and hard-filtering variants on unrecalibrated reads, then
+feeding that filtered VCF into <code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code>.</p></li>
+<li><p><strong>Hard filtering instead of VQSR.</strong> VQSR requires a large, curated truth
+set that does not exist for most non-model species. We use GATK’s
+recommended hard-filter expressions for SNPs and indels separately.</p></li>
+</ul>
+<p>Scope is limited to <strong>germline short variants in a single sample</strong>. This
+tutorial does not cover somatic calling, structural variants, or joint
+genotyping across cohorts.</p>
+<section id="pipeline-overview">
+<h2>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/workflow-bootstrapping.jpg"><img alt="WGS variant-calling pipeline with bootstrapped BQSR" src="../_images/workflow-bootstrapping.jpg" width="600" />
+</a>
+<figcaption>
+<p><span class="caption-text">The pipeline, with two alternative paths marked. Arrow <strong>1</strong> shows
+an alternative path that skips BQSR entirely, going straight from
+the indexed BAM to variant calling. Arrow <strong>2</strong> is the bootstrap
+feedback loop: filtered variants from the first-pass call are fed
+back in as the known-sites input for BQSR. Best practice is to run
+BQSR, and for non-model organisms (where no curated known-sites VCF
+exists) that means bootstrapping your own via arrow <strong>2</strong>. This
+tutorial follows that path and runs the loop once (a single
+bootstrap pass).</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Align reads with BWA-MEM.</p></li>
+<li><p>Sort, mark duplicates.</p></li>
+<li><p>Bootstrap a known-sites VCF: a first-pass <code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> call,
+split into SNPs and indels, hard-filtered, and kept only if PASS.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code> + <code class="docutils literal notranslate"><span class="pre">ApplyBQSR</span></code> using the bootstrap VCF.</p></li>
+<li><p>Final variant calling with <code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code>.</p></li>
+<li><p>Split, hard-filter, normalize, annotate, and QC the final call set.</p></li>
+<li><p>Visualize the results in IGV to sanity-check the calls.</p></li>
+</ol>
+</section>
+<section id="environment">
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<p>All commands assume the following modules are loaded. Exact names depend
+on your HPC installation. Substitute the versions available to you.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>bwa/&lt;version&gt;
+module<span class="w"> </span>load<span class="w"> </span>samtools/&lt;version&gt;
+module<span class="w"> </span>load<span class="w"> </span>bcftools/&lt;version&gt;
+module<span class="w"> </span>load<span class="w"> </span>gatk/4.x
+module<span class="w"> </span>load<span class="w"> </span>htslib/&lt;version&gt;<span class="w">    </span><span class="c1"># for tabix</span>
+module<span class="w"> </span>load<span class="w"> </span>snpeff/&lt;version&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code> is a drop-in faster replacement for <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> and
+produces identical alignments. If your HPC provides it, substitute
+<code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code> for <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> in the alignment step below.</p>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>Before running the pipeline you need:</p>
+<ul class="simple">
+<li><p>A <strong>reference genome FASTA</strong> (<code class="docutils literal notranslate"><span class="pre">reference.fa</span></code>). This is the assembly
+your reads will be aligned to.</p></li>
+<li><p><strong>Paired-end sequencing reads</strong> (<code class="docutils literal notranslate"><span class="pre">sample_1_R1.fastq.gz</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sample_1_R2.fastq.gz</span></code>): gzip-compressed FASTQ, read 1 and read 2 of
+each pair.</p></li>
+<li><p>A <strong>sample name</strong>, used in the BAM read-group <code class="docutils literal notranslate"><span class="pre">SM</span></code> tag and as a
+prefix for derived filenames. We use <code class="docutils literal notranslate"><span class="pre">sample_1</span></code> throughout.</p></li>
+</ul>
+<p>All other files in the pipeline are produced by the commands below.</p>
+</section>
+<section id="preprocessing">
+<h2>Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading"></a></h2>
+<section id="index-the-reference">
+<h3>Index the reference<a class="headerlink" href="#index-the-reference" title="Link to this heading"></a></h3>
+<p>BWA, samtools, and GATK each need their own index or dictionary of the
+reference.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bwa<span class="w"> </span>index<span class="w"> </span>reference.fa
+samtools<span class="w"> </span>faidx<span class="w"> </span>reference.fa
+gatk<span class="w"> </span>CreateSequenceDictionary<span class="w"> </span>-R<span class="w"> </span>reference.fa
+</pre></div>
+</div>
+<p>For references larger than 2 GB, use <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">index</span> <span class="pre">-a</span> <span class="pre">bwtsw</span> <span class="pre">reference.fa</span></code>.</p>
+</section>
+<section id="align-with-bwa-mem">
+<h3>Align with BWA-MEM<a class="headerlink" href="#align-with-bwa-mem" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">-R</span></code> read-group string is required. <code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> will refuse
+to run without it. <code class="docutils literal notranslate"><span class="pre">-M</span></code> marks shorter split hits as secondary, which
+GATK expects.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bwa<span class="w"> </span>mem<span class="w"> </span>-M<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span><span class="s1">&#39;@RG\tID:sample_1\tLB:sample_1\tPL:ILLUMINA\tSM:sample_1&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sample_1_R1.fastq.gz<span class="w"> </span>sample_1_R2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>&gt;<span class="w"> </span>aligned_reads.sam
+</pre></div>
+</div>
+</section>
+<section id="sort-and-convert-to-bam">
+<h3>Sort and convert to BAM<a class="headerlink" href="#sort-and-convert-to-bam" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>SortSam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>aligned_reads.sam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>sorted_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-SO<span class="w"> </span>coordinate
+</pre></div>
+</div>
+<p>Sanity-check the alignment with <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">flagstat</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>flagstat<span class="w"> </span>sorted_reads.bam<span class="w"> </span>&gt;<span class="w"> </span>alignment_metrics.txt
+</pre></div>
+</div>
+<p>Things to look for in the report:</p>
+<ul class="simple">
+<li><p><strong>Total reads</strong> should roughly match the expected count (reads-in-FASTQ
+multiplied by 2 for paired-end).</p></li>
+<li><p><strong>Mapped %</strong>: typically above 95% for a matched reference and a healthy
+library. Substantially lower can indicate the wrong reference, heavy
+contamination, or severe quality issues.</p></li>
+<li><p><strong>Properly paired %</strong>: aim for above 90%. Very low values point to
+library-prep problems or an assembly that is fragmented relative to
+the insert size.</p></li>
+<li><p><strong>Singletons %</strong>: reads whose mate did not map. Should be low (low
+single-digit %).</p></li>
+</ul>
+</section>
+<section id="mark-duplicates">
+<h3>Mark duplicates<a class="headerlink" href="#mark-duplicates" title="Link to this heading"></a></h3>
+<p>The same DNA fragment can be sequenced multiple times: PCR duplicates
+during library prep, or optical duplicates from the instrument mis-reading
+one cluster as several. Duplicates are not independent evidence of a
+variant, so they must be identified and excluded from downstream variant
+calling.</p>
+<p><code class="docutils literal notranslate"><span class="pre">MarkDuplicates</span></code> does not remove duplicates; it <strong>flags</strong> them, so
+downstream GATK tools can skip them by default.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>MarkDuplicates<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>sorted_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-M<span class="w"> </span>dedup_metrics.txt
+
+samtools<span class="w"> </span>index<span class="w"> </span>dedup_reads.bam
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not mark duplicates for amplicon or other library types where reads
+are expected to start and end at the same positions by design.</p>
+</div>
+<section id="inspecting-the-duplicate-flag">
+<h4>Inspecting the duplicate flag<a class="headerlink" href="#inspecting-the-duplicate-flag" title="Link to this heading"></a></h4>
+<p>The second column of every SAM/BAM record is the <strong>bitwise flag</strong>, a
+small integer that packs multiple boolean properties about the read
+into a single number. To see the raw records, use <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">view</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>view<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1
+</pre></div>
+</div>
+<p>A SAM record has 11 required tab-separated columns followed by optional
+tags. Broken out, a typical record looks like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Column  Field   Example value
+------  ------  ---------------------------------------------
+1       QNAME   HWI-ST123:42:ABCDE:1:1101:1234:5678
+2       FLAG    99
+3       RNAME   chr1
+4       POS     10145
+5       MAPQ    60
+6       CIGAR   100M
+7       RNEXT   =
+8       PNEXT   10245
+9       TLEN    200
+10      SEQ     ACGTACGT...
+11      QUAL    IIIIIIII...
+tags    ...     NM:i:0  RG:Z:sample_1  ...
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">99</span></code> in column 2 is the bitwise flag for that read.</p>
+<p><code class="docutils literal notranslate"><span class="pre">MarkDuplicates</span></code> sets bit <code class="docutils literal notranslate"><span class="pre">0x400</span></code> (decimal <code class="docutils literal notranslate"><span class="pre">1024</span></code>) on any record
+it identifies as a duplicate. Every other bit is left as it was. A
+properly-paired forward read that gets marked as a duplicate will go
+from flag <code class="docutils literal notranslate"><span class="pre">99</span></code> to flag <code class="docutils literal notranslate"><span class="pre">1123</span></code> (that is, <code class="docutils literal notranslate"><span class="pre">99</span> <span class="pre">+</span> <span class="pre">1024</span></code>).</p>
+<p>Two ways to decode a flag value into its component bits:</p>
+<ul class="simple">
+<li><p>The Broad Institute hosts a <a class="reference external" href="https://broadinstitute.github.io/picard/explain-flags.html">web-based flag decoder</a>: paste
+a flag number into the form and the page shows you which bits are set.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">flags</span> <span class="pre">&lt;value&gt;</span></code> on the command line:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>flags<span class="w"> </span><span class="m">1123</span>
+<span class="c1"># 0x463  1123  PAIRED,PROPER_PAIR,MREVERSE,READ1,DUP</span>
+</pre></div>
+</div>
+<p>To see how many records carry each flag value in a BAM:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>view<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">dedup_metrics.txt</span></code> file written by the command above summarizes
+the duplication rate per library (<code class="docutils literal notranslate"><span class="pre">PERCENT_DUPLICATION</span></code>) and an
+<code class="docutils literal notranslate"><span class="pre">ESTIMATED_LIBRARY_SIZE</span></code>, which is useful for spotting over-amplified
+or under-diverse libraries.</p>
+</section>
+</section>
+</section>
+<section id="bootstrapped-bqsr">
+<h2>Bootstrapped BQSR<a class="headerlink" href="#bootstrapped-bqsr" title="Link to this heading"></a></h2>
+<section id="why-base-quality-recalibration">
+<h3>Why base-quality recalibration<a class="headerlink" href="#why-base-quality-recalibration" title="Link to this heading"></a></h3>
+<p>The sequencer emits a Phred-scaled <strong>base quality score</strong> (Q-score) for
+every base it calls. Q20 means a 1-in-100 probability that the base is
+wrong; Q30 means 1-in-1000. Variant callers use these scores to weigh
+evidence for and against a variant: a pile-up of high-Q alternate bases
+is a real signal, whereas the same pile-up at low quality is noise.</p>
+<p>The problem is that <strong>the raw Q-scores coming out of the instrument are
+biased</strong>. Systematic sources (sequencing chemistry, position in the
+read, local sequence context such as the preceding dinucleotide, and
+lane or flowcell effects) mean a report of “Q30” is not really
+1-in-1000 across the board. Base Quality Score Recalibration (BQSR)
+learns an empirical correction for these biases and overwrites the raw
+scores with recalibrated ones, so downstream variant-calling evidence
+is correctly weighted.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/fastqc-example.jpg"><img alt="FastQC per-position quality distribution across all reads" src="../_images/fastqc-example.jpg" width="600" />
+</a>
+<figcaption>
+<p><span class="caption-text">Example FastQC per-position quality plot. The first few positions
+show wider spread and a lower mean quality, the middle of the read
+is stable at Q37 or above, and the final base drops back toward
+Q32. These position-dependent systematic patterns are exactly what
+BQSR learns to correct.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="how-bqsr-works">
+<h3>How BQSR works<a class="headerlink" href="#how-bqsr-works" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code> scans the BAM. At every aligned base it compares
+the read base to the reference. At any position that appears in the
+known-sites VCF, mismatches are treated as real variation and skipped.
+At any other position, a mismatch is treated as a likely sequencing
+error.</p>
+<p>For each observed base, the tool records a set of properties, called
+<strong>covariates</strong>, that might explain systematic errors. A covariate is
+simply a property of the observation (something describing the base or
+the read it came from) that the tool can group by when measuring error
+rates. The standard covariates are:</p>
+<ul class="simple">
+<li><p><strong>Read group</strong>: which lane and library the read came from.</p></li>
+<li><p><strong>Reported Q-score</strong>: the quality the sequencer originally assigned.</p></li>
+<li><p><strong>Cycle position</strong>: how far into the read the base is (base 1,
+base 2, …, base N).</p></li>
+<li><p><strong>Sequence context</strong>: the current base and the base immediately
+preceding it (the dinucleotide, e.g. <code class="docutils literal notranslate"><span class="pre">AC</span></code> vs. <code class="docutils literal notranslate"><span class="pre">TG</span></code>).</p></li>
+</ul>
+<p>For every combination of these covariate values, <code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code>
+counts how many bases were examined and how many mismatched the
+reference. Those two numbers give an empirical error rate, which is
+compared to the reported Q-score. The difference produces a correction.
+For example: “in lane 3, at cycle 90, in an <code class="docutils literal notranslate"><span class="pre">AC</span></code> dinucleotide context,
+bases reported as Q30 actually mismatch at a rate closer to Q24, so
+subtract 6 from the score”. The table of all such corrections is the
+recalibration report.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ApplyBQSR</span></code> then walks the BAM and replaces the original per-base
+Q-scores with the corrected values from the table.</p>
+</section>
+<section id="why-we-bootstrap-for-non-model-organisms">
+<h3>Why we bootstrap for non-model organisms<a class="headerlink" href="#why-we-bootstrap-for-non-model-organisms" title="Link to this heading"></a></h3>
+<p>BQSR requires a known-sites VCF to mask real variants during error
+estimation. For humans and a handful of other model organisms, curated
+sets like dbSNP or the 1000 Genomes panel are the standard input. For
+a non-model organism, no such resource exists.</p>
+<p>The <strong>bootstrap</strong> solves this: call variants once on the <em>uncalibrated</em>
+BAM, hard-filter aggressively to get a high-confidence set, and use
+that as the known-sites input for BQSR. This tutorial runs a <strong>single
+bootstrap pass</strong>. For some species or deeper studies you may want to
+iterate (re-call on the recalibrated BAM, re-filter, re-recalibrate)
+until the BQSR report stabilises.</p>
+</section>
+<section id="step-1-first-pass-variant-calling">
+<h3>Step 1 - first-pass variant calling<a class="headerlink" href="#step-1-first-pass-variant-calling" title="Link to this heading"></a></h3>
+<p>The bootstrap call is throw-away. We only need candidate sites to mask
+during recalibration, so a plain VCF output is fine here (no need for
+GVCF mode, introduced below in the final variant-calling step).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>HaplotypeCaller<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_variants.vcf
+</pre></div>
+</div>
+</section>
+<section id="step-2-split-and-hard-filter">
+<h3>Step 2 - split and hard-filter<a class="headerlink" href="#step-2-split-and-hard-filter" title="Link to this heading"></a></h3>
+<p>Split into SNPs and indels; each class has its own filter thresholds.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>SelectVariants<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>bootstrap_variants.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--select-type-to-include<span class="w"> </span>SNP<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_snps.vcf
+
+gatk<span class="w"> </span>SelectVariants<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>bootstrap_variants.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--select-type-to-include<span class="w"> </span>INDEL<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_indels.vcf
+</pre></div>
+</div>
+<p>Apply hard filters. <code class="docutils literal notranslate"><span class="pre">VariantFiltration</span></code> marks failing variants but
+keeps them in the VCF; we drop them in the next command.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>bootstrap_snps.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 60.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS60&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQ &lt; 40.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQ40&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQRankSum &lt; -12.5&quot;</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQRankSum-12.5&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -8.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-8&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 3.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_snps.filtered.vcf
+
+gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>bootstrap_indels.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 200.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS200&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -20.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-20&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 10.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR10&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_indels.filtered.vcf
+</pre></div>
+</div>
+<p>Keep only PASS variants and merge into a single known-sites VCF:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class="w"> </span>reference.fa<span class="w"> </span>-V<span class="w"> </span>bootstrap_snps.filtered.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--exclude-filtered<span class="w"> </span>-O<span class="w"> </span>bootstrap_snps.pass.vcf
+gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class="w"> </span>reference.fa<span class="w"> </span>-V<span class="w"> </span>bootstrap_indels.filtered.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--exclude-filtered<span class="w"> </span>-O<span class="w"> </span>bootstrap_indels.pass.vcf
+
+gatk<span class="w"> </span>MergeVcfs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>bootstrap_snps.pass.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>bootstrap_indels.pass.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_known_sites.vcf
+
+tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>bootstrap_known_sites.vcf
+</pre></div>
+</div>
+</section>
+<section id="step-3-recalibrate">
+<h3>Step 3 - recalibrate<a class="headerlink" href="#step-3-recalibrate" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>BaseRecalibrator<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--known-sites<span class="w"> </span>bootstrap_known_sites.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>recal_data.table
+
+gatk<span class="w"> </span>ApplyBQSR<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bqsr-recal-file<span class="w"> </span>recal_data.table<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>recal_reads.bam
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code> in GATK4 no longer computes Per-Base Alignment
+Quality (BAQ) by default. If you want it, add <code class="docutils literal notranslate"><span class="pre">--enable-baq</span></code>.
+Leaving it off is the current recommendation and is faster.</p>
+</div>
+</section>
+</section>
+<section id="variant-calling">
+<h2>Variant calling<a class="headerlink" href="#variant-calling" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> identifies candidate variant sites, locally
+reassembles the reads overlapping each active region, and emits
+genotype calls (SNPs and indels together) with confidence scores.</p>
+<section id="choosing-an-output-mode">
+<h3>Choosing an output mode<a class="headerlink" href="#choosing-an-output-mode" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> can write its output in two forms.</p>
+<p><strong>Standard VCF mode</strong> (the default) emits one record per variant site
+directly into a VCF file. It is the simplest path and is a reasonable
+choice when you have a single sample and no plans to ever combine this
+callset with others.</p>
+<p><strong>GVCF mode</strong> (<code class="docutils literal notranslate"><span class="pre">-ERC</span> <span class="pre">GVCF</span></code>) emits a <em>genomic VCF</em>
+(<code class="docutils literal notranslate"><span class="pre">sample_1.g.vcf.gz</span></code>). A GVCF records reference confidence at every
+position in the genome, with long reference-matching stretches
+compressed into <em>reference blocks</em>. A second tool, <code class="docutils literal notranslate"><span class="pre">GenotypeGVCFs</span></code>,
+reads that GVCF and produces the final VCF. For a single sample the
+final content is equivalent to standard mode.</p>
+<p>GVCF mode is the current Broad Best Practices recommendation and it
+future-proofs the pipeline: if more samples arrive later, you can
+feed all their GVCFs into <code class="docutils literal notranslate"><span class="pre">GenotypeGVCFs</span></code> (or first consolidate
+them with <code class="docutils literal notranslate"><span class="pre">GenomicsDBImport</span></code>) to joint-genotype the cohort, without
+re-running <code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> from the BAMs. For one-shot
+single-sample analyses where none of that applies, standard mode is
+simpler and equally correct.</p>
+<p>Both paths below produce <code class="docutils literal notranslate"><span class="pre">raw_variants.vcf</span></code>, the input to the
+hard-filter step.</p>
+<p>Standard mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>HaplotypeCaller<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>recal_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>raw_variants.vcf
+</pre></div>
+</div>
+<p>GVCF mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>HaplotypeCaller<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>recal_reads.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-ERC<span class="w"> </span>GVCF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>sample_1.g.vcf.gz
+
+gatk<span class="w"> </span>GenotypeGVCFs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>sample_1.g.vcf.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>raw_variants.vcf
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> is deliberately permissive at this stage: the aim
+is to maximise sensitivity. False positives are removed by the
+hard-filter step below.</p>
+</section>
+</section>
+<section id="hard-filtering">
+<h2>Hard filtering<a class="headerlink" href="#hard-filtering" title="Link to this heading"></a></h2>
+<p>Same split-then-filter pattern as the bootstrap, applied to the final
+call set.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class="w"> </span>reference.fa<span class="w"> </span>-V<span class="w"> </span>raw_variants.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--select-type-to-include<span class="w"> </span>SNP<span class="w">   </span>-O<span class="w"> </span>raw_snps.vcf
+gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class="w"> </span>reference.fa<span class="w"> </span>-V<span class="w"> </span>raw_variants.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--select-type-to-include<span class="w"> </span>INDEL<span class="w"> </span>-O<span class="w"> </span>raw_indels.vcf
+</pre></div>
+</div>
+<p>SNP filters:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>raw_snps.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 60.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS60&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQ &lt; 40.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQ40&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQRankSum &lt; -12.5&quot;</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQRankSum-12.5&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -8.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-8&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 3.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>filtered_snps.vcf
+</pre></div>
+</div>
+<p>Indel filters:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-V<span class="w"> </span>raw_indels.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 200.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS200&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -20.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-20&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 10.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR10&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>filtered_indels.vcf
+</pre></div>
+</div>
+<p>These thresholds are the current GATK-recommended defaults for germline
+hard filtering. Upstream reference: <a class="reference external" href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants">Hard-filtering germline short
+variants</a>.</p>
+</section>
+<section id="annotation">
+<h2>Annotation<a class="headerlink" href="#annotation" title="Link to this heading"></a></h2>
+<p>A filtered VCF tells you <em>where</em> the variants are; annotation tells you
+<em>what they do</em>: which gene and transcript each variant falls in,
+whether it changes an amino acid, whether it disrupts a splice site,
+whether it is intergenic, and so on. We use <a class="reference external" href="https://pcingola.github.io/SnpEff/">snpEff</a>, a command-line effect predictor
+that:</p>
+<ul class="simple">
+<li><p>Reads a pre-built genome annotation database (gene, transcript, and
+exon structure) matched to your reference assembly.</p></li>
+<li><p>For every variant in the input VCF, looks up overlapping features and
+predicts the functional consequence (e.g. <code class="docutils literal notranslate"><span class="pre">missense_variant</span></code>,
+<code class="docutils literal notranslate"><span class="pre">synonymous_variant</span></code>, <code class="docutils literal notranslate"><span class="pre">frameshift_variant</span></code>, <code class="docutils literal notranslate"><span class="pre">splice_donor_variant</span></code>,
+<code class="docutils literal notranslate"><span class="pre">intergenic_region</span></code>).</p></li>
+<li><p>Writes an annotated VCF with the predictions in a structured <code class="docutils literal notranslate"><span class="pre">ANN</span></code>
+INFO field, plus a summary HTML report and a per-gene table.</p></li>
+</ul>
+<p>snpEff is particularly well-suited to non-model organism work: pre-built
+databases exist for over 20,000 reference genomes, and when no pre-built
+database is available you can build your own from a GFF/GTF and the
+reference FASTA.</p>
+<section id="normalize-before-annotating">
+<h3>Normalize before annotating<a class="headerlink" href="#normalize-before-annotating" title="Link to this heading"></a></h3>
+<p>Annotators can assign different consequences to what is effectively the
+same variant if it is represented differently in the VCF. Two
+differences matter in practice:</p>
+<ul class="simple">
+<li><p><strong>Multi-allelic records</strong>: a single VCF line can carry more than one
+alternate allele. Most annotators score the record as a whole; some
+rank the alts inconsistently. Splitting into one record per alt is
+safer.</p></li>
+<li><p><strong>Left-alignment of indels</strong>: an indel that can be written at several
+equivalent positions should be normalized to the leftmost
+representation so it matches the annotation database.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">bcftools</span> <span class="pre">norm</span></code> handles both in one pass:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bcftools<span class="w"> </span>norm<span class="w"> </span>-f<span class="w"> </span>reference.fa<span class="w"> </span>-m<span class="w"> </span>-both<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>z<span class="w"> </span>-o<span class="w"> </span>filtered_snps.norm.vcf.gz<span class="w"> </span>filtered_snps.vcf
+tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>filtered_snps.norm.vcf.gz
+
+bcftools<span class="w"> </span>norm<span class="w"> </span>-f<span class="w"> </span>reference.fa<span class="w"> </span>-m<span class="w"> </span>-both<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>z<span class="w"> </span>-o<span class="w"> </span>filtered_indels.norm.vcf.gz<span class="w"> </span>filtered_indels.vcf
+tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>filtered_indels.norm.vcf.gz
+</pre></div>
+</div>
+</section>
+<section id="find-and-download-a-database">
+<h3>Find and download a database<a class="headerlink" href="#find-and-download-a-database" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>snpEff<span class="w"> </span>databases<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>&lt;your_organism&gt;
+snpEff<span class="w"> </span>download<span class="w"> </span>&lt;database_name&gt;
+</pre></div>
+</div>
+</section>
+<section id="annotate">
+<h3>Annotate<a class="headerlink" href="#annotate" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>snpEff<span class="w"> </span>-v<span class="w"> </span>&lt;database_name&gt;<span class="w"> </span>filtered_snps.norm.vcf.gz<span class="w"> </span>&gt;<span class="w"> </span>filtered_snps.ann.vcf
+</pre></div>
+</div>
+<section id="output-files">
+<h4>Output files<a class="headerlink" href="#output-files" title="Link to this heading"></a></h4>
+<p>snpEff writes three files into the working directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filtered_snps.ann.vcf</span></code>: the annotated VCF. Each variant carries an
+<code class="docutils literal notranslate"><span class="pre">ANN</span></code> INFO field listing predicted effects, affected gene and
+transcript, impact category (HIGH, MODERATE, LOW, MODIFIER), and HGVS
+nomenclature.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">snpEff_genes.txt</span></code>: tab-delimited per-gene summary of how many
+variants of each consequence class fall in each gene.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">snpEff_summary.html</span></code>: HTML report with distributional plots
+(effects by class, by region, by impact) and dataset-level QC.</p></li>
+</ul>
+</section>
+</section>
+<section id="chromosome-naming-mismatches">
+<h3>Chromosome naming mismatches<a class="headerlink" href="#chromosome-naming-mismatches" title="Link to this heading"></a></h3>
+<p>snpEff will silently annotate zero variants if chromosome names in your
+VCF do not match those in the snpEff database. A typical mismatch is
+RefSeq-style <code class="docutils literal notranslate"><span class="pre">NC_000020.11</span></code> in your VCF vs. plain <code class="docutils literal notranslate"><span class="pre">20</span></code> in the
+database. Rename chromosomes before annotation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build a two-column rename map: &lt;source_name&gt; &lt;target_name&gt;</span>
+<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;NC_000020.11\t20&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>chrom_rename.txt
+
+bcftools<span class="w"> </span>annotate<span class="w"> </span>--rename-chrs<span class="w"> </span>chrom_rename.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>z<span class="w"> </span>-o<span class="w"> </span>filtered_snps.renamed.vcf.gz<span class="w"> </span>filtered_snps.norm.vcf.gz
+tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>filtered_snps.renamed.vcf.gz
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">filtered_snps.renamed.vcf.gz</span></code> as the snpEff input.</p>
+</section>
+<section id="alternatives">
+<h3>Alternatives<a class="headerlink" href="#alternatives" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.ensembl.org/info/docs/tools/vep/index.html">Ensembl VEP</a>
+is the other widely used effect predictor. It excels for human clinical
+annotation (ClinVar, gnomAD frequencies) but has fewer pre-built
+non-model genomes and a heavier setup, so snpEff is usually the better
+default for non-model organism work.</p>
+</section>
+</section>
+<section id="post-filter-qc">
+<h2>Post-filter QC<a class="headerlink" href="#post-filter-qc" title="Link to this heading"></a></h2>
+<p>Quick summary statistics on the final, annotated call set (Ts/Tv ratio,
+singleton count, per-chromosome counts, depth distribution) are useful
+for sanity-checking.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bcftools<span class="w"> </span>stats<span class="w"> </span>filtered_snps.ann.vcf<span class="w"> </span>&gt;<span class="w"> </span>filtered_snps.stats.txt
+</pre></div>
+</div>
+<p>For a plotted report:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plot-vcfstats<span class="w"> </span>-p<span class="w"> </span>plots/<span class="w"> </span>filtered_snps.stats.txt
+</pre></div>
+</div>
+</section>
+<section id="visualization-in-igv">
+<h2>Visualization in IGV<a class="headerlink" href="#visualization-in-igv" title="Link to this heading"></a></h2>
+<p>Loading the BAM and final VCF in IGV is the fastest sanity check: you
+can see whether each called variant is supported by the underlying reads.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The screenshots below are from a human GRCh38 chr20 example, but the
+interpretation is the same for any organism. Only the track headers
+change.</p>
+</div>
+<section id="called-vs-uncalled-snps">
+<h3>Called vs. uncalled SNPs<a class="headerlink" href="#called-vs-uncalled-snps" title="Link to this heading"></a></h3>
+<p>A called SNP has a clear, consistent alternate allele across a majority
+of overlapping reads at that position. Sporadic mismatches that do not
+cluster into a coherent signal are (correctly) not called.</p>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/1-called-vs-uncalled-snp.png"><img alt="IGV: a called SNP next to positions with random mismatches" src="../_images/1-called-vs-uncalled-snp.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">A called SNP (green column in the coverage track, red tick in the
+VCF track) supported by consistent alternate-allele reads, next to
+positions with sporadic mismatches that the caller correctly ignored.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="homozygous-vs-heterozygous-snps">
+<h3>Homozygous vs. heterozygous SNPs<a class="headerlink" href="#homozygous-vs-heterozygous-snps" title="Link to this heading"></a></h3>
+<p>A homozygous alternate allele shows nearly 100% alternate reads; a
+heterozygous call shows roughly 50% reference and 50% alternate.</p>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/2-hom-vs-het-snp.png"><img alt="IGV: homozygous vs heterozygous SNP read support" src="../_images/2-hom-vs-het-snp.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Homozygous alternate on the left (nearly all reads carry the
+alternate base) and heterozygous on the right (about half reference,
+half alternate).</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="pass-vs-filtered-variants">
+<h3>PASS vs. filtered variants<a class="headerlink" href="#pass-vs-filtered-variants" title="Link to this heading"></a></h3>
+<p>Variants that failed hard filtering remain in the VCF but are marked
+with the filter name(s) they tripped. IGV renders them as lighter,
+translucent ticks in the VCF track, so at a glance you can see which
+calls passed and which did not. The pile-up alone does not always
+explain the failure: hard-filter decisions are based on annotation
+values such as QD, FS, MQ, and SOR in the VCF <code class="docutils literal notranslate"><span class="pre">INFO</span></code> field rather
+than on anything directly visible in the reads. For a specific
+filtered variant, read the <code class="docutils literal notranslate"><span class="pre">FILTER</span></code> column of its VCF record to see
+which threshold(s) it tripped.</p>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/3-filtered-vs-pass-snp.png"><img alt="IGV: PASS SNPs and filtered SNPs in the same VCF track" src="../_images/3-filtered-vs-pass-snp.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Five SNPs in the VCF track: three solid dark-red ticks are PASS
+calls, and two lighter translucent ticks are variants that failed
+hard filtering.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="snps-in-the-cystatin-c-gene-cst3">
+<h3>SNPs in the cystatin C gene (CST3)<a class="headerlink" href="#snps-in-the-cystatin-c-gene-cst3" title="Link to this heading"></a></h3>
+<p>The example below shows the final, hard-filtered SNP calls across the
+cystatin C gene (<code class="docutils literal notranslate"><span class="pre">CST3</span></code>). Variants in <code class="docutils literal notranslate"><span class="pre">CST3</span></code> have been associated
+with Alzheimer’s disease.</p>
+<figure class="align-center" id="id6">
+<a class="reference internal image-reference" href="../_images/4-cst-3-snps.png"><img alt="IGV: SNPs called across the CST3 gene over a 10 kb window" src="../_images/4-cst-3-snps.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Eight SNPs called along the <code class="docutils literal notranslate"><span class="pre">CST3</span></code> gene, viewed over a ~10 kb
+window. The <code class="docutils literal notranslate"><span class="pre">filtered_snps.vcf</span></code> track at the top shows the
+individual SNP calls, and the gene track at the bottom
+(<code class="docutils literal notranslate"><span class="pre">NM_000099.3</span></code>) marks the <code class="docutils literal notranslate"><span class="pre">CST3</span></code> transcript.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="notes-for-non-model-organisms">
+<h2>Notes for non-model organisms<a class="headerlink" href="#notes-for-non-model-organisms" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>When to iterate BQSR.</strong> A single bootstrap pass is sufficient for
+many use cases. If you want to check convergence, re-run
+<code class="docutils literal notranslate"><span class="pre">HaplotypeCaller</span></code> on <code class="docutils literal notranslate"><span class="pre">recal_reads.bam</span></code>, re-filter, and compare the
+resulting known-sites VCF to the previous one. Re-recalibrate only if
+the difference is non-trivial.</p></li>
+<li><p><strong>No known-sites VCF at all?</strong> Running <code class="docutils literal notranslate"><span class="pre">BaseRecalibrator</span></code> without
+<code class="docutils literal notranslate"><span class="pre">--known-sites</span></code> is not supported. The bootstrap step is mandatory if
+you want BQSR for a non-model organism.</p></li>
+<li><p><strong>No rsIDs.</strong> The annotated VCF will not carry dbSNP identifiers;
+functional predictions from snpEff are the primary annotation.</p></li>
+<li><p><strong>Custom snpEff database.</strong> If no pre-built database exists for your
+organism, you can build one from a GFF/GTF and a reference FASTA. See
+the <a class="reference external" href="https://pcingola.github.io/SnpEff/snpeff/build_db/">snpEff database-building guide</a>.</p></li>
+</ul>
+</section>
 </section>
 
 

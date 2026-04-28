@@ -6,3 +6,10 @@
 .center h2 {
     text-align: center;
 }
+
+.rst-content img,
+.rst-content .figure,
+.rst-content figure {
+    margin-top: 1em;
+    margin-bottom: 1.5em;
+}
