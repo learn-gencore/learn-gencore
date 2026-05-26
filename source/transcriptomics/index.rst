@@ -7,3 +7,4 @@ Transcriptomics
    bulk_rna_seq
    single_cell_rna_seq
    multiome
+   over_representation_analysis
