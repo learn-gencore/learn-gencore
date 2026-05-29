@@ -50,6 +50,26 @@ http://software.broadinstitute.org/software/igv/download. When
 prompted, register or log in as requested. You must register to
 download IGV (you'll need to provide your email address, that's it).
 
+Launch via Open OnDemand (NYU HPC)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NYU HPC users can run IGV through Open OnDemand (OOD). This has two
+advantages over running IGV on your laptop: the HPC has more memory
+for working with large datasets, and your data on the HPC is available
+directly without having to download it first.
+
+1. Log in to `Open OnDemand <https://ood.torch.hpc.nyu.edu>`_.
+2. In the top menu, click **Interactive Apps**.
+3. Select **IGV**.
+4. Set the resource request. The defaults (2 cores, 8 GB memory) work
+   well for most cases. If you are working with large files (e.g.
+   whole-genome BAMs), increase the memory to 16 GB or higher.
+   Set a reasonable time limit for your session (e.g. 4 hours).
+5. Click **Launch**.
+
+Once the session is ready, click **Launch IGV** to open the viewer in
+your browser.
+
 Load a pre-existing genome
 --------------------------
 
@@ -71,7 +91,7 @@ Select **More...** to see the full list of available genomes.
 .. figure:: ../img/visualization/igv-load-pre-existing-genome-2.jpg
    :alt: IGV "More..." dialog listing all available pre-packaged genomes
    :align: center
-   :width: 700
+   :width: 350
 
    The **More...** dialog shows the full set of genomes you can pull
    down on demand.
@@ -127,7 +147,7 @@ loading.
 
 From the menu, select **File > Load from File**.
 
-Locate the ``aligned_reads.sorted.bam`` file (prepared for you) and
+Locate the ``aligned_reads.sorted.bam`` file and
 click **Open**. You should see something like the following:
 
 .. figure:: ../img/visualization/igv-load-bam-1.jpg
@@ -142,9 +162,8 @@ Navigate and interpret data
 ---------------------------
 
 **Navigating by chromosome:** Use the drop-down menu beside the Genome
-drop-down list to select a chromosome to view. In our sample
-alignment, we have reads from chromosome 20 only. Alternatively, enter
-the chromosome name in the search box (``chr20``) and hit enter.
+drop-down list to select a chromosome to view. You can also enter a
+chromosome name in the search box (e.g. ``chr20``) and hit enter.
 
 .. figure:: ../img/visualization/igv-nav-1.jpg
    :alt: IGV chromosome dropdown and search box
