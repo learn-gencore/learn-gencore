@@ -51,9 +51,9 @@ This is an R workflow. Install ``clusterProfiler``, ``pathview``, and
 
 .. code:: r
 
-    #BiocManager::install("clusterProfiler", version = "3.8")
-    #BiocManager::install("pathview")
-    #install.packages("wordcloud")
+    BiocManager::install("clusterProfiler", version = "3.8")
+    BiocManager::install("pathview")
+    install.packages("wordcloud")
     library(clusterProfiler)
     library(wordcloud)
 
@@ -80,7 +80,7 @@ full list at `Bioconductor OrgDb packages
 .. code:: r
 
     organism = "org.Dm.eg.db"
-    #BiocManager::install(organism, character.only = TRUE)
+    BiocManager::install(organism, character.only = TRUE)
     library(organism, character.only = TRUE)
 
 Prepare input
@@ -172,7 +172,7 @@ Emphasizes the genes overlapping among different gene sets.
 
 .. code:: r
 
-    #BiocManager::install("enrichplot")
+    BiocManager::install("enrichplot")
     library(enrichplot)
     upsetplot(go_enrich)
 
