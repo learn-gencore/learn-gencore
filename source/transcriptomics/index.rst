@@ -8,3 +8,4 @@ Transcriptomics
    single_cell_rna_seq
    multiome
    over_representation_analysis
+   gene_set_enrichment_analysis
