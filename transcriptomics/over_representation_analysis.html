@@ -1,0 +1,589 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Over-representation analysis &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Gene set enrichment analysis" href="gene_set_enrichment_analysis.html" />
+    <link rel="prev" title="Multiome" href="multiome.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Transcriptomics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bulk_rna_seq.html">Bulk RNA-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="single_cell_rna_seq.html">Single-cell RNA-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiome.html">Multiome</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Over-representation analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-overview">Workflow overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#annotation-database">Annotation database</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-input">Prepare input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#go-enrichment">GO enrichment</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-the-enrichgo-object">Create the enrichGO object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#visualizations">Visualizations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#kegg-pathway-enrichment">KEGG pathway enrichment</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-data">Prepare data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-the-enrichkegg-object">Create the enrichKEGG object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Visualizations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pathview">Pathview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gene_set_enrichment_analysis.html">Gene set enrichment analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
+      <li class="breadcrumb-item active">Over-representation analysis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="over-representation-analysis">
+<h1>Over-representation analysis<a class="headerlink" href="#over-representation-analysis" title="Link to this heading"></a></h1>
+<p>Over-representation (or enrichment) analysis is a statistical method
+that determines whether genes from pre-defined sets (e.g. those
+belonging to a specific GO term or KEGG pathway) are present more than
+would be expected (over-represented) in a subset of your data. In this
+case, the subset is your set of under- or over-expressed genes.</p>
+<p>For example, the fruit fly transcriptome has about 10,000 genes. If
+260 genes are categorized as “axon guidance” (2.6% of all genes carry
+that category), and in an experiment we find 1,000 genes are
+differentially expressed and 200 of those genes are in the “axon
+guidance” category (20% of DE genes), is that significant?</p>
+<p>This page describes the implementation of over-representation analysis
+using the <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code> package. It is run downstream of a
+differential expression analysis (e.g. with <a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">DESeq2</a>).
+Full <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code> documentation:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html">clusterProfiler vignette</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An R Markdown notebook covering this workflow is available at
+<a class="reference external" href="https://github.com/gencorefacility/r-notebooks/blob/master/ora.Rmd">gencorefacility/r-notebooks/ora.Rmd</a>.</p>
+</div>
+<section id="workflow-overview">
+<h2>Workflow overview<a class="headerlink" href="#workflow-overview" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code> and the organism-specific annotation
+database.</p></li>
+<li><p>Read the differential-expression results and build a sorted,
+named vector of log2 fold-changes (the <em>gene universe</em>) and a
+filtered vector of significant DE genes.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">enrichGO</span></code> to test for GO-term over-representation.</p></li>
+<li><p>Visualize the GO results (upset, wordcloud, barplot, dotplot,
+enrichment map, induced graph, category netplot).</p></li>
+<li><p>Convert gene IDs and run <code class="docutils literal notranslate"><span class="pre">enrichKEGG</span></code> for KEGG pathway
+over-representation.</p></li>
+<li><p>Visualize the KEGG results and render an enriched pathway with
+<code class="docutils literal notranslate"><span class="pre">pathview</span></code>.</p></li>
+</ol>
+</section>
+<section id="environment">
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<p>This is an R workflow. Install <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code>, <code class="docutils literal notranslate"><span class="pre">pathview</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">wordcloud</span></code> once, then load them at the start of each session.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;clusterProfiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;3.8&quot;</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;pathview&quot;</span><span class="p">)</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;wordcloud&quot;</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">clusterProfiler</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>You need:</p>
+<ul class="simple">
+<li><p>A <strong>differential expression results CSV</strong> (<code class="docutils literal notranslate"><span class="pre">drosphila_example_de.csv</span></code>
+in the examples below), typically produced by a tool such as DESeq2.
+At minimum it must contain a gene-ID column, a <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code>
+column, and a <code class="docutils literal notranslate"><span class="pre">padj</span></code> column.</p></li>
+<li><p>An <strong>organism annotation database</strong> matched to the gene IDs in that
+CSV. The examples here use <em>D. melanogaster</em> and <code class="docutils literal notranslate"><span class="pre">org.Dm.eg.db</span></code>.</p></li>
+</ul>
+<section id="annotation-database">
+<h3>Annotation database<a class="headerlink" href="#annotation-database" title="Link to this heading"></a></h3>
+<p>Install and load the annotation package for your organism. See the
+full list at <a class="reference external" href="http://bioconductor.org/packages/release/BiocViews.html#___OrgDb">Bioconductor OrgDb packages</a>
+(there are 19 presently available).</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Dm.eg.db&quot;</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="prepare-input">
+<h2>Prepare input<a class="headerlink" href="#prepare-input" title="Link to this heading"></a></h2>
+<p>Read the DESeq2 output and build two vectors: the full gene universe
+(named, sorted log2 fold-changes) and the filtered set of significant
+DE genes (gene names only).</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># reading in input from deseq2</span>
+<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&quot;drosphila_example_de.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="c1"># we want the log2 fold change</span>
+<span class="n">original_gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="o">$</span><span class="n">log2FoldChange</span>
+
+<span class="c1"># name the vector</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="o">$</span><span class="n">X</span>
+
+<span class="c1"># omit any NA values</span>
+<span class="n">gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">na.omit</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">)</span>
+
+<span class="c1"># sort the list in decreasing order (required for clusterProfiler)</span>
+<span class="n">gene_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="c1"># Extract significant results (padj &lt; 0.05)</span>
+<span class="n">sig_genes_df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
+
+<span class="c1"># From significant results, we want to filter on log2 fold change</span>
+<span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sig_genes_df</span><span class="o">$</span><span class="n">log2FoldChange</span>
+
+<span class="c1"># Name the vector</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sig_genes_df</span><span class="o">$</span><span class="n">X</span>
+
+<span class="c1"># omit NA values</span>
+<span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">na.omit</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span>
+
+<span class="c1"># filter on min log2 fold change (log2FoldChange &gt; 2)</span>
+<span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">genes</span><span class="p">)[</span><span class="nf">abs</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="go-enrichment">
+<h2>GO enrichment<a class="headerlink" href="#go-enrichment" title="Link to this heading"></a></h2>
+<p>Run <code class="docutils literal notranslate"><span class="pre">enrichGO</span></code> to test whether GO terms are over-represented among
+the significant DE genes, using the full gene universe as background.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<p><strong>Ontology</strong> Options: <code class="docutils literal notranslate"><span class="pre">&quot;BP&quot;</span></code> (Biological Process), <code class="docutils literal notranslate"><span class="pre">&quot;MF&quot;</span></code>
+(Molecular Function), <code class="docutils literal notranslate"><span class="pre">&quot;CC&quot;</span></code> (Cellular Component).</p>
+<p><strong>keyType</strong> This is the source of the annotation (gene IDs). The
+options vary for each annotation. In the example of <em>org.Dm.eg.db</em>,
+the options are:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">&quot;ACCNUM&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ALIAS&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ENSEMBL&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ENSEMBLPROT&quot;</span></code>
+<code class="docutils literal notranslate"><span class="pre">&quot;ENSEMBLTRANS&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ENTREZID&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ENZYME&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;EVIDENCE&quot;</span></code>
+<code class="docutils literal notranslate"><span class="pre">&quot;EVIDENCEALL&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;FLYBASE&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;FLYBASECG&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;FLYBASEPROT&quot;</span></code>
+<code class="docutils literal notranslate"><span class="pre">&quot;GENENAME&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;GO&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;GOALL&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;ONTOLOGY&quot;</span></code>
+<code class="docutils literal notranslate"><span class="pre">&quot;ONTOLOGYALL&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;PATH&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;PMID&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;REFSEQ&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;SYMBOL&quot;</span></code>
+<code class="docutils literal notranslate"><span class="pre">&quot;UNIGENE&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;UNIPROT&quot;</span></code></p>
+</div></blockquote>
+<p>Check which options are available with the <code class="docutils literal notranslate"><span class="pre">keytypes</span></code> command, for
+example <code class="docutils literal notranslate"><span class="pre">keytypes(org.Dm.eg.db)</span></code>.</p>
+</section>
+<section id="create-the-enrichgo-object">
+<h3>Create the enrichGO object<a class="headerlink" href="#create-the-enrichgo-object" title="Link to this heading"></a></h3>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">go_enrich</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichGO</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">gene_list</span><span class="p">),</span>
+<span class="w">                      </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">organism</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;ENSEMBL&#39;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">readable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">T</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BP&quot;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">qvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.10</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="visualizations">
+<h3>Visualizations<a class="headerlink" href="#visualizations" title="Link to this heading"></a></h3>
+<section id="upset-plot">
+<h4>Upset plot<a class="headerlink" href="#upset-plot" title="Link to this heading"></a></h4>
+<p>Emphasizes the genes overlapping among different gene sets.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;enrichplot&quot;</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">enrichplot</span><span class="p">)</span>
+<span class="nf">upsetplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/upsetplot.png"><img alt="enrichplot upsetplot of enriched GO terms" src="../_images/upsetplot.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Upset plot of GO-term over-representation, highlighting gene
+overlap between enriched sets.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="wordcloud">
+<h4>Wordcloud<a class="headerlink" href="#wordcloud" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">wcdf</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">go_enrich</span><span class="o">$</span><span class="n">GeneRatio</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span>
+<span class="n">wcdf</span><span class="o">$</span><span class="n">term</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">go_enrich</span><span class="p">[,</span><span class="m">2</span><span class="p">]</span>
+<span class="nf">wordcloud</span><span class="p">(</span><span class="n">words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcdf</span><span class="o">$</span><span class="n">term</span><span class="p">,</span><span class="w"> </span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcdf</span><span class="o">$</span><span class="n">V1</span><span class="p">,</span><span class="w"> </span><span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="n">.</span><span class="m">1</span><span class="p">)),</span>
+<span class="w">          </span><span class="n">colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">brewer.pal</span><span class="p">(</span><span class="m">8</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Dark2&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">max.words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">25</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/wordcloud.png"><img alt="wordcloud of enriched GO terms" src="../_images/wordcloud.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Wordcloud of the top 25 enriched GO terms, sized by the numerator
+of each term’s gene ratio.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="barplot">
+<h4>Barplot<a class="headerlink" href="#barplot" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">barplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span>
+<span class="w">        </span><span class="n">drop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;GO Biological Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id9">
+<a class="reference internal image-reference" href="../_images/barplot-go.png"><img alt="barplot of enriched GO biological pathways" src="../_images/barplot-go.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Top 10 enriched GO biological-process terms by adjusted p-value.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="dotplot">
+<h4>Dotplot<a class="headerlink" href="#dotplot" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dotplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id10">
+<a class="reference internal image-reference" href="../_images/dotplot-go1.png"><img alt="dotplot of enriched GO terms" src="../_images/dotplot-go1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Dotplot of enriched GO terms. Dot size is the number of DE genes in
+the set; colour is the adjusted p-value.</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="enrichment-map">
+<h4>Enrichment map<a class="headerlink" href="#enrichment-map" title="Link to this heading"></a></h4>
+<p>Enrichment map organizes enriched terms into a network with edges
+connecting overlapping gene sets. Mutually overlapping gene sets tend
+to cluster together, making it easy to identify functional modules.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">emapplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id11">
+<a class="reference internal image-reference" href="../_images/emapplot-go1.png"><img alt="enrichment map of enriched GO terms" src="../_images/emapplot-go1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Enrichment map: nodes are GO terms, edges connect terms that share
+genes. Functional modules cluster together.</span><a class="headerlink" href="#id11" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="enriched-go-induced-graph">
+<h4>Enriched GO induced graph<a class="headerlink" href="#enriched-go-induced-graph" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">goplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id12">
+<a class="reference internal image-reference" href="../_images/goplot.png"><img alt="induced GO graph of enriched terms" src="../_images/goplot.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Induced GO DAG for the top 10 enriched terms, showing each term’s
+parents in the ontology hierarchy.</span><a class="headerlink" href="#id12" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="category-netplot">
+<h4>Category netplot<a class="headerlink" href="#category-netplot" title="Link to this heading"></a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">cnetplot</span></code> depicts the linkages of genes and biological concepts
+(e.g. GO terms or KEGG pathways) as a network. It is helpful for
+seeing which genes are involved in enriched pathways and which genes
+belong to multiple annotation categories.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id13">
+<a class="reference internal image-reference" href="../_images/cnetplot-go1.png"><img alt="cnetplot of enriched GO terms linking genes to categories" src="../_images/cnetplot-go1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Category netplot: gene nodes are connected to the enriched GO
+categories they belong to, with fold-change overlaid as colour.</span><a class="headerlink" href="#id13" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+<section id="kegg-pathway-enrichment">
+<h2>KEGG pathway enrichment<a class="headerlink" href="#kegg-pathway-enrichment" title="Link to this heading"></a></h2>
+<p>For KEGG pathway enrichment we use the <code class="docutils literal notranslate"><span class="pre">enrichKEGG</span></code> function. KEGG
+requires its own identifier types, so we first convert gene IDs with
+<code class="docutils literal notranslate"><span class="pre">bitr</span></code> (included in <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code>). It is normal for this call
+to produce some messages or warnings.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">bitr</span></code> function, the param <code class="docutils literal notranslate"><span class="pre">fromType</span></code> should be the same as
+the <code class="docutils literal notranslate"><span class="pre">keyType</span></code> we used for <code class="docutils literal notranslate"><span class="pre">enrichGO</span></code> above (the annotation
+source). This param is used again in the next two steps: creating
+<code class="docutils literal notranslate"><span class="pre">dedup_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">df2</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">toType</span></code> in the <code class="docutils literal notranslate"><span class="pre">bitr</span></code> function has to be one of the available
+options from <code class="docutils literal notranslate"><span class="pre">keyTypes(org.Dm.eg.db)</span></code> and must map to one of
+<code class="docutils literal notranslate"><span class="pre">'kegg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ncbi-geneid'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ncib-proteinid'</span></code> or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span></code>,
+because <code class="docutils literal notranslate"><span class="pre">enrichKEGG</span></code> only accepts one of those four options as its
+<code class="docutils literal notranslate"><span class="pre">keytype</span></code> parameter. In the case of <em>org.Dm.eg.db</em>, none of those
+four types are available directly, but <code class="docutils literal notranslate"><span class="pre">'ENTREZID'</span></code> is the same as
+<code class="docutils literal notranslate"><span class="pre">'ncbi-geneid'</span></code> for <em>org.Dm.eg.db</em>, so we use <code class="docutils literal notranslate"><span class="pre">'ENTREZID'</span></code> for
+<code class="docutils literal notranslate"><span class="pre">toType</span></code>.</p>
+<p>As our initial input, we use <code class="docutils literal notranslate"><span class="pre">original_gene_list</span></code> created above.</p>
+<section id="prepare-data">
+<h3>Prepare data<a class="headerlink" href="#prepare-data" title="Link to this heading"></a></h3>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert gene IDs for enrichKEGG function</span>
+<span class="c1"># We will lose some genes here because not all IDs will be converted</span>
+<span class="n">ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">),</span><span class="w"> </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Dm.eg.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># remove duplicate IDS (here I use &quot;ENSEMBL&quot;, but it should be</span>
+<span class="c1"># whatever was selected as keyType)</span>
+<span class="n">dedup_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ids</span><span class="p">[</span><span class="o">!</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">)]),]</span>
+
+<span class="c1"># Create a new dataframe df2 which has only the genes which were</span>
+<span class="c1"># successfully mapped using the bitr function above</span>
+<span class="n">df2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">X</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">dedup_ids</span><span class="o">$</span><span class="n">ENSEMBL</span><span class="p">,]</span>
+
+<span class="c1"># Create a new column in df2 with the corresponding ENTREZ IDs</span>
+<span class="n">df2</span><span class="o">$</span><span class="n">Y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dedup_ids</span><span class="o">$</span><span class="n">ENTREZID</span>
+
+<span class="c1"># Create a vector of the gene universe</span>
+<span class="n">kegg_gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">log2FoldChange</span>
+
+<span class="c1"># Name vector with ENTREZ ids</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">kegg_gene_list</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">Y</span>
+
+<span class="c1"># omit any NA values</span>
+<span class="n">kegg_gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">na.omit</span><span class="p">(</span><span class="n">kegg_gene_list</span><span class="p">)</span>
+
+<span class="c1"># sort the list in decreasing order (required for clusterProfiler)</span>
+<span class="n">kegg_gene_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="n">kegg_gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="c1"># Extract significant results from df2</span>
+<span class="n">kegg_sig_genes_df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="w"> </span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
+
+<span class="c1"># From significant results, we want to filter on log2 fold change</span>
+<span class="n">kegg_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kegg_sig_genes_df</span><span class="o">$</span><span class="n">log2FoldChange</span>
+
+<span class="c1"># Name the vector with the CONVERTED ID!</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">kegg_genes</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kegg_sig_genes_df</span><span class="o">$</span><span class="n">Y</span>
+
+<span class="c1"># omit NA values</span>
+<span class="n">kegg_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">na.omit</span><span class="p">(</span><span class="n">kegg_genes</span><span class="p">)</span>
+
+<span class="c1"># filter on log2 fold change (PARAMETER)</span>
+<span class="n">kegg_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">kegg_genes</span><span class="p">)[</span><span class="nf">abs</span><span class="p">(</span><span class="n">kegg_genes</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p><strong>organism</strong> KEGG organism code. The full list is here:
+<a class="reference external" href="https://www.genome.jp/kegg/catalog/org_list.html">KEGG organism list</a>
+(need the 3-letter code). We define it as <code class="docutils literal notranslate"><span class="pre">kegg_organism</span></code> first,
+because it is used again below when making the pathview plots.</p>
+<p><strong>keyType</strong> one of <code class="docutils literal notranslate"><span class="pre">'kegg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ncbi-geneid'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ncib-proteinid'</span></code>
+or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span></code>.</p>
+</section>
+<section id="create-the-enrichkegg-object">
+<h3>Create the enrichKEGG object<a class="headerlink" href="#create-the-enrichkegg-object" title="Link to this heading"></a></h3>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">kegg_organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme&quot;</span>
+<span class="n">kk</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichKEGG</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_genes</span><span class="p">,</span>
+<span class="w">                 </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">kegg_gene_list</span><span class="p">),</span>
+<span class="w">                 </span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
+<span class="w">                 </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
+<span class="w">                 </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ncbi-geneid&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>Visualizations<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<section id="id3">
+<h4>Barplot<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">barplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span>
+<span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enriched Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id14">
+<a class="reference internal image-reference" href="../_images/barplot-kegg.png"><img alt="barplot of enriched KEGG pathways" src="../_images/barplot-kegg.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Top 10 enriched KEGG pathways by adjusted p-value.</span><a class="headerlink" href="#id14" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id4">
+<h4>Dotplot<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dotplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span>
+<span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enriched Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id15">
+<a class="reference internal image-reference" href="../_images/dotplot-kegg1.png"><img alt="dotplot of enriched KEGG pathways" src="../_images/dotplot-kegg1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Dotplot of enriched KEGG pathways. Dot size is the DE-gene count
+per pathway; colour is the adjusted p-value.</span><a class="headerlink" href="#id15" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id5">
+<h4>Category netplot<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">cnetplot</span></code> depicts the linkages of genes and biological concepts
+(here KEGG pathways) as a network.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id16">
+<a class="reference internal image-reference" href="../_images/cnetplot-kegg1.png"><img alt="cnetplot of enriched KEGG pathways linking genes to categories" src="../_images/cnetplot-kegg1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Category netplot for KEGG pathway enrichment, with DE-gene
+fold-change overlaid as colour.</span><a class="headerlink" href="#id16" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+<section id="pathview">
+<h2>Pathview<a class="headerlink" href="#pathview" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pathview</span></code> renders an enriched KEGG pathway with your DE genes
+overlaid, producing a PNG and a (different) PDF of the pathway map.</p>
+<section id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p><strong>gene.data</strong> The named vector <code class="docutils literal notranslate"><span class="pre">kegg_gene_list</span></code> created above.</p>
+<p><strong>pathway.id</strong> The user needs to enter this. Enriched pathways plus
+the pathway ID are provided in the <code class="docutils literal notranslate"><span class="pre">enrichKEGG</span></code> output table above.</p>
+<p><strong>species</strong> Same as <code class="docutils literal notranslate"><span class="pre">organism</span></code> above in <code class="docutils literal notranslate"><span class="pre">enrichKEGG</span></code>, which we
+defined as <code class="docutils literal notranslate"><span class="pre">kegg_organism</span></code>.</p>
+<p><strong>gene.idtype</strong> The index number (first index is 1) corresponding to
+your keytype from this list: <code class="docutils literal notranslate"><span class="pre">gene.idtype.list</span></code>.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">pathview</span><span class="p">)</span>
+
+<span class="c1"># Produce the native KEGG plot (PNG)</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04080&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
+<span class="w">                </span><span class="n">gene.idtype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene.idtype.list</span><span class="p">[</span><span class="m">3</span><span class="p">])</span>
+
+<span class="c1"># Produce a different plot (PDF) (not displayed here)</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04080&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
+<span class="w">                </span><span class="n">gene.idtype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene.idtype.list</span><span class="p">[</span><span class="m">3</span><span class="p">],</span>
+<span class="w">                </span><span class="n">kegg.native</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)</span>
+
+<span class="n">knitr</span><span class="o">::</span><span class="nf">include_graphics</span><span class="p">(</span><span class="s">&quot;dme04080.pathview.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id17">
+<a class="reference internal image-reference" href="../_images/pathview-dme04080.png"><img alt="KEGG native enriched pathway plot for dme04080" src="../_images/pathview-dme04080.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">KEGG native enriched pathway plot (<code class="docutils literal notranslate"><span class="pre">dme04080</span></code>) with DE-gene
+fold-change overlaid on pathway nodes.</span><a class="headerlink" href="#id17" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="multiome.html" class="btn btn-neutral float-left" title="Multiome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gene_set_enrichment_analysis.html" class="btn btn-neutral float-right" title="Gene set enrichment analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
