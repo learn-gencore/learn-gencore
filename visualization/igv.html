@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGV &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Programming" href="../programming/index.html" />
+    <link rel="prev" title="Visualization" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Visualization</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">IGV</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#launching-igv">Launching IGV</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-java-web-start">Using Java Web Start</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#download-and-run-locally">Download and run locally</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#launch-via-open-ondemand-nyu-hpc">Launch via Open OnDemand (NYU HPC)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#load-a-pre-existing-genome">Load a pre-existing genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-custom-genome">Create a custom genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-alignment-data">Load alignment data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#navigate-and-interpret-data">Navigate and interpret data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exercise">Exercise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#further-reading">Further reading</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Visualization</a></li>
+      <li class="breadcrumb-item active">IGV</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="igv">
+<h1>IGV<a class="headerlink" href="#igv" title="Link to this heading"></a></h1>
+<p>The <a class="reference external" href="http://software.broadinstitute.org/software/igv/home">Integrative Genomics Viewer (IGV)</a> is a
+high-performance visualization tool for interactive exploration of
+large, integrated genomic datasets. It supports a wide variety of data
+types involved in NGS analysis, including mapped reads, gene
+annotations, and genetic variants.</p>
+<p>This page is a hands-on walkthrough: launch IGV, load a reference
+(pre-packaged or custom), load aligned reads, then navigate the data.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Launching IGV</p></li>
+<li><p>Load a pre-existing genome</p></li>
+<li><p>Create a custom genome</p></li>
+<li><p>Load alignment data (mapped reads)</p></li>
+<li><p>Navigate and interpret the data</p></li>
+</ul>
+</section>
+<section id="launching-igv">
+<h2>Launching IGV<a class="headerlink" href="#launching-igv" title="Link to this heading"></a></h2>
+<p>There are a few ways to launch IGV. We’ll cover two basic ways here.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may need to update your Java in order to run IGV.</p>
+</div>
+<section id="using-java-web-start">
+<h3>Using Java Web Start<a class="headerlink" href="#using-java-web-start" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Go to the IGV downloads page:
+<a class="reference external" href="http://software.broadinstitute.org/software/igv/download">http://software.broadinstitute.org/software/igv/download</a></p></li>
+<li><p>Click the launch icon. The browser will display the web-start launch
+window.</p></li>
+<li><p>Select <strong>Open with Java Web Start</strong> and click <strong>OK</strong>. If the system
+displays messages about trusting the application, confirm that you
+trust the application. Web Start downloads and starts IGV.</p></li>
+</ul>
+</section>
+<section id="download-and-run-locally">
+<h3>Download and run locally<a class="headerlink" href="#download-and-run-locally" title="Link to this heading"></a></h3>
+<p>Download IGV and launch it locally on your Windows or Mac computer.
+Your computer must meet certain requirements (OS, Java version, etc.).
+Follow instructions on
+<a class="reference external" href="http://software.broadinstitute.org/software/igv/download">http://software.broadinstitute.org/software/igv/download</a>. When
+prompted, register or log in as requested. You must register to
+download IGV (you’ll need to provide your email address, that’s it).</p>
+</section>
+<section id="launch-via-open-ondemand-nyu-hpc">
+<h3>Launch via Open OnDemand (NYU HPC)<a class="headerlink" href="#launch-via-open-ondemand-nyu-hpc" title="Link to this heading"></a></h3>
+<p>NYU HPC users can run IGV through Open OnDemand (OOD). This has two
+advantages over running IGV on your laptop: the HPC has more memory
+for working with large datasets, and your data on the HPC is available
+directly without having to download it first.</p>
+<ol class="arabic simple">
+<li><p>Log in to <a class="reference external" href="https://ood.torch.hpc.nyu.edu">Open OnDemand</a>.</p></li>
+<li><p>In the top menu, click <strong>Interactive Apps</strong>.</p></li>
+<li><p>Select <strong>IGV</strong>.</p></li>
+<li><p>Set the resource request. The defaults (2 cores, 8 GB memory) work
+well for most cases. If you are working with large files (e.g.
+whole-genome BAMs), increase the memory to 16 GB or higher.
+Set a reasonable time limit for your session (e.g. 4 hours).</p></li>
+<li><p>Click <strong>Launch</strong>.</p></li>
+</ol>
+<p>Once the session is ready, click <strong>Launch IGV</strong> to open the viewer in
+your browser.</p>
+</section>
+</section>
+<section id="load-a-pre-existing-genome">
+<h2>Load a pre-existing genome<a class="headerlink" href="#load-a-pre-existing-genome" title="Link to this heading"></a></h2>
+<p>Data for many commonly studied organisms comes pre-packaged with IGV.</p>
+<p>Once IGV is up and running, navigate to the left-most dropdown in the
+toolbar to select your genome.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/igv-load-pre-existing-genome-1.jpg"><img alt="IGV genome dropdown in the toolbar" src="../_images/igv-load-pre-existing-genome-1.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The left-most dropdown in the IGV toolbar lists pre-packaged
+genomes.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Select <strong>More…</strong> to see the full list of available genomes.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/igv-load-pre-existing-genome-2.jpg"><img alt="IGV &quot;More...&quot; dialog listing all available pre-packaged genomes" src="../_images/igv-load-pre-existing-genome-2.jpg" width="350" />
+</a>
+<figcaption>
+<p><span class="caption-text">The <strong>More…</strong> dialog shows the full set of genomes you can pull
+down on demand.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="create-a-custom-genome">
+<h2>Create a custom genome<a class="headerlink" href="#create-a-custom-genome" title="Link to this heading"></a></h2>
+<p>In case you are working with an organism for which there is no
+pre-existing genome in IGV, you can create a custom genome quite
+easily.</p>
+<p>Requirements:</p>
+<ul class="simple">
+<li><p>Reference sequence (in FASTA format)</p></li>
+<li><p>Gene annotations (in <code class="docutils literal notranslate"><span class="pre">.gff</span></code> format)</p></li>
+</ul>
+<p>From the menu, select <strong>Genomes &gt; Create .genome File</strong>.</p>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/igv-load-create-genome-1.jpg"><img alt="IGV Genomes menu with Create .genome File highlighted" src="../_images/igv-load-create-genome-1.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text"><strong>Genomes &gt; Create .genome File</strong> in the IGV menu bar.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>You will be presented with the following window. Enter a unique
+identifier and descriptive name (these can be anything that makes
+sense to you), then select the path to the reference FASTA file and
+the path to your gene annotation (GFF) file for the <strong>Gene File</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A FASTA index (<code class="docutils literal notranslate"><span class="pre">.fai</span></code>) file needs to be in the same directory as
+the reference sequence (<code class="docutils literal notranslate"><span class="pre">.fasta</span></code>).</p>
+</div>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/igv-load-create-genome-2.jpg"><img alt="IGV Create .genome File dialog showing identifier, name, FASTA, and gene-file fields" src="../_images/igv-load-create-genome-2.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The Create .genome File dialog: identifier, descriptive name,
+reference FASTA, and gene-annotation GFF.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Upon clicking <strong>OK</strong>, you will be prompted to select a name and
+location to save your new <code class="docutils literal notranslate"><span class="pre">.genome</span></code> file.</p>
+</section>
+<section id="load-alignment-data">
+<h2>Load alignment data<a class="headerlink" href="#load-alignment-data" title="Link to this heading"></a></h2>
+<p>Once you’ve loaded your reference genome, you can load your mapped
+reads. Note that your reads must be sorted and indexed prior to
+loading.</p>
+<p>From the menu, select <strong>File &gt; Load from File</strong>.</p>
+<p>Locate the <code class="docutils literal notranslate"><span class="pre">aligned_reads.sorted.bam</span></code> file and
+click <strong>Open</strong>. You should see something like the following:</p>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/igv-load-bam-1.jpg"><img alt="IGV after loading a sorted, indexed BAM file" src="../_images/igv-load-bam-1.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">IGV after loading a sorted, indexed BAM. The coverage track sits
+above the per-read pileup.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="navigate-and-interpret-data">
+<h2>Navigate and interpret data<a class="headerlink" href="#navigate-and-interpret-data" title="Link to this heading"></a></h2>
+<p><strong>Navigating by chromosome:</strong> Use the drop-down menu beside the Genome
+drop-down list to select a chromosome to view. You can also enter a
+chromosome name in the search box (e.g. <code class="docutils literal notranslate"><span class="pre">chr20</span></code>) and hit enter.</p>
+<figure class="align-center" id="id6">
+<a class="reference internal image-reference" href="../_images/igv-nav-1.jpg"><img alt="IGV chromosome dropdown and search box" src="../_images/igv-nav-1.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Chromosome dropdown and search box for jumping to a specific
+chromosome.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Zooming in:</strong> We still can’t see much. Let’s zoom in to a region
+within 23,500,000 to 24,000,000 until you begin to see some mapped
+reads. Use the slider on the top right to zoom incrementally, or click
+and drag a region on the coordinates to zoom to it.</p>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/igv-nav-2.jpg"><img alt="IGV zoomed in to a region showing mapped reads" src="../_images/igv-nav-2.jpg" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Zoomed in to <code class="docutils literal notranslate"><span class="pre">chr20:23,500,000-24,000,000</span></code>: individual mapped
+reads become visible.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Navigating using the keyboard:</strong> Once you are in a region of
+interest, use the arrow, home, end, page-up and page-down keys to
+explore the region.</p>
+<p><strong>Navigate directly to a region of interest:</strong> Enter a gene name or
+coordinates in the search box to navigate directly to that
+feature/region. Example: <code class="docutils literal notranslate"><span class="pre">CST4</span></code> or <code class="docutils literal notranslate"><span class="pre">chr20:23,675,452-23,682,868</span></code>.</p>
+<p><strong>Change the appearance of genes:</strong> Right-click on the gene track and
+select <strong>expanded</strong>. Navigate to gene <code class="docutils literal notranslate"><span class="pre">GGTLC1</span></code> to see the
+difference. Try <strong>squished</strong> also.</p>
+<p><strong>Change the appearance of reads:</strong> Right-click on the BAM track and
+experiment with some of the different options: <strong>View as pairs</strong>,
+<strong>Show all bases</strong>, <strong>Shade bases by quality</strong>. We will discuss these
+options.</p>
+</section>
+<section id="exercise">
+<h2>Exercise<a class="headerlink" href="#exercise" title="Link to this heading"></a></h2>
+<p>Color-coded reads: you might see red and blue reads. What do these
+represent? What might this suggest?</p>
+</section>
+<section id="further-reading">
+<h2>Further reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<p>For more details, see the <a class="reference external" href="http://software.broadinstitute.org/software/igv/UserGuide">IGV User Guide</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../programming/index.html" class="btn btn-neutral float-right" title="Programming" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

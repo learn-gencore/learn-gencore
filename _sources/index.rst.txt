@@ -16,6 +16,7 @@ Contents:
    transcriptomics/index
    variant_detection/index
    epigenomics/index
+   visualization/index
    programming/index
    denovo/index
    metagenomics/index
