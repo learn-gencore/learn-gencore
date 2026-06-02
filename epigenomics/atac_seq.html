@@ -50,7 +50,37 @@
 <li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Epigenomics</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">ATAC-seq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ATAC-seq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-control">Quality control</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#generating-a-tss-bed-file">Generating a TSS BED file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fragment-size-distribution">Fragment-size distribution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tss-enrichment">TSS enrichment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bam-filtering">BAM filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#peak-calling">Peak calling</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#individual-samples">Individual samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pooled-conditions">Pooled conditions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inspecting-peak-counts">Inspecting peak counts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#consensus-peak-set">Consensus peak set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantification">Quantification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#differential-accessibility">Differential accessibility</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#why-diffbind-rather-than-plain-deseq2">Why DiffBind rather than plain DESeq2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-sheet-and-counting">Sample sheet and counting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#background-normalization-contrasts-and-analysis">Background normalization, contrasts, and analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#extracting-and-saving-results">Extracting and saving results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-level-diagnostics">Sample-level diagnostics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-outlier-samples">Handling outlier samples</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scatac.html">scATAC</a></li>
 </ul>
@@ -87,7 +117,736 @@
              
   <section id="atac-seq">
 <h1>ATAC-seq<a class="headerlink" href="#atac-seq" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+<p>Downstream analysis of bulk ATAC-seq (Assay for Transposase-Accessible
+Chromatin) from paired-end Illumina sequencing of <strong>human</strong> samples, run on
+locally installed HPC modules. The tutorial covers everything from quality
+control through to differential accessibility analysis across multiple
+conditions.</p>
+<p>ATAC-seq uses the hyperactive Tn5 transposase to simultaneously fragment and
+tag accessible (open) chromatin. The distribution of resulting fragments is a
+direct readout of chromatin state: sub-nucleosomal fragments (under ~150 bp)
+originate from nucleosome-free regions (NFR), whereas progressively longer
+fragments reflect mono-, di-, and tri-nucleosomal wrapping. A healthy library
+therefore shows a characteristic <strong>nucleosomal ladder</strong> in its fragment-size
+distribution, and strong enrichment of signal at transcription start sites
+(TSS).</p>
+<p>This tutorial follows a four-condition experiment: a wildtype (WT) and three
+distinct cell lines (N1, N2, N3), each compared back to WT.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial begins from <strong>deduplicated, coordinate-sorted BAM files and
+their index files</strong> (<code class="docutils literal notranslate"><span class="pre">.bai</span></code>). It assumes you have already aligned your
+paired-end reads to hg38, marked or removed duplicates, and coordinate
+sorted the result. Alignment, duplicate marking, and sorting are covered in
+the upstream preprocessing material and are not repeated here.</p>
+</div>
+<section id="pipeline-overview">
+<h2>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id1">
+<img alt="ATAC-seq downstream analysis workflow" src="_images/atac_workflow.png" />
+<figcaption>
+<p><span class="caption-text">The downstream ATAC-seq workflow. The <strong>main path</strong> (green) runs from the
+input BAMs through filtering, peak calling, consensus construction,
+quantification, and differential accessibility. The two QC branches
+(orange) are informational: they validate library quality before committing
+to the analysis but do not alter the BAMs. Peak calling is run twice, on
+individual samples and on per-condition pools; the pooled peaks build the
+consensus set, while the individual peaks populate the DiffBind sample sheet
+(grey dashed auxiliary inputs).</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Assess library quality: fragment-size distribution and TSS enrichment.</p></li>
+<li><p>Filter the BAMs: remove mitochondrial reads, apply a mapping-quality
+threshold, apply the Tn5 +4/-5 bp shift, and retain only NFR fragments.</p></li>
+<li><p>Call peaks with MACS2 on each individual sample and on per-condition pooled
+BAMs.</p></li>
+<li><p>Build a consensus (union) peak set from the pooled peaks and remove
+blacklisted regions.</p></li>
+<li><p>Quantify reads per sample in the consensus peaks with <code class="docutils literal notranslate"><span class="pre">featureCounts</span></code>.</p></li>
+<li><p>Run differential accessibility in R using DiffBind with DESeq2 and
+background normalization, then extract and visualise results per contrast.</p></li>
+</ol>
+</section>
+<section id="environment">
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<p>All commands assume the following modules are loaded. Exact names depend on
+your HPC installation; substitute the versions available to you. Note that
+peak calling here uses a different module tree (<code class="docutils literal notranslate"><span class="pre">gencore/2</span></code>) from the rest of
+the command-line steps (<code class="docutils literal notranslate"><span class="pre">gencore/3</span></code>), so the module environment is switched
+where needed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># BAM filtering, QC, and quantification</span>
+<span class="n">module</span> <span class="n">purge</span>
+<span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">3</span> <span class="n">deeptools</span> <span class="n">samtools</span> <span class="n">subread</span> <span class="n">bedtools</span>
+
+<span class="c1"># Peak calling</span>
+<span class="n">module</span> <span class="n">purge</span>
+<span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">2</span> <span class="n">macs2</span>
+</pre></div>
+</div>
+<p>The differential-accessibility step (Step 6) is run locally in R / RStudio.
+Required packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">&quot;ggplot2&quot;</span><span class="p">,</span> <span class="s2">&quot;ggrepel&quot;</span><span class="p">,</span> <span class="s2">&quot;dplyr&quot;</span><span class="p">))</span>
+<span class="n">BiocManager</span><span class="p">::</span><span class="n">install</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">&quot;DiffBind&quot;</span><span class="p">,</span> <span class="s2">&quot;DESeq2&quot;</span><span class="p">,</span> <span class="s2">&quot;GenomicRanges&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>Before running the pipeline you need:</p>
+<ul class="simple">
+<li><p><strong>Deduplicated, coordinate-sorted BAMs</strong> and their <code class="docutils literal notranslate"><span class="pre">.bai</span></code> indexes, one per
+sample.</p></li>
+<li><p><strong>RPKM-normalized bigwig files</strong>, one per sample, for the TSS-enrichment QC
+step. These are typically produced with deeptools <code class="docutils literal notranslate"><span class="pre">bamCoverage</span></code>.</p></li>
+<li><p>A <strong>reference genome build</strong> identifier. This tutorial uses hg38.</p></li>
+<li><p>The <strong>ENCODE hg38 blacklist</strong> of problematic regions (downloaded below).</p></li>
+</ul>
+<p>The example data set is 16 samples across four conditions:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 12.0%" />
+<col style="width: 12.0%" />
+<col style="width: 38.0%" />
+<col style="width: 38.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Sample</p></th>
+<th class="head"><p>Condition</p></th>
+<th class="head"><p>BAM</p></th>
+<th class="head"><p>Bigwig</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WT-1</p></td>
+<td><p>WT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._01_S16_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._01_S16_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>WT-4</p></td>
+<td><p>WT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._02_S15_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._02_S15_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>WT-5</p></td>
+<td><p>WT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._03_S14_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._03_S14_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>WT-6</p></td>
+<td><p>WT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._04_S13_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._04_S13_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N1-3</p></td>
+<td><p>N1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._05_S12_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._05_S12_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N1-4</p></td>
+<td><p>N1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._06_S11_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._06_S11_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N1-5</p></td>
+<td><p>N1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._07_S10_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._07_S10_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N1-6</p></td>
+<td><p>N1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._08_S9_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._08_S9_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N2-1</p></td>
+<td><p>N2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._09_S8_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._09_S8_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N2-2</p></td>
+<td><p>N2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._10_S7_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._10_S7_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N2-3</p></td>
+<td><p>N2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._11_S6_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._11_S6_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N2-4</p></td>
+<td><p>N2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._12_S5_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._12_S5_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N3-1</p></td>
+<td><p>N3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._13_S4_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._13_S4_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N3-3</p></td>
+<td><p>N3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._14_S3_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._14_S3_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>N3-4</p></td>
+<td><p>N3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._15_S2_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._15_S2_bamCoverage.bw</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>N3-5</p></td>
+<td><p>N3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._16_S1_mdup.withrg.csorted.cleaned.aligned.bam</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">..._16_S1_bamCoverage.bw</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="quality-control">
+<h2>Quality control<a class="headerlink" href="#quality-control" title="Link to this heading"></a></h2>
+<p>Run QC on the raw deduplicated BAMs <em>before</em> any filtering, so you have a
+baseline picture of library quality. Two metrics are essential for ATAC-seq:
+the fragment-size distribution and the TSS enrichment score.</p>
+<section id="generating-a-tss-bed-file">
+<h3>Generating a TSS BED file<a class="headerlink" href="#generating-a-tss-bed-file" title="Link to this heading"></a></h3>
+<p>TSS enrichment needs a BED file of transcription start sites. Derive one from
+the GENCODE v45 annotation for hg38.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Download GENCODE v45 GTF
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_45/gencode.v45.annotation.gtf.gz
+
+# Extract unique TSS positions, primary chromosomes only
+zcat gencode.v45.annotation.gtf.gz \
+  | awk &#39;$3 == &quot;transcript&quot;&#39; \
+  | awk &#39;BEGIN{OFS=&quot;\t&quot;} {
+      if ($7 == &quot;+&quot;) print $1, $4-1, $4, &quot;.&quot;, &quot;.&quot;, $7;
+      else print $1, $5-1, $5, &quot;.&quot;, &quot;.&quot;, $7
+    }&#39; \
+  | grep -v &quot;^#&quot; \
+  | grep -E &quot;^chr([0-9]+|X|Y)\s&quot; \
+  | sort -k1,1 -k2,2n \
+  | uniq \
+  &gt; hg38_TSS_primary.bed
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The primary chromosome sequences in hg38 are identical across all GRCh38
+patch releases (p1 through p14); patches only add or revise alt contigs and
+scaffolds. A TSS file restricted to <code class="docutils literal notranslate"><span class="pre">chr1</span></code>–<code class="docutils literal notranslate"><span class="pre">chr22</span></code>, <code class="docutils literal notranslate"><span class="pre">chrX</span></code>, <code class="docutils literal notranslate"><span class="pre">chrY</span></code>
+is therefore safe to use regardless of which patch your alignment reference
+was built from, as long as you restrict to the primary chromosomes. The
+<code class="docutils literal notranslate"><span class="pre">grep</span> <span class="pre">-E</span> <span class="pre">&quot;^chr([0-9]+|X|Y)\s&quot;</span></code> filter does this; the trailing <code class="docutils literal notranslate"><span class="pre">\s</span></code>
+matches the tab after the chromosome name (using <code class="docutils literal notranslate"><span class="pre">$</span></code> would match
+end-of-line and silently return nothing).</p>
+</div>
+</section>
+<section id="fragment-size-distribution">
+<h3>Fragment-size distribution<a class="headerlink" href="#fragment-size-distribution" title="Link to this heading"></a></h3>
+<p>Use deeptools <code class="docutils literal notranslate"><span class="pre">bamPEFragmentSize</span></code> across all samples at once.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">QC</span>
+
+<span class="n">bamPEFragmentSize</span> \
+  <span class="o">-</span><span class="n">b</span> <span class="n">WT</span><span class="o">-</span><span class="mf">1.</span><span class="n">bam</span> <span class="n">WT</span><span class="o">-</span><span class="mf">4.</span><span class="n">bam</span> <span class="n">WT</span><span class="o">-</span><span class="mf">5.</span><span class="n">bam</span> <span class="n">WT</span><span class="o">-</span><span class="mf">6.</span><span class="n">bam</span> \
+     <span class="n">N1</span><span class="o">-</span><span class="mf">3.</span><span class="n">bam</span> <span class="n">N1</span><span class="o">-</span><span class="mf">4.</span><span class="n">bam</span> <span class="n">N1</span><span class="o">-</span><span class="mf">5.</span><span class="n">bam</span> <span class="n">N1</span><span class="o">-</span><span class="mf">6.</span><span class="n">bam</span> \
+     <span class="n">N2</span><span class="o">-</span><span class="mf">1.</span><span class="n">bam</span> <span class="n">N2</span><span class="o">-</span><span class="mf">2.</span><span class="n">bam</span> <span class="n">N2</span><span class="o">-</span><span class="mf">3.</span><span class="n">bam</span> <span class="n">N2</span><span class="o">-</span><span class="mf">4.</span><span class="n">bam</span> \
+     <span class="n">N3</span><span class="o">-</span><span class="mf">1.</span><span class="n">bam</span> <span class="n">N3</span><span class="o">-</span><span class="mf">3.</span><span class="n">bam</span> <span class="n">N3</span><span class="o">-</span><span class="mf">4.</span><span class="n">bam</span> <span class="n">N3</span><span class="o">-</span><span class="mf">5.</span><span class="n">bam</span> \
+  <span class="o">--</span><span class="n">samplesLabel</span> <span class="n">WT</span><span class="o">-</span><span class="mi">1</span> <span class="n">WT</span><span class="o">-</span><span class="mi">4</span> <span class="n">WT</span><span class="o">-</span><span class="mi">5</span> <span class="n">WT</span><span class="o">-</span><span class="mi">6</span> <span class="n">N1</span><span class="o">-</span><span class="mi">3</span> <span class="n">N1</span><span class="o">-</span><span class="mi">4</span> <span class="n">N1</span><span class="o">-</span><span class="mi">5</span> <span class="n">N1</span><span class="o">-</span><span class="mi">6</span> \
+                 <span class="n">N2</span><span class="o">-</span><span class="mi">1</span> <span class="n">N2</span><span class="o">-</span><span class="mi">2</span> <span class="n">N2</span><span class="o">-</span><span class="mi">3</span> <span class="n">N2</span><span class="o">-</span><span class="mi">4</span> <span class="n">N3</span><span class="o">-</span><span class="mi">1</span> <span class="n">N3</span><span class="o">-</span><span class="mi">3</span> <span class="n">N3</span><span class="o">-</span><span class="mi">4</span> <span class="n">N3</span><span class="o">-</span><span class="mi">5</span> \
+  <span class="o">--</span><span class="n">histogram</span> <span class="n">QC</span><span class="o">/</span><span class="n">fragment_size_distribution</span><span class="o">.</span><span class="n">png</span> \
+  <span class="o">--</span><span class="n">outRawFragmentLengths</span> <span class="n">QC</span><span class="o">/</span><span class="n">fragment_sizes_raw</span><span class="o">.</span><span class="n">tab</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">28</span>
+</pre></div>
+</div>
+<p>A healthy ATAC library shows a dominant NFR peak below 150 bp, with smaller
+mono- and di-nucleosomal shoulders at roughly 200 bp intervals, and tight
+overlap of all sample curves.</p>
+</section>
+<section id="tss-enrichment">
+<h3>TSS enrichment<a class="headerlink" href="#tss-enrichment" title="Link to this heading"></a></h3>
+<p>Compute a signal matrix centred on every TSS (±2 kb) from the bigwig files,
+then plot a profile and a heatmap. TSS enrichment above 7 is acceptable for
+human ATAC-seq, and above 10 is good.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">reference</span><span class="o">-</span><span class="n">point</span> \
+  <span class="o">--</span><span class="n">referencePoint</span> <span class="n">TSS</span> \
+  <span class="o">-</span><span class="n">b</span> <span class="mi">2000</span> <span class="o">-</span><span class="n">a</span> <span class="mi">2000</span> \
+  <span class="o">-</span><span class="n">R</span> <span class="n">hg38_TSS_primary</span><span class="o">.</span><span class="n">bed</span> \
+  <span class="o">-</span><span class="n">S</span> <span class="n">WT</span><span class="o">-</span><span class="mf">1.</span><span class="n">bw</span> <span class="n">WT</span><span class="o">-</span><span class="mf">4.</span><span class="n">bw</span> <span class="n">WT</span><span class="o">-</span><span class="mf">5.</span><span class="n">bw</span> <span class="n">WT</span><span class="o">-</span><span class="mf">6.</span><span class="n">bw</span> \
+     <span class="n">N1</span><span class="o">-</span><span class="mf">3.</span><span class="n">bw</span> <span class="n">N1</span><span class="o">-</span><span class="mf">4.</span><span class="n">bw</span> <span class="n">N1</span><span class="o">-</span><span class="mf">5.</span><span class="n">bw</span> <span class="n">N1</span><span class="o">-</span><span class="mf">6.</span><span class="n">bw</span> \
+     <span class="n">N2</span><span class="o">-</span><span class="mf">1.</span><span class="n">bw</span> <span class="n">N2</span><span class="o">-</span><span class="mf">2.</span><span class="n">bw</span> <span class="n">N2</span><span class="o">-</span><span class="mf">3.</span><span class="n">bw</span> <span class="n">N2</span><span class="o">-</span><span class="mf">4.</span><span class="n">bw</span> \
+     <span class="n">N3</span><span class="o">-</span><span class="mf">1.</span><span class="n">bw</span> <span class="n">N3</span><span class="o">-</span><span class="mf">3.</span><span class="n">bw</span> <span class="n">N3</span><span class="o">-</span><span class="mf">4.</span><span class="n">bw</span> <span class="n">N3</span><span class="o">-</span><span class="mf">5.</span><span class="n">bw</span> \
+  <span class="o">--</span><span class="n">skipZeros</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_matrix</span><span class="o">.</span><span class="n">gz</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">28</span>
+
+<span class="n">plotProfile</span> \
+  <span class="o">-</span><span class="n">m</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_matrix</span><span class="o">.</span><span class="n">gz</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_enrichment_profile</span><span class="o">.</span><span class="n">png</span> \
+  <span class="o">--</span><span class="n">perGroup</span> \
+  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">&quot;TSS Enrichment - All Samples&quot;</span>
+
+<span class="n">plotHeatmap</span> \
+  <span class="o">-</span><span class="n">m</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_matrix</span><span class="o">.</span><span class="n">gz</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_enrichment_heatmap</span><span class="o">.</span><span class="n">png</span> \
+  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">&quot;TSS Enrichment Heatmap&quot;</span> \
+  <span class="o">--</span><span class="n">colorMap</span> <span class="n">RdYlBu_r</span>
+</pre></div>
+</div>
+<p>What to look for in the QC plots:</p>
+<ul class="simple">
+<li><p><strong>Fragment size</strong>: a strong sub-150 bp NFR peak, nucleosomal shoulders, and
+tight overlap across samples. A divergent curve flags a depth or quality
+outlier.</p></li>
+<li><p><strong>TSS profile / heatmap</strong>: a sharp, symmetric peak centred exactly on the
+TSS in every sample, consistent peak height within a condition, and a clear
+enrichment band in each heatmap column.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>TSS profiles computed from whole-fragment bigwigs (as here) look broader
+than those from NFR-filtered bigwigs. This is expected at the QC stage and
+is <strong>not</strong> a reason to fail a sample. Profiles sharpen considerably after
+the filtering step below.</p>
+</div>
+</section>
+</section>
+<section id="bam-filtering">
+<h2>BAM filtering<a class="headerlink" href="#bam-filtering" title="Link to this heading"></a></h2>
+<p>Several classes of reads in the raw BAM are uninformative or harmful for
+ATAC-seq and must be removed before peak calling.</p>
+<ul class="simple">
+<li><p><strong>Mitochondrial reads (chrM).</strong> The mitochondrial genome is essentially
+naked, highly accessible DNA, and a single cell contains many copies. Without
+removal, chrM reads can dominate an ATAC library (often 30–80 % of reads) and
+dilute nuclear signal.</p></li>
+<li><p><strong>Low-MAPQ reads.</strong> Ambiguously placed multi-mappers are dropped by requiring
+<code class="docutils literal notranslate"><span class="pre">MAPQ</span> <span class="pre">&gt;=</span> <span class="pre">30</span></code>.</p></li>
+<li><p><strong>Non-NFR fragments.</strong> Retaining only sub-nucleosomal fragments (10–150 bp)
+focuses the analysis on genuine open-chromatin signal rather than nucleosome
+positioning.</p></li>
+<li><p><strong>Tn5 insertion offset.</strong> Tn5 inserts as a dimer that leaves a 9 bp
+duplication, so the true insertion point is offset +4 bp on the <code class="docutils literal notranslate"><span class="pre">+</span></code> strand
+and -5 bp on the <code class="docutils literal notranslate"><span class="pre">-</span></code> strand from the reported alignment start. This shift
+must be corrected for accurate footprinting and motif analysis.</p></li>
+</ul>
+<p>deeptools <code class="docutils literal notranslate"><span class="pre">alignmentSieve</span></code> applies all of these in a single pass. The
+<code class="docutils literal notranslate"><span class="pre">--ATACshift</span></code> flag performs the Tn5 correction.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">filtered</span>
+
+<span class="n">alignmentSieve</span> \
+  <span class="o">-</span><span class="n">b</span> <span class="n">WT</span><span class="o">-</span><span class="mf">1.</span><span class="n">bam</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span> \
+  <span class="o">--</span><span class="n">ATACshift</span> \
+  <span class="o">--</span><span class="n">minFragmentLength</span> <span class="mi">10</span> \
+  <span class="o">--</span><span class="n">maxFragmentLength</span> <span class="mi">150</span> \
+  <span class="o">--</span><span class="n">minMappingQuality</span> <span class="mi">30</span> \
+  <span class="o">--</span><span class="n">ignoreDuplicates</span> \
+  <span class="o">--</span><span class="n">blackListFileName</span> <span class="n">hg38_blacklist</span><span class="o">.</span><span class="n">bed</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">28</span>
+
+<span class="n">samtools</span> <span class="n">sort</span>  <span class="o">-@</span> <span class="mi">28</span> <span class="o">-</span><span class="n">o</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span>
+<span class="n">samtools</span> <span class="n">index</span> <span class="o">-@</span> <span class="mi">28</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span>
+<span class="n">rm</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span>
+</pre></div>
+</div>
+<p>Download the ENCODE hg38 blacklist (the unified exclusion list recommended by
+the Kundaje lab) before running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="o">-</span><span class="n">L</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">encodeproject</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="n">ENCFF356LFX</span><span class="o">/@</span><span class="nd">@download</span><span class="o">/</span><span class="n">ENCFF356LFX</span><span class="o">.</span><span class="n">bed</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">gunzip</span> <span class="n">ENCFF356LFX</span><span class="o">.</span><span class="n">bed</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">mv</span> <span class="n">ENCFF356LFX</span><span class="o">.</span><span class="n">bed</span> <span class="n">hg38_blacklist</span><span class="o">.</span><span class="n">bed</span>
+</pre></div>
+</div>
+<p>On a cluster, run one job per sample. A generator script that writes the 16
+SLURM scripts keeps submission tidy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH -A gencore</span>
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --partition=gencore</span>
+<span class="c1">#SBATCH --cpus-per-task=28</span>
+<span class="c1">#SBATCH --time=12000:00:00</span>
+<span class="c1">#SBATCH --mem 420000</span>
+
+<span class="n">module</span> <span class="n">purge</span>
+<span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">3</span> <span class="n">deeptools</span> <span class="n">samtools</span>
+
+<span class="n">cd</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">bams</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">filtered</span>
+
+<span class="n">alignmentSieve</span> \
+  <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">SAMPLE</span><span class="o">&gt;.</span><span class="n">bam</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">filtered</span><span class="o">/&lt;</span><span class="n">LABEL</span><span class="o">&gt;</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span> \
+  <span class="o">--</span><span class="n">ATACshift</span> <span class="o">--</span><span class="n">minFragmentLength</span> <span class="mi">10</span> <span class="o">--</span><span class="n">maxFragmentLength</span> <span class="mi">150</span> \
+  <span class="o">--</span><span class="n">minMappingQuality</span> <span class="mi">30</span> <span class="o">--</span><span class="n">ignoreDuplicates</span> \
+  <span class="o">--</span><span class="n">blackListFileName</span> <span class="n">hg38_blacklist</span><span class="o">.</span><span class="n">bed</span> <span class="o">-</span><span class="n">p</span> <span class="mi">28</span>
+
+<span class="n">samtools</span> <span class="n">sort</span>  <span class="o">-@</span> <span class="mi">28</span> <span class="o">-</span><span class="n">o</span> <span class="n">filtered</span><span class="o">/&lt;</span><span class="n">LABEL</span><span class="o">&gt;</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> <span class="n">filtered</span><span class="o">/&lt;</span><span class="n">LABEL</span><span class="o">&gt;</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span>
+<span class="n">samtools</span> <span class="n">index</span> <span class="o">-@</span> <span class="mi">28</span> <span class="n">filtered</span><span class="o">/&lt;</span><span class="n">LABEL</span><span class="o">&gt;</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span>
+<span class="n">rm</span> <span class="n">filtered</span><span class="o">/&lt;</span><span class="n">LABEL</span><span class="o">&gt;</span><span class="n">_filtered</span><span class="o">.</span><span class="n">bam</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Keep the <code class="docutils literal notranslate"><span class="pre">#SBATCH</span></code> header minimal. On some cluster configurations adding
+<code class="docutils literal notranslate"><span class="pre">--job-name</span></code>, <code class="docutils literal notranslate"><span class="pre">--output</span></code>, or <code class="docutils literal notranslate"><span class="pre">--error</span></code> directives causes the job to
+exit silently within a couple of seconds with no logs written, because
+SLURM tries to open the log paths before the script body (which creates
+those directories) has run. If you need custom log paths, create the log
+directory <em>before</em> submitting, or use absolute paths that already exist.</p>
+</div>
+</section>
+<section id="peak-calling">
+<h2>Peak calling<a class="headerlink" href="#peak-calling" title="Link to this heading"></a></h2>
+<p>Peaks are called with MACS2 in paired-end mode (<code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">BAMPE</span></code>). Run peak calling
+twice: on each individual sample and on per-condition pooled BAMs. The
+individual peaks populate the DiffBind sample sheet in Step 6; the pooled peaks
+build the consensus set and give more sensitive detection of lower-occupancy
+sites.</p>
+<section id="individual-samples">
+<h3>Individual samples<a class="headerlink" href="#individual-samples" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">macs2</span> <span class="n">callpeak</span> \
+  <span class="o">-</span><span class="n">t</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> \
+  <span class="o">-</span><span class="n">f</span> <span class="n">BAMPE</span> \
+  <span class="o">-</span><span class="n">n</span> <span class="n">WT</span><span class="o">-</span><span class="mi">1</span> \
+  <span class="o">--</span><span class="n">outdir</span> <span class="n">peaks</span><span class="o">/</span><span class="n">individual</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span> \
+  <span class="o">--</span><span class="n">nomodel</span> <span class="o">--</span><span class="n">shift</span> <span class="o">-</span><span class="mi">100</span> <span class="o">--</span><span class="n">extsize</span> <span class="mi">200</span> \
+  <span class="o">--</span><span class="n">nolambda</span> <span class="o">--</span><span class="n">keep</span><span class="o">-</span><span class="n">dup</span> <span class="nb">all</span> \
+  <span class="o">-</span><span class="n">q</span> <span class="mf">0.05</span> <span class="o">--</span><span class="n">call</span><span class="o">-</span><span class="n">summits</span> \
+  <span class="o">-</span><span class="n">g</span> <span class="n">hs</span> \
+  <span class="mi">2</span><span class="o">&gt;</span> <span class="n">peaks</span><span class="o">/</span><span class="n">individual</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_macs2</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>The parameter choices:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--nomodel</span> <span class="pre">--shift</span> <span class="pre">-100</span> <span class="pre">--extsize</span> <span class="pre">200</span></code> — the standard ATAC-seq setting.
+Reads are extended around the Tn5 cut site rather than MACS2 building a
+fragment model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--nolambda</span></code> — disables local background (lambda) estimation. ATAC-seq has
+no input control, and local lambda can bias peak calls, so it is turned off.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--keep-dup</span> <span class="pre">all</span></code> — duplicates were already removed upstream; do not let
+MACS2 remove reads again.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--call-summits</span></code> — reports the precise summit within each peak, which is
+needed for downstream motif analysis.</p></li>
+</ul>
+</section>
+<section id="pooled-conditions">
+<h3>Pooled conditions<a class="headerlink" href="#pooled-conditions" title="Link to this heading"></a></h3>
+<p>Merge the per-replicate filtered BAMs for each condition, then call peaks on
+the pool. Remember to switch module trees between <code class="docutils literal notranslate"><span class="pre">samtools</span></code> and <code class="docutils literal notranslate"><span class="pre">macs2</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Merge replicates (example: WT)</span>
+<span class="n">module</span> <span class="n">purge</span> <span class="o">&amp;&amp;</span> <span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">3</span> <span class="n">samtools</span>
+
+<span class="n">samtools</span> <span class="n">merge</span> <span class="o">-@</span> <span class="mi">28</span> <span class="o">-</span><span class="n">f</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT_pooled</span><span class="o">.</span><span class="n">bam</span> \
+    <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">1</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> \
+    <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">4</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> \
+    <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">5</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span> \
+    <span class="n">filtered</span><span class="o">/</span><span class="n">WT</span><span class="o">-</span><span class="mi">6</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span>
+<span class="n">samtools</span> <span class="n">index</span> <span class="o">-@</span> <span class="mi">28</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT_pooled</span><span class="o">.</span><span class="n">bam</span>
+
+<span class="c1"># Call peaks on the pool</span>
+<span class="n">module</span> <span class="n">purge</span> <span class="o">&amp;&amp;</span> <span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">2</span> <span class="n">macs2</span>
+
+<span class="n">macs2</span> <span class="n">callpeak</span> \
+  <span class="o">-</span><span class="n">t</span> <span class="n">filtered</span><span class="o">/</span><span class="n">WT_pooled</span><span class="o">.</span><span class="n">bam</span> \
+  <span class="o">-</span><span class="n">f</span> <span class="n">BAMPE</span> <span class="o">-</span><span class="n">n</span> <span class="n">WT_pooled</span> \
+  <span class="o">--</span><span class="n">outdir</span> <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">WT</span> \
+  <span class="o">--</span><span class="n">nomodel</span> <span class="o">--</span><span class="n">shift</span> <span class="o">-</span><span class="mi">100</span> <span class="o">--</span><span class="n">extsize</span> <span class="mi">200</span> \
+  <span class="o">--</span><span class="n">nolambda</span> <span class="o">--</span><span class="n">keep</span><span class="o">-</span><span class="n">dup</span> <span class="nb">all</span> <span class="o">-</span><span class="n">q</span> <span class="mf">0.05</span> <span class="o">--</span><span class="n">call</span><span class="o">-</span><span class="n">summits</span> \
+  <span class="o">-</span><span class="n">g</span> <span class="n">hs</span> \
+  <span class="mi">2</span><span class="o">&gt;</span> <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">WT</span><span class="o">/</span><span class="n">WT_pooled_macs2</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+</section>
+<section id="inspecting-peak-counts">
+<h3>Inspecting peak counts<a class="headerlink" href="#inspecting-peak-counts" title="Link to this heading"></a></h3>
+<p>Before going further, tabulate peak counts per sample. Consistent counts
+across replicates are reassuring; a sample with far fewer peaks than its
+siblings should be investigated (see <a class="reference internal" href="#handling-outlier-samples">Handling outlier samples</a>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>for dir in peaks/individual/*/; do
+  sample=$(basename $dir)
+  count=$(wc -l &lt; ${dir}/${sample}_peaks.narrowPeak)
+  echo &quot;${sample}: ${count} peaks&quot;
+done
+</pre></div>
+</div>
+</section>
+</section>
+<section id="consensus-peak-set">
+<h2>Consensus peak set<a class="headerlink" href="#consensus-peak-set" title="Link to this heading"></a></h2>
+<p>A consensus (union) peak set is a single coordinate system shared by all
+samples. It is built from the pooled condition peaks, which capture
+condition-specific accessible regions that any one sample might miss, and used
+as the feature space for quantification and differential testing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span>
+<span class="n">module</span> <span class="n">purge</span> <span class="o">&amp;&amp;</span> <span class="n">module</span> <span class="n">load</span> <span class="nb">all</span> <span class="n">gencore</span><span class="o">/</span><span class="mi">3</span> <span class="n">bedtools</span>
+
+<span class="c1"># Concatenate pooled peaks, sort, merge overlaps, keep primary chromosomes</span>
+<span class="n">cat</span> <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">WT</span><span class="o">/</span><span class="n">WT_pooled_peaks</span><span class="o">.</span><span class="n">narrowPeak</span> \
+    <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">N1</span><span class="o">/</span><span class="n">N1_pooled_peaks</span><span class="o">.</span><span class="n">narrowPeak</span> \
+    <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">N2</span><span class="o">/</span><span class="n">N2_pooled_peaks</span><span class="o">.</span><span class="n">narrowPeak</span> \
+    <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">N3</span><span class="o">/</span><span class="n">N3_pooled_peaks</span><span class="o">.</span><span class="n">narrowPeak</span> \
+  <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">k1</span><span class="p">,</span><span class="mi">1</span> <span class="o">-</span><span class="n">k2</span><span class="p">,</span><span class="mi">2</span><span class="n">n</span> \
+  <span class="o">|</span> <span class="n">bedtools</span> <span class="n">merge</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> \
+  <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">E</span> <span class="s2">&quot;^chr([0-9]+|X|Y)\s&quot;</span> \
+  <span class="o">&gt;</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span><span class="o">/</span><span class="n">consensus_peaks_raw</span><span class="o">.</span><span class="n">bed</span>
+
+<span class="c1"># Remove blacklisted regions entirely</span>
+<span class="n">bedtools</span> <span class="n">subtract</span> \
+  <span class="o">-</span><span class="n">a</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span><span class="o">/</span><span class="n">consensus_peaks_raw</span><span class="o">.</span><span class="n">bed</span> \
+  <span class="o">-</span><span class="n">b</span> <span class="n">hg38_blacklist</span><span class="o">.</span><span class="n">bed</span> \
+  <span class="o">-</span><span class="n">A</span> \
+  <span class="o">&gt;</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span><span class="o">/</span><span class="n">consensus_peaks_final</span><span class="o">.</span><span class="n">bed</span>
+
+<span class="n">wc</span> <span class="o">-</span><span class="n">l</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span><span class="o">/</span><span class="n">consensus_peaks_final</span><span class="o">.</span><span class="n">bed</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-A</span></code> flag in <code class="docutils literal notranslate"><span class="pre">bedtools</span> <span class="pre">subtract</span></code> drops any consensus peak that
+overlaps a blacklist region <em>at all</em>, rather than trimming only the
+overlapping bases. A peak that straddles a blacklisted region is unreliable
+along its whole length, so removing it entirely is the correct behaviour.</p>
+</div>
+</section>
+<section id="quantification">
+<h2>Quantification<a class="headerlink" href="#quantification" title="Link to this heading"></a></h2>
+<p>Count the read pairs falling in each consensus peak for every sample. This
+produces the peaks × samples count matrix that feeds differential testing.
+<code class="docutils literal notranslate"><span class="pre">featureCounts</span></code> requires the peaks in SAF format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>module purge &amp;&amp; module load all gencore/3 subread
+
+# Convert consensus BED to SAF
+awk &#39;BEGIN{OFS=&quot;\t&quot;; print &quot;GeneID\tChr\tStart\tEnd\tStrand&quot;}
+     {print &quot;peak_&quot;NR&quot;\t&quot;$1&quot;\t&quot;$2&quot;\t&quot;$3&quot;\t.&quot;}&#39; \
+  peaks/consensus/consensus_peaks_final.bed \
+  &gt; peaks/consensus/consensus_peaks_final.saf
+
+# Count reads across all samples
+featureCounts \
+  -F SAF \
+  -a peaks/consensus/consensus_peaks_final.saf \
+  -o peaks/consensus/consensus_counts.txt \
+  -p --countReadPairs \
+  -T 28 -f \
+  filtered/WT-1_filtered_csorted.bam \
+  filtered/WT-4_filtered_csorted.bam \
+  filtered/WT-5_filtered_csorted.bam \
+  filtered/WT-6_filtered_csorted.bam \
+  filtered/N1-3_filtered_csorted.bam \
+  filtered/N1-4_filtered_csorted.bam \
+  filtered/N1-5_filtered_csorted.bam \
+  filtered/N2-1_filtered_csorted.bam \
+  filtered/N2-2_filtered_csorted.bam \
+  filtered/N2-3_filtered_csorted.bam \
+  filtered/N2-4_filtered_csorted.bam \
+  filtered/N3-1_filtered_csorted.bam \
+  filtered/N3-3_filtered_csorted.bam \
+  filtered/N3-4_filtered_csorted.bam \
+  filtered/N3-5_filtered_csorted.bam \
+  2&gt; peaks/consensus/featureCounts.log
+</pre></div>
+</div>
+<p>The per-sample “Successfully assigned” rate in <code class="docutils literal notranslate"><span class="pre">featureCounts.log</span></code> is the
+equivalent of a FRiP (fraction of reads in peaks) score. Rates of 70 % or above
+across all samples indicate the consensus peak set captures the signal well.</p>
+</section>
+<section id="differential-accessibility">
+<h2>Differential accessibility<a class="headerlink" href="#differential-accessibility" title="Link to this heading"></a></h2>
+<section id="why-diffbind-rather-than-plain-deseq2">
+<h3>Why DiffBind rather than plain DESeq2<a class="headerlink" href="#why-diffbind-rather-than-plain-deseq2" title="Link to this heading"></a></h3>
+<p>DESeq2’s default normalization (median-of-ratios) assumes that most features
+are unchanged between conditions — a reasonable assumption for RNA-seq, where
+the bulk of genes are stably expressed. ATAC-seq comparisons between
+genetically distinct cell lines can violate this badly: <strong>global chromatin
+accessibility may genuinely differ</strong> between conditions, and normalizing on the
+peaks themselves can then misattribute a global shift to thousands of
+individually “significant” peaks, inflating both fold changes and significance.</p>
+<p>DiffBind offers <strong>background normalization</strong> as the remedy. Instead of deriving
+size factors from the peaks, it tiles the genome into large bins (default
+15 kb) and estimates library-level scaling from read counts in those bins.
+Because the bins sample open and closed chromatin impartially, the resulting
+factors reflect sequencing-depth differences rather than accessibility shifts.
+This is conceptually similar to spike-in normalization and is the recommended
+approach whenever conditions may differ in global accessibility.</p>
+</section>
+<section id="sample-sheet-and-counting">
+<h3>Sample sheet and counting<a class="headerlink" href="#sample-sheet-and-counting" title="Link to this heading"></a></h3>
+<p>DiffBind is driven by a sample sheet listing, for each sample, its condition,
+replicate, BAM, and peak file. The BAMs must be accessible because DiffBind
+reads them both to count reads in the consensus peaks and to compute the
+background bins.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">DiffBind</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">GenomicRanges</span><span class="p">)</span>
+
+<span class="n">sample_sheet</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">data.frame</span><span class="p">(</span>
+<span class="w">  </span><span class="n">SampleID</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Condition</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N1&quot;</span><span class="p">,</span><span class="s">&quot;N1&quot;</span><span class="p">,</span><span class="s">&quot;N1&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Replicate</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">),</span>
+<span class="w">  </span><span class="n">bamReads</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;bams/&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
+<span class="w">                 </span><span class="s">&quot;_filtered_csorted.bam&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Peaks</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;np/&quot;</span><span class="p">,</span>
+<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
+<span class="w">                 </span><span class="s">&quot;_peaks.narrowPeak&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">PeakCaller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;narrow&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span>
+<span class="p">)</span>
+
+<span class="c1"># Load the consensus peaks as the counting interval set</span>
+<span class="n">consensus_bed</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;consensus_peaks_final.bed&quot;</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;\t&quot;</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;Chr&quot;</span><span class="p">,</span><span class="s">&quot;Start&quot;</span><span class="p">,</span><span class="s">&quot;End&quot;</span><span class="p">))</span>
+<span class="n">consensus_gr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">GRanges</span><span class="p">(</span><span class="n">seqnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">Chr</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">ranges</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">IRanges</span><span class="p">(</span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">Start</span><span class="p">,</span>
+<span class="w">                                           </span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">End</span><span class="p">))</span>
+
+<span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba</span><span class="p">(</span><span class="n">sampleSheet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_sheet</span><span class="p">)</span>
+<span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.count</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">peaks</span><span class="w">                 </span><span class="o">=</span><span class="w"> </span><span class="n">consensus_gr</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">score</span><span class="w">                 </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_SCORE_READS</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">fragmentSize</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">bUseSummarizeOverlaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="background-normalization-contrasts-and-analysis">
+<h3>Background normalization, contrasts, and analysis<a class="headerlink" href="#background-normalization-contrasts-and-analysis" title="Link to this heading"></a></h3>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># The key step: size factors from 15 kb background bins</span>
+<span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.normalize</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
+<span class="w">                         </span><span class="n">method</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">,</span>
+<span class="w">                         </span><span class="n">normalize</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_NORM_BACKGROUND</span><span class="p">,</span>
+<span class="w">                         </span><span class="n">background</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">15000</span><span class="p">)</span>
+
+<span class="c1"># WT as the reference level for all contrasts</span>
+<span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.contrast</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">reorderMeta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">Condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;WT&quot;</span><span class="p">))</span>
+
+<span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.analyze</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">method</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">bBlacklist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w">   </span><span class="c1"># already filtered upstream</span>
+<span class="w">                       </span><span class="n">bGreylist</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="extracting-and-saving-results">
+<h3>Extracting and saving results<a class="headerlink" href="#extracting-and-saving-results" title="Link to this heading"></a></h3>
+<p>Retrieve the full result table for each contrast (N1 vs WT, N2 vs WT, N3 vs
+WT), then apply significance thresholds. It is good practice to save both a
+<strong>standard</strong> set (FDR &lt; 0.05, <a href="#id2"><span class="problematic" id="id3">|log2FC|</span></a> &gt; 1) and a <strong>strict</strong> set that adds a
+minimum-concentration filter to suppress low-count peaks.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">comparisons</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N1_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N2_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">),</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N3_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="kr">for</span><span class="w"> </span><span class="p">(</span><span class="n">comp</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">comparisons</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">res</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.report</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">contrast</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">contrast</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">method</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">th</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w">       </span><span class="c1"># return all peaks</span>
+<span class="w">                    </span><span class="n">bUsePval</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">fold</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">bNormalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="w">  </span><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+<span class="w">  </span><span class="c1"># Standard significance</span>
+<span class="w">  </span><span class="n">sig</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="n">FDR</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nf">abs</span><span class="p">(</span><span class="n">Fold</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;results/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;_DA_significant.csv&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="w">  </span><span class="c1"># Strict: additionally require Conc &gt;= log2(20)</span>
+<span class="w">  </span><span class="n">sig_strict</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="n">Conc</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nf">log2</span><span class="p">(</span><span class="m">20</span><span class="p">))</span>
+<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig_strict</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;results/strict/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;_DA_significant.csv&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="sample-level-diagnostics">
+<h3>Sample-level diagnostics<a class="headerlink" href="#sample-level-diagnostics" title="Link to this heading"></a></h3>
+<p>A PCA and a correlation heatmap of the normalized counts are the quickest check
+that replicates cluster by condition before trusting any contrast.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dba.plotPCA</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span><span class="w"> </span><span class="n">DBA_CONDITION</span><span class="p">,</span><span class="w"> </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_ID</span><span class="p">)</span>
+<span class="nf">dba.plotHeatmap</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Well-separated condition clusters on PC1/PC2 and tight within-condition
+grouping indicate that the chromatin landscapes differ substantially between
+conditions and that the replicates are reproducible.</p>
+</section>
+</section>
+<section id="handling-outlier-samples">
+<h2>Handling outlier samples<a class="headerlink" href="#handling-outlier-samples" title="Link to this heading"></a></h2>
+<p>Always reconcile peak counts and library depth across samples before
+finalising. A replicate with a dramatically lower peak count than its group is
+usually undersequenced rather than biologically distinct, and should be
+excluded.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compare library depth of a suspected outlier against its group</span>
+<span class="n">samtools</span> <span class="n">flagstat</span> <span class="n">filtered</span><span class="o">/</span><span class="n">N1</span><span class="o">-</span><span class="mi">6</span><span class="n">_filtered_csorted</span><span class="o">.</span><span class="n">bam</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In the example data set, sample <strong>N1-6</strong> carried only ~12.6 M mapped reads
+after filtering, versus ~110–118 M for the other N1 replicates — roughly a
+ten-fold deficit. This produced only ~145 k called peaks against ~330 k for
+N1-3, N1-4, and N1-5. N1-6 was excluded from all downstream analysis, and
+the N1 pooled peak call was re-run using only N1-3, N1-4, and N1-5.</p>
+</div>
+<p>After excluding N1-6, the final layout used for differential analysis is:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 23.5%" />
+<col style="width: 64.7%" />
+<col style="width: 11.8%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Condition</p></th>
+<th class="head"><p>Replicates</p></th>
+<th class="head"><p>n</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WT</p></td>
+<td><p>WT-1, WT-4, WT-5, WT-6</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>N1</p></td>
+<td><p>N1-3, N1-4, N1-5</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>N2</p></td>
+<td><p>N2-1, N2-2, N2-3, N2-4</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>N3</p></td>
+<td><p>N3-1, N3-3, N3-4, N3-5</p></td>
+<td><p>4</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Three replicates per condition is the minimum for a well-powered
+differential test with DESeq2 / DiffBind, so dropping N1-6 still leaves N1
+adequately powered. If excluding an outlier would drop a condition below
+three replicates, consider resequencing rather than proceeding.</p>
+</div>
+</section>
 </section>
 
 
