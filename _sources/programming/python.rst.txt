@@ -603,6 +603,14 @@ Useful options:
 * Pass a ``.csv.gz`` filename and ``pandas`` writes it gzipped for
   free.
 
+7. Results
+-----------
+
+The expected output files generated throughout this tutorial are
+available in the course repository:
+
+`Results directory <https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/tree/main/results>`_
+
 Next steps
 ----------
 

@@ -873,6 +873,15 @@ Useful options:
 * End the filename with ``.gz`` and combine with ``gzfile()``,
   or use ``readr::write_csv`` which handles ``.gz`` directly.
 
+7. Results
+-----------
+
+The expected output files generated throughout this tutorial are
+available in the course repository:
+
+`Results directory <https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/tree/main/results>`_
+
+
 Next steps
 ----------
 
