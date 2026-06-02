@@ -52,7 +52,42 @@
 <li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Programming</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-you-need-to-know-first">What you need to know first</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-overview">Workflow overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data-shape">Data shape</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-setup">Environment setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading-data">1. Loading data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering">2. Filtering</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#empty-samples">Empty samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#genes-with-no-expression">Genes with no expression</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slicing">3. Slicing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pick-columns-whose-name-contains-a-word">Pick columns whose name contains a word</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pick-rows-by-gene-name">Pick rows by gene name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pick-rows-and-columns-at-once">Pick rows and columns at once</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#transforming-data">4. Transforming data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#a-quick-tour-of-matplotlib-and-seaborn">A quick tour of matplotlib and seaborn</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#boxplot-of-raw-counts">Boxplot of raw counts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log1p-transform">Log1p transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#normalize-by-library-size-cpm">Normalize by library size (CPM)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fold-change-before-and-after-transformation">Fold change before and after transformation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#merging-data">5. Merging data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-correlation">Sample correlation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#exporting-data">6. Exporting data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="r.html">R / RShiny</a></li>
 <li class="toctree-l2"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="slurm.html">SLURM</a></li>
@@ -88,10 +123,549 @@
              
   <section id="python">
 <h1>Python<a class="headerlink" href="#python" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test.py
+<p>This tutorial is a hands-on introduction to data analysis in Python
+for people who are new to the language. It walks through a typical
+workflow on a real biology dataset: bulk RNA-seq gene expression
+measured across eight tissues in human and mouse. By the end you
+will have loaded a table from disk, cleaned it up, made some plots,
+combined two datasets, and saved the result back out.</p>
+<p>The material is adapted from the <em>Applied data analysis for
+beginners</em> module of the NYUAD Core Bioinformatics Workshops
+(<em>Start Analytics 2025</em>). Source data and notebooks are at
+<a class="reference external" href="https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/">NYUAD-Core-Bioinformatics/StartAnalytics_2025</a>.</p>
+<p>No prior Python experience is assumed. If you already know Python,
+skim the “What you need to know first” boxes and read the code.</p>
+<section id="what-you-need-to-know-first">
+<h2>What you need to know first<a class="headerlink" href="#what-you-need-to-know-first" title="Link to this heading"></a></h2>
+<p>A few terms that come up over and over:</p>
+<ul class="simple">
+<li><p><strong>Library</strong> (also called a “package” or “module”) — a chunk of
+pre-written code you can use. We use four:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code> — tables of data (think Excel sheets in code).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code> — fast math on numbers, arrays, and matrices.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> — the standard plotting library.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seaborn</span></code> — nicer-looking plots built on top of matplotlib.</p></li>
+</ul>
+</li>
+<li><p><strong>DataFrame</strong> — a table with named rows and named columns. This
+is what <code class="docutils literal notranslate"><span class="pre">pandas</span></code> gives you. Each column can hold a different
+type (numbers, text, dates).</p></li>
+<li><p><strong>Index</strong> — the labels on the rows of a DataFrame. In our case
+the index is the gene name (e.g. <code class="docutils literal notranslate"><span class="pre">STAG2</span></code>); the column names
+are the sample names (e.g. <code class="docutils literal notranslate"><span class="pre">human_brain_4</span></code>).</p></li>
+<li><p><strong>Axis</strong> — <code class="docutils literal notranslate"><span class="pre">axis=0</span></code> means “go down columns” (operate on rows).
+<code class="docutils literal notranslate"><span class="pre">axis=1</span></code> means “go across rows” (operate on columns). It is
+the opposite of what most people guess on the first try.</p></li>
+</ul>
+</section>
+<section id="workflow-overview">
+<h2>Workflow overview<a class="headerlink" href="#workflow-overview" title="Link to this heading"></a></h2>
+<p>A typical analysis on a gene-expression table follows six steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Load</strong> the data into a DataFrame.</p></li>
+<li><p><strong>Filter</strong> out empty samples and unexpressed genes.</p></li>
+<li><p><strong>Slice</strong> the table to focus on samples or genes of interest.</p></li>
+<li><p><strong>Transform</strong> the numbers (normalize, log-transform) so plots
+and comparisons are meaningful.</p></li>
+<li><p><strong>Merge</strong> datasets (e.g. human + mouse) and check that the
+biology makes sense via a correlation heatmap.</p></li>
+<li><p><strong>Export</strong> the cleaned table to CSV for downstream work.</p></li>
+</ol>
+<section id="data-shape">
+<h3>Data shape<a class="headerlink" href="#data-shape" title="Link to this heading"></a></h3>
+<p>The data table looks like this:</p>
+<ul class="simple">
+<li><p><strong>rows</strong> — genes (one per row, e.g. <code class="docutils literal notranslate"><span class="pre">STAG2</span></code>, <code class="docutils literal notranslate"><span class="pre">GOSR2</span></code>, …).</p></li>
+<li><p><strong>columns</strong> — samples / experiments
+(e.g. <code class="docutils literal notranslate"><span class="pre">human_brain_4</span></code>, <code class="docutils literal notranslate"><span class="pre">mouse_liver_5</span></code>).</p></li>
+<li><p><strong>values</strong> — raw “read counts”: how many sequencing reads from
+that sample mapped to that gene. A higher number means the gene
+is more strongly expressed in that sample.</p></li>
+</ul>
+<p>Before any analysis, ask yourself: <em>Are there empty samples? Do all
+genes have a value? Which features are irrelevant? Are there
+outliers or missing data?</em> Garbage in, garbage out.</p>
+</section>
+</section>
+<section id="environment-setup">
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Link to this heading"></a></h2>
+<p>Install the libraries once from a terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>pandas<span class="w"> </span>matplotlib<span class="w"> </span>seaborn
 </pre></div>
 </div>
+<p>Then, at the top of your Python script or notebook, import them.
+The <code class="docutils literal notranslate"><span class="pre">as</span> <span class="pre">np</span></code> / <code class="docutils literal notranslate"><span class="pre">as</span> <span class="pre">pd</span></code> part gives each library a short nickname
+so you do not have to type the full name every time.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>                 <span class="c1"># numerical math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>                <span class="c1"># tables (DataFrames)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>    <span class="c1"># plotting</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>              <span class="c1"># nicer plots</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>  <span class="c1"># hide non-critical warnings</span>
+</pre></div>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>The example uses three CSV files (provided as gzipped CSVs in the
+workshop repo). Python’s <code class="docutils literal notranslate"><span class="pre">pandas</span></code> reads <code class="docutils literal notranslate"><span class="pre">.csv.gz</span></code> natively — no
+need to unzip them first.</p>
+<p>Download the three files from
+<a class="reference external" href="https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/tree/main/notebooks/data">NYUAD-Core-Bioinformatics/StartAnalytics_2025 / notebooks / data</a>
+and place them in a <code class="docutils literal notranslate"><span class="pre">data/</span></code> folder next to your script or
+notebook:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data/human_expression.csv.gz</span></code> — raw read counts, 14,744 genes
+× 8 human tissue samples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data/mouse_expression.csv.gz</span></code> — raw read counts, 14,744 genes
+× 8 mouse tissue samples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data/human_mouse_gene_map.csv.gz</span></code> — a lookup table pairing
+each human gene symbol (uppercase, e.g. <code class="docutils literal notranslate"><span class="pre">STAG2</span></code>) with its
+mouse equivalent (capitalized, e.g. <code class="docutils literal notranslate"><span class="pre">Stag2</span></code>).</p></li>
+</ul>
+<p>Or grab all three from the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>data
+<span class="nv">BASE</span><span class="o">=</span>https://raw.githubusercontent.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/main/notebooks/data
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/human_expression.csv.gz<span class="w">       </span><span class="nv">$BASE</span>/human_expression.csv.gz
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/mouse_expression.csv.gz<span class="w">       </span><span class="nv">$BASE</span>/mouse_expression.csv.gz
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/human_mouse_gene_map.csv.gz<span class="w">   </span><span class="nv">$BASE</span>/human_mouse_gene_map.csv.gz
+</pre></div>
+</div>
+</section>
+<section id="loading-data">
+<h2>1. Loading data<a class="headerlink" href="#loading-data" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> reads a CSV file into a DataFrame. The
+<code class="docutils literal notranslate"><span class="pre">index_col=0</span></code> argument says “use the first column of the file as
+the row labels” — so gene names become the index rather than a
+plain data column.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mouse</span>    <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/mouse_expression.csv.gz&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">human</span>    <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/human_expression.csv.gz&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">gene_map</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/human_mouse_gene_map.csv.gz&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A few quick ways to look at what just got loaded:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">human</span><span class="o">.</span><span class="n">shape</span>       <span class="c1"># (rows, cols) tuple — here (14744, 8)</span>
+<span class="n">human</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>      <span class="c1"># first 5 rows</span>
+<span class="n">human</span><span class="o">.</span><span class="n">columns</span>     <span class="c1"># the column (sample) names</span>
+<span class="n">human</span><span class="o">.</span><span class="n">index</span>       <span class="c1"># the row (gene) names</span>
+</pre></div>
+</div>
+<p>Typing the name of a DataFrame on its own line in a notebook
+prints a preview of it. In a regular script use <code class="docutils literal notranslate"><span class="pre">print(human)</span></code>.</p>
+</section>
+<section id="filtering">
+<h2>2. Filtering<a class="headerlink" href="#filtering" title="Link to this heading"></a></h2>
+<p>Filtering means dropping rows or columns that carry no useful
+information.</p>
+<section id="empty-samples">
+<h3>Empty samples<a class="headerlink" href="#empty-samples" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">.sum()</span></code> adds up the values. By default it sums each column,
+giving the total number of reads per sample. Any sample with a
+total of 0 sequenced badly and should be removed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">human</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>        <span class="c1"># one total per column</span>
+</pre></div>
+</div>
+<p>In this dataset every sample has millions of reads, so nothing to
+drop here.</p>
+</section>
+<section id="genes-with-no-expression">
+<h3>Genes with no expression<a class="headerlink" href="#genes-with-no-expression" title="Link to this heading"></a></h3>
+<p>To check the <em>other</em> direction — genes that are zero in every
+sample — pass <code class="docutils literal notranslate"><span class="pre">axis=1</span></code> so the sum runs across each row instead
+of each column:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">human</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>   <span class="c1"># summary stats: min, max, mean, etc.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">.describe()</span></code> prints quick summary statistics for whatever it is
+called on. Useful for sanity-checking distributions.</p>
+<p>There are 674 genes with zero counts in every tissue. We can see
+them with a <strong>boolean filter</strong> — <code class="docutils literal notranslate"><span class="pre">human.sum(1)</span> <span class="pre">==</span> <span class="pre">0</span></code> produces a
+Series of True/False, and using it inside <code class="docutils literal notranslate"><span class="pre">human[...]</span></code> keeps
+only the rows where it is True:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">empty_genes</span> <span class="o">=</span> <span class="n">human</span><span class="p">[</span><span class="n">human</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">empty_genes</span><span class="o">.</span><span class="n">shape</span>      <span class="c1"># (674, 8)</span>
+</pre></div>
+</div>
+<p>Drop those rows and keep only genes expressed in at least one
+tissue. <code class="docutils literal notranslate"><span class="pre">.gt(0)</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code> in this context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">human</span> <span class="o">=</span> <span class="n">human</span><span class="p">[</span><span class="n">human</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
+<span class="n">human</span><span class="o">.</span><span class="n">shape</span>            <span class="c1"># (14070, 8)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">human.sum(1).gt(0)</span></code> and <code class="docutils literal notranslate"><span class="pre">~human.sum(1).eq(0)</span></code> (read: “not
+equal to zero”) do the same thing. <code class="docutils literal notranslate"><span class="pre">~</span></code> is the “not” operator
+for boolean Series.</p>
+</div>
+</section>
+</section>
+<section id="slicing">
+<h2>3. Slicing<a class="headerlink" href="#slicing" title="Link to this heading"></a></h2>
+<p>Slicing means picking a piece of the table — particular rows,
+particular columns, or both. Square brackets <code class="docutils literal notranslate"><span class="pre">[]</span></code> are the main
+tool.</p>
+<section id="pick-columns-whose-name-contains-a-word">
+<h3>Pick columns whose name contains a word<a class="headerlink" href="#pick-columns-whose-name-contains-a-word" title="Link to this heading"></a></h3>
+<p>The expression <code class="docutils literal notranslate"><span class="pre">[c</span> <span class="pre">for</span> <span class="pre">c</span> <span class="pre">in</span> <span class="pre">human.columns</span> <span class="pre">if</span> <span class="pre">&quot;brain&quot;</span> <span class="pre">in</span> <span class="pre">c]</span></code> is a
+<strong>list comprehension</strong>. Read it left-to-right: “make a list of
+<code class="docutils literal notranslate"><span class="pre">c</span></code> for each <code class="docutils literal notranslate"><span class="pre">c</span></code> in <code class="docutils literal notranslate"><span class="pre">human.columns</span></code>, but only when the text
+<code class="docutils literal notranslate"><span class="pre">brain</span></code> appears in <code class="docutils literal notranslate"><span class="pre">c</span></code>.”</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">brain_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">human</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;brain&quot;</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>
+<span class="n">brain_cols</span>       <span class="c1"># [&#39;human_brain_4&#39;]</span>
+<span class="n">human</span><span class="p">[</span><span class="n">brain_cols</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="pick-rows-by-gene-name">
+<h3>Pick rows by gene name<a class="headerlink" href="#pick-rows-by-gene-name" title="Link to this heading"></a></h3>
+<p>Same trick on the row labels (<code class="docutils literal notranslate"><span class="pre">human.index</span></code>). The <em>DLX</em> genes
+are a family of homeobox transcription factors active in the
+brain.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dlx_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">human</span><span class="o">.</span><span class="n">index</span> <span class="k">if</span> <span class="s2">&quot;DLX&quot;</span> <span class="ow">in</span> <span class="n">g</span><span class="p">]</span>
+<span class="n">human</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">human.loc[...]</span></code> selects rows by their <em>label</em>. Plain
+<code class="docutils literal notranslate"><span class="pre">human[...]</span></code> selects columns. They look similar but they target
+different axes, which is a common point of confusion.</p>
+</section>
+<section id="pick-rows-and-columns-at-once">
+<h3>Pick rows and columns at once<a class="headerlink" href="#pick-rows-and-columns-at-once" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">.loc</span></code> accepts both row and column lists:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">subset</span> <span class="o">=</span> <span class="n">human</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span> <span class="n">brain_cols</span><span class="p">]</span>
+<span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;subset has: </span><span class="si">{</span><span class="n">n_rows</span><span class="si">}</span><span class="s2"> rows, and </span><span class="si">{</span><span class="n">n_cols</span><span class="si">}</span><span class="s2"> cols&quot;</span><span class="p">)</span>
+<span class="n">subset</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">f&quot;...&quot;</span></code> thing is an <strong>f-string</strong>: Python plugs the value of
+<code class="docutils literal notranslate"><span class="pre">n_rows</span></code> and <code class="docutils literal notranslate"><span class="pre">n_cols</span></code> into the string for you.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">.loc[rows,</span> <span class="pre">cols]</span></code> selects by label.
+<code class="docutils literal notranslate"><span class="pre">.iloc[rows,</span> <span class="pre">cols]</span></code> selects by integer position
+(<code class="docutils literal notranslate"><span class="pre">.iloc[0:5]</span></code> = first five rows). Mixing them is a common
+source of off-by-one bugs — pick one and stick with it per
+call.</p>
+</div>
+</section>
+</section>
+<section id="transforming-data">
+<h2>4. Transforming data<a class="headerlink" href="#transforming-data" title="Link to this heading"></a></h2>
+<p>Raw counts are hard to interpret directly for two reasons:</p>
+<ol class="arabic simple">
+<li><p>A handful of highly-expressed genes are so much bigger than
+everything else that they dominate any plot or statistic
+(outliers).</p></li>
+<li><p>Different samples were sequenced to different depths, so a gene
+can look “higher” in one sample purely because that sample was
+sequenced more deeply, not because of biology.</p></li>
+</ol>
+<p>We fix both with two standard transformations:</p>
+<ul class="simple">
+<li><p><strong>Normalize by library size</strong> (counts per million, CPM) — scale
+each sample so all samples sum to the same total, making them
+comparable.</p></li>
+<li><p><strong>Log-transform</strong> (<code class="docutils literal notranslate"><span class="pre">log1p(x)</span></code> = <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">x)</span></code>) — compresses
+the long tail of highly-expressed genes. We use <code class="docutils literal notranslate"><span class="pre">log1p</span></code>
+instead of plain <code class="docutils literal notranslate"><span class="pre">log</span></code> so that zero counts stay defined
+(<code class="docutils literal notranslate"><span class="pre">log(0)</span></code> is undefined; <code class="docutils literal notranslate"><span class="pre">log1p(0)</span> <span class="pre">=</span> <span class="pre">0</span></code>).</p></li>
+</ul>
+<section id="a-quick-tour-of-matplotlib-and-seaborn">
+<h3>A quick tour of matplotlib and seaborn<a class="headerlink" href="#a-quick-tour-of-matplotlib-and-seaborn" title="Link to this heading"></a></h3>
+<p>Before the first plot, a short mental model.</p>
+<p><strong>matplotlib</strong> is the foundational plotting library. Two ways to
+use it:</p>
+<ul class="simple">
+<li><p><strong>Pandas/seaborn shortcuts</strong> — many objects know how to plot
+themselves. <code class="docutils literal notranslate"><span class="pre">human.plot.box(...)</span></code> or
+<code class="docutils literal notranslate"><span class="pre">sns.violinplot(data=human)</span></code> build a matplotlib figure for
+you and return the <code class="docutils literal notranslate"><span class="pre">Axes</span></code> (one panel) so you can customize
+it.</p></li>
+<li><p><strong>Direct matplotlib</strong> — <code class="docutils literal notranslate"><span class="pre">fig,</span> <span class="pre">axes</span> <span class="pre">=</span> <span class="pre">plt.subplots(...)</span></code>
+creates an explicit figure and one or more <code class="docutils literal notranslate"><span class="pre">Axes</span></code> panels;
+you then pass <code class="docutils literal notranslate"><span class="pre">ax=...</span></code> to the shortcut to draw into a
+specific panel.</p></li>
+</ul>
+<p>Useful pieces you will see below:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">plt.title(&quot;...&quot;)</span></code> / <code class="docutils literal notranslate"><span class="pre">plt.xlabel(...)</span></code> / <code class="docutils literal notranslate"><span class="pre">plt.ylabel(...)</span></code>
+— labels on the current panel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plt.xticks(rotation=90)</span></code> — tilt tick labels so long sample
+names fit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plt.tight_layout()</span></code> — auto-fix overlapping titles/labels
+when you have multiple panels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plt.show()</span></code> — display the figure (only needed in plain
+scripts; notebooks show it automatically).</p></li>
+</ul>
+<p><strong>seaborn</strong> is built on top of matplotlib and adds two things we
+use:</p>
+<ul class="simple">
+<li><p>Nicer defaults and palettes (<code class="docutils literal notranslate"><span class="pre">palette=&quot;pastel&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cmap=&quot;coolwarm&quot;</span></code>).</p></li>
+<li><p>Higher-level plot types that work directly on DataFrames:
+<code class="docutils literal notranslate"><span class="pre">sns.boxplot</span></code>, <code class="docutils literal notranslate"><span class="pre">sns.violinplot</span></code>, <code class="docutils literal notranslate"><span class="pre">sns.heatmap</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sns.clustermap</span></code>.</p></li>
+</ul>
+<p>One practical note: when you mix pandas’s <code class="docutils literal notranslate"><span class="pre">.plot.box()</span></code> with
+seaborn calls and <code class="docutils literal notranslate"><span class="pre">plt.subplots</span></code>, all three are drawing onto
+the <em>same</em> matplotlib figure underneath. That is why a
+<code class="docutils literal notranslate"><span class="pre">plt.title(...)</span></code> call right after a <code class="docutils literal notranslate"><span class="pre">.plot.box(...)</span></code> line
+still affects the right plot.</p>
+</section>
+<section id="boxplot-of-raw-counts">
+<h3>Boxplot of raw counts<a class="headerlink" href="#boxplot-of-raw-counts" title="Link to this heading"></a></h3>
+<p>A boxplot summarizes each sample’s distribution: the box is the
+middle 50% of values, the whiskers extend outward, and outliers
+appear as individual dots.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;lightblue&quot;</span><span class="p">,</span> <span class="s2">&quot;lightgreen&quot;</span><span class="p">,</span> <span class="s2">&quot;lightpink&quot;</span><span class="p">,</span> <span class="s2">&quot;lightsalmon&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lightyellow&quot;</span><span class="p">,</span> <span class="s2">&quot;powderblue&quot;</span><span class="p">,</span> <span class="s2">&quot;lavender&quot;</span><span class="p">,</span> <span class="s2">&quot;thistle&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">human</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">patch_artist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">patch</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">artists</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+    <span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Box plot of expression by samples&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Tissue sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Expression&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>   <span class="c1"># tilt sample names so they fit</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The raw plot is unreadable: a few enormous outlier genes squash
+the rest of the distribution onto the baseline.</p>
+</section>
+<section id="log1p-transform">
+<h3>Log1p transform<a class="headerlink" href="#log1p-transform" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">np.log1p(human)</span></code> returns a new DataFrame where every value has
+been replaced with <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">value)</span></code>. The original <code class="docutils literal notranslate"><span class="pre">human</span></code>
+table is <em>not</em> modified.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">patch_artist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">patch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">human</span><span class="o">.</span><span class="n">columns</span><span class="p">)]):</span>
+    <span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">patch</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+    <span class="n">patch</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Box plot of log1p expression by samples&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Tissue sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;log1p Expression&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now the distributions are visible. But samples still differ in
+overall level because of library size — that is what the next
+step fixes.</p>
+</section>
+<section id="normalize-by-library-size-cpm">
+<h3>Normalize by library size (CPM)<a class="headerlink" href="#normalize-by-library-size-cpm" title="Link to this heading"></a></h3>
+<p>Divide every value in a column by that column’s total (so each
+column now sums to 1), then multiply by one million for readable
+numbers:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">normed_human</span> <span class="o">=</span> <span class="n">human</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">human</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>
+<span class="n">normed_human</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">human.sum(axis=0)</span></code> gives one total per column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">human.div(...,</span> <span class="pre">axis=1)</span></code> divides each row of <code class="docutils literal notranslate"><span class="pre">human</span></code> by
+those totals, column-by-column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">1e6</span></code> rescales to counts per million.</p></li>
+</ul>
+<p>Visually compare all three views — raw, normalized, log-normalized
+— side by side. <code class="docutils literal notranslate"><span class="pre">plt.subplots(1,</span> <span class="pre">3)</span></code> makes one figure with
+three panels.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Raw expression&#39;</span><span class="p">,</span> <span class="s1">&#39;Normed&#39;</span><span class="p">,</span> <span class="s1">&#39;l1p Normed&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+    <span class="nb">zip</span><span class="p">([</span><span class="n">human</span><span class="p">,</span> <span class="n">normed_human</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)],</span> <span class="n">axes</span><span class="p">)</span>
+<span class="p">):</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">patch_artist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;dict&quot;</span><span class="p">,</span> <span class="n">boxprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">patch</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">colors</span><span class="p">):</span>
+        <span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Expression&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Violin plots show the full distribution shape, not just the
+quartiles:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+    <span class="nb">zip</span><span class="p">([</span><span class="n">human</span><span class="p">,</span> <span class="n">normed_human</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)],</span> <span class="n">axes</span><span class="p">)</span>
+<span class="p">):</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s2">&quot;pastel&quot;</span><span class="p">,</span> <span class="n">inner</span><span class="o">=</span><span class="s2">&quot;quartile&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="fold-change-before-and-after-transformation">
+<h3>Fold change before and after transformation<a class="headerlink" href="#fold-change-before-and-after-transformation" title="Link to this heading"></a></h3>
+<p><strong>Fold change</strong> asks: how much higher (or lower) is gene X in
+sample B compared to sample A? The simple formula is
+<code class="docutils literal notranslate"><span class="pre">(B</span> <span class="pre">-</span> <span class="pre">A)</span> <span class="pre">/</span> <span class="pre">A</span></code>: a value of <code class="docutils literal notranslate"><span class="pre">1</span></code> means twice as high, <code class="docutils literal notranslate"><span class="pre">-0.5</span></code>
+means half as high, <code class="docutils literal notranslate"><span class="pre">0</span></code> means equal.</p>
+<p>Computing fold change on raw counts gives implausibly large values
+driven by sequencing depth. Computing it on log1p-normalized
+values gives interpretable numbers.</p>
+<p>A small helper function. Defining a function avoids repeating the
+same lines three times:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fold_change</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">ref</span><span class="p">]</span>                       <span class="c1"># reference column</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">!=</span> <span class="n">ref</span><span class="p">]</span>        <span class="c1"># everything else</span>
+    <span class="n">fc</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">a</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">}</span>
+    <span class="n">fc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>             <span class="c1"># NaN -&gt; 0</span>
+    <span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">fc</span><span class="p">),</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">])</span>  <span class="c1"># inf -&gt; raw val</span>
+    <span class="k">return</span> <span class="n">fc</span>
+
+<span class="n">fc_raw</span>        <span class="o">=</span> <span class="n">fold_change</span><span class="p">(</span><span class="n">human</span><span class="p">,</span>                 <span class="s2">&quot;human_brain_4&quot;</span><span class="p">,</span> <span class="n">dlx_rows</span><span class="p">)</span>
+<span class="n">fc_normed</span>     <span class="o">=</span> <span class="n">fold_change</span><span class="p">(</span><span class="n">normed_human</span><span class="p">,</span>          <span class="s2">&quot;human_brain_4&quot;</span><span class="p">,</span> <span class="n">dlx_rows</span><span class="p">)</span>
+<span class="n">fc_l1p_normed</span> <span class="o">=</span> <span class="n">fold_change</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">),</span><span class="s2">&quot;human_brain_4&quot;</span><span class="p">,</span> <span class="n">dlx_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">.fillna(0)</span></code> replaces missing values (NaN, from <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">/</span> <span class="pre">0</span></code>) with
+zero. <code class="docutils literal notranslate"><span class="pre">.mask(condition,</span> <span class="pre">other)</span></code> replaces values where
+<code class="docutils literal notranslate"><span class="pre">condition</span></code> is True with values from <code class="docutils literal notranslate"><span class="pre">other</span></code> — here we
+replace infinities (from dividing by zero) with the raw value, as
+a fallback.</p>
+<p>Heatmap comparison — colour-coded so the difference is obvious:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">fc_raw</span><span class="p">,</span>        <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Raw expression FC&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">fc_normed</span><span class="p">,</span>     <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Normed FC&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">fc_l1p_normed</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;l1p Normed FC&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Raw fold-changes contain values like <code class="docutils literal notranslate"><span class="pre">19</span></code> or <code class="docutils literal notranslate"><span class="pre">-1</span></code> driven
+entirely by library size; the log1p-normalized panel shows
+interpretable values in roughly <code class="docutils literal notranslate"><span class="pre">[-1,</span> <span class="pre">1]</span></code>.</p>
+</section>
+</section>
+<section id="merging-data">
+<h2>5. Merging data<a class="headerlink" href="#merging-data" title="Link to this heading"></a></h2>
+<p>To compare expression across species, we need to align genes:
+<code class="docutils literal notranslate"><span class="pre">STAG2</span></code> in human is the same gene as <code class="docutils literal notranslate"><span class="pre">Stag2</span></code> in mouse. The
+orthologue map provides that link.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gene_map</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="c1">#                          human          mouse</span>
+<span class="c1"># Stag2_STAG2              STAG2          Stag2</span>
+<span class="c1"># Stag1_STAG1              STAG1          Stag1</span>
+<span class="c1"># ...</span>
+</pre></div>
+</div>
+<p>Process the mouse table the same way (normalize + log1p), then
+merge each species’ table onto the gene map. <code class="docutils literal notranslate"><span class="pre">merge</span></code> is
+<code class="docutils literal notranslate"><span class="pre">pandas</span></code>’s version of a SQL join — it lines up rows by a key
+column.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">normed_mouse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">mouse</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">mouse</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
+
+<span class="n">star_normed_mouse</span> <span class="o">=</span> <span class="n">normed_mouse</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">gene_map</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">star_normed_human</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">gene_map</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">left_index=True</span></code> — use the left table’s row index as the
+join key.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">right_on='mouse'</span></code> — match against the <code class="docutils literal notranslate"><span class="pre">mouse</span></code> column on
+the right table.</p></li>
+</ul>
+<p>After both merges, the two tables share the same row labels
+(<code class="docutils literal notranslate"><span class="pre">Stag2_STAG2</span></code>, etc.). Join them and drop the duplicate
+<code class="docutils literal notranslate"><span class="pre">human</span></code>/<code class="docutils literal notranslate"><span class="pre">mouse</span></code> columns introduced by the second merge
+(<code class="docutils literal notranslate"><span class="pre">suffixes=('',</span> <span class="pre">'_drop')</span></code> tags the duplicates so we can find
+and remove them):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">merged_df</span> <span class="o">=</span> <span class="n">star_normed_mouse</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">star_normed_human</span><span class="p">,</span>
+    <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;_drop&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">merged_df</span> <span class="o">=</span> <span class="n">merged_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+    <span class="p">:,</span> <span class="o">~</span><span class="n">merged_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_drop&#39;</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="n">merged_df</span><span class="o">.</span><span class="n">shape</span>    <span class="c1"># (14744, 18)</span>
+</pre></div>
+</div>
+<section id="sample-correlation">
+<h3>Sample correlation<a class="headerlink" href="#sample-correlation" title="Link to this heading"></a></h3>
+<p>A correlation heatmap is a quick sanity check: matched tissues
+(human brain ↔ mouse brain) should correlate more strongly than
+mismatched tissues, even across species.</p>
+<p><code class="docutils literal notranslate"><span class="pre">.corr()</span></code> computes the pairwise Pearson correlation between
+every pair of columns.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">correlation_matrix</span> <span class="o">=</span> <span class="n">merged_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+    <span class="p">:,</span> <span class="o">~</span><span class="n">merged_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;human&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse&#39;</span><span class="p">])</span>
+<span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span>
+            <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span>
+            <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Correlation Heatmap&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">clustermap</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span>
+               <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span>
+               <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sns.clustermap</span></code> reorders the rows and columns so similar
+samples sit next to each other, making tissue clusters jump out
+even when the original ordering was arbitrary.</p>
+</section>
+</section>
+<section id="exporting-data">
+<h2>6. Exporting data<a class="headerlink" href="#exporting-data" title="Link to this heading"></a></h2>
+<p>Save the cleaned, transformed, merged table to disk so the next
+step in your pipeline (differential expression, enrichment
+analysis, …) can read it back.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">merged_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;./data/human_mouse_merged_expression.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Useful options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">index=False</span></code> — do not write the row labels (use this if you
+do not want a leading unnamed column when you re-read the file).</p></li>
+<li><p>Pass a <code class="docutils literal notranslate"><span class="pre">.csv.gz</span></code> filename and <code class="docutils literal notranslate"><span class="pre">pandas</span></code> writes it gzipped for
+free.</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<p>The merged table produced here is the standard input for the
+downstream tutorials in this resource:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../transcriptomics/bulk_rna_seq.html"><span class="doc">Bulk RNA-seq</span></a> — differential expression.</p></li>
+<li><p><a class="reference internal" href="../transcriptomics/over_representation_analysis.html"><span class="doc">Over-representation analysis</span></a> —
+GO / KEGG over-representation on a DE gene list.</p></li>
+<li><p><a class="reference internal" href="../transcriptomics/gene_set_enrichment_analysis.html"><span class="doc">Gene set enrichment analysis</span></a> — GSEA on
+a ranked gene list.</p></li>
+</ul>
+</section>
 </section>
 
 

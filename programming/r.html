@@ -53,7 +53,45 @@
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Programming</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="python.html">Python</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">R / RShiny</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">R / RShiny</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-you-need-to-know-first">What you need to know first</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-overview">Workflow overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data-shape">Data shape</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-setup">Environment setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading-data">1. Loading data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering">2. Filtering</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#empty-samples">Empty samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#genes-with-no-expression">Genes with no expression</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slicing">3. Slicing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pick-columns-whose-name-contains-a-word">Pick columns whose name contains a word</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pick-rows-by-gene-name">Pick rows by gene name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#extract-the-subset-of-data">Extract the subset of data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#transform-data">4. Transform data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wide-vs-long-format">Wide vs long format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-quick-tour-of-ggplot2">A quick tour of ggplot2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#boxplot-of-raw-counts">Boxplot of raw counts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log1p-transform">Log1p transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#normalize-by-library-size-cpm">Normalize by library size (CPM)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fold-change-before-and-after-transformation">Fold change before and after transformation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#heatmap-of-fold-changes">Heatmap of fold changes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#merging-data">5. Merging data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-correlation">Sample correlation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cross-species-correlation-only">Cross-species correlation only</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-data">6. Saving data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="slurm.html">SLURM</a></li>
 </ul>
@@ -88,7 +126,841 @@
              
   <section id="r-rshiny">
 <h1>R / RShiny<a class="headerlink" href="#r-rshiny" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+<p>This tutorial is a hands-on introduction to data analysis in R for
+people who are new to the language. It follows the same workflow as
+the <a class="reference internal" href="python.html"><span class="doc">Python</span></a> tutorial — load, filter, slice, transform, merge,
+save — using the same bulk RNA-seq dataset (gene expression across
+eight tissues in human and mouse).</p>
+<p>The material is adapted from the <em>Applied data analysis for
+beginners</em> module of the NYUAD Core Bioinformatics Workshops
+(<em>Start Analytics 2025</em>). Source data and notebooks are at
+<a class="reference external" href="https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/">NYUAD-Core-Bioinformatics/StartAnalytics_2025</a>.</p>
+<p>No prior R experience is assumed.</p>
+<section id="what-you-need-to-know-first">
+<h2>What you need to know first<a class="headerlink" href="#what-you-need-to-know-first" title="Link to this heading"></a></h2>
+<p>A few terms that come up over and over:</p>
+<ul class="simple">
+<li><p><strong>Package</strong> — a chunk of pre-written code you can use. We use:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">dplyr</span></code> — verbs for data frames (<code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">select</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mutate</span></code>, <code class="docutils literal notranslate"><span class="pre">left_join</span></code>) and the pipe <code class="docutils literal notranslate"><span class="pre">%&gt;%</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tidyr</span></code> — reshape data between wide and long form
+(<code class="docutils literal notranslate"><span class="pre">pivot_longer</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tibble</span></code> — helpers like <code class="docutils literal notranslate"><span class="pre">rownames_to_column</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reshape2</span></code> — older reshaper, provides <code class="docutils literal notranslate"><span class="pre">melt</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ggplot2</span></code> — the standard plotting library.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gridExtra</span></code> — arrange several ggplot panels in a grid
+(<code class="docutils literal notranslate"><span class="pre">grid.arrange</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pheatmap</span></code> — pretty heatmaps with clustering.</p></li>
+</ul>
+</li>
+<li><p><strong>data.frame</strong> — a table with named rows and named columns. The
+R equivalent of a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame. After we read a CSV
+with <code class="docutils literal notranslate"><span class="pre">row.names</span> <span class="pre">=</span> <span class="pre">1</span></code> the first column of the file becomes the
+row labels.</p></li>
+<li><p><strong>matrix</strong> — a 2-D grid of values that are <em>all the same type</em>
+(usually all numeric). Most of our math (sums, normalization,
+correlation) is done on a matrix.</p></li>
+<li><p><strong>The pipe</strong> <code class="docutils literal notranslate"><span class="pre">%&gt;%</span></code> — takes whatever is on the left and feeds
+it as the first argument to the function on the right.
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">%&gt;%</span> <span class="pre">f(y)</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">f(x,</span> <span class="pre">y)</span></code>. It lets you read
+transformations left-to-right instead of inside-out.</p></li>
+<li><p><strong>Row and column ops</strong> — <code class="docutils literal notranslate"><span class="pre">rowSums(x)</span></code> sums each row,
+<code class="docutils literal notranslate"><span class="pre">colSums(x)</span></code> sums each column. In Python you would write
+<code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=0)</span></code>; in R the function
+name itself tells you the direction.</p></li>
+<li><p><strong>The transpose trick</strong> — <code class="docutils literal notranslate"><span class="pre">t(t(x)</span> <span class="pre">/</span> <span class="pre">colSums(x))</span></code> divides each
+<em>column</em> of <code class="docutils literal notranslate"><span class="pre">x</span></code> by its column total. Without the two <code class="docutils literal notranslate"><span class="pre">t()</span></code>
+calls, R would try to divide row-wise and recycle the values
+the wrong way. (More on this in the normalization step.)</p></li>
+</ul>
+</section>
+<section id="workflow-overview">
+<h2>Workflow overview<a class="headerlink" href="#workflow-overview" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Load</strong> the data into a data frame.</p></li>
+<li><p><strong>Filter</strong> — inspect samples and genes; spot anything empty.</p></li>
+<li><p><strong>Slice</strong> the table to focus on samples or genes of interest.</p></li>
+<li><p><strong>Transform</strong> the numbers (normalize, log-transform).</p></li>
+<li><p><strong>Merge</strong> human and mouse data and check correlation.</p></li>
+<li><p><strong>Save</strong> results to disk.</p></li>
+</ol>
+<section id="data-shape">
+<h3>Data shape<a class="headerlink" href="#data-shape" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>rows</strong> — genes (e.g. <code class="docutils literal notranslate"><span class="pre">STAG2</span></code>, <code class="docutils literal notranslate"><span class="pre">GOSR2</span></code>).</p></li>
+<li><p><strong>columns</strong> — samples (e.g. <code class="docutils literal notranslate"><span class="pre">human_brain_4</span></code>).</p></li>
+<li><p><strong>values</strong> — raw sequencing read counts.</p></li>
+</ul>
+<p>Before any analysis, ask yourself: <em>Are there empty samples? Do
+all genes have a value? Which features are irrelevant? Are there
+outliers or missing data?</em> Garbage in, garbage out.</p>
+</section>
+</section>
+<section id="environment-setup">
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Link to this heading"></a></h2>
+<p>Install the packages once from the R console:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">install.packages</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;dplyr&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tidyr&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tibble&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;reshape2&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">&quot;ggplot2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gridExtra&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pheatmap&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Load them at the top of each script or notebook session:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">dplyr</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">gridExtra</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">reshape2</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">ggplot2</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tidyr</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tibble</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you are working inside a Jupyter notebook with the R kernel,
+this option keeps the printed tables short so they fit on screen:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">options</span><span class="p">(</span><span class="n">repr.matrix.max.rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">repr.matrix.max.cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">6</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>The example uses three gzipped CSVs (<code class="docutils literal notranslate"><span class="pre">read.csv</span></code> handles <code class="docutils literal notranslate"><span class="pre">.gz</span></code>
+automatically — no need to unzip):</p>
+<p>Download the three files from
+<a class="reference external" href="https://github.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/tree/main/notebooks/data">NYUAD-Core-Bioinformatics/StartAnalytics_2025 / notebooks / data</a>
+and place them in a <code class="docutils literal notranslate"><span class="pre">data/</span></code> folder next to your script or
+notebook:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data/human_expression.csv.gz</span></code> — raw read counts, 14,744 genes
+× 8 human tissue samples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data/mouse_expression.csv.gz</span></code> — raw read counts, 14,744 genes
+× 8 mouse tissue samples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data/human_mouse_gene_map.csv.gz</span></code> — a lookup table pairing
+each human gene symbol (<code class="docutils literal notranslate"><span class="pre">STAG2</span></code>) with its mouse equivalent
+(<code class="docutils literal notranslate"><span class="pre">Stag2</span></code>).</p></li>
+</ul>
+<p>Or grab all three from the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>data
+<span class="nv">BASE</span><span class="o">=</span>https://raw.githubusercontent.com/NYUAD-Core-Bioinformatics/StartAnalytics_2025/main/notebooks/data
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/human_expression.csv.gz<span class="w">       </span><span class="nv">$BASE</span>/human_expression.csv.gz
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/mouse_expression.csv.gz<span class="w">       </span><span class="nv">$BASE</span>/mouse_expression.csv.gz
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>data/human_mouse_gene_map.csv.gz<span class="w">   </span><span class="nv">$BASE</span>/human_mouse_gene_map.csv.gz
+</pre></div>
+</div>
+</section>
+<section id="loading-data">
+<h2>1. Loading data<a class="headerlink" href="#loading-data" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">read.csv</span></code> reads a CSV file into a data frame. The argument
+<code class="docutils literal notranslate"><span class="pre">row.names</span> <span class="pre">=</span> <span class="pre">1</span></code> says “use the first column of the file as the
+row labels” — so gene names become the row names rather than a
+plain data column.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">mouse</span><span class="w">    </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&#39;data/mouse_expression.csv.gz&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="n">human</span><span class="w">    </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&#39;data/human_expression.csv.gz&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="n">gene_map</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&#39;data/human_mouse_gene_map.csv.gz&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A few quick ways to look at what just got loaded:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dim</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w">       </span><span class="c1"># 14744    8     (rows, cols)</span>
+<span class="nf">head</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w">      </span><span class="c1"># first 6 rows</span>
+<span class="nf">colnames</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w">  </span><span class="c1"># sample names</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">human</span><span class="p">)[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">   </span><span class="c1"># first 5 gene names</span>
+</pre></div>
+</div>
+<p>In a notebook, just typing <code class="docutils literal notranslate"><span class="pre">human</span></code> and running the cell prints
+the table. In a plain script use <code class="docutils literal notranslate"><span class="pre">print(human)</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">View(human)</span></code> (capital V) opens the table in a
+spreadsheet-style viewer — but this only works inside
+<strong>RStudio</strong>. It will not do anything useful from a plain R
+console, a terminal session, or most Jupyter setups.</p>
+</div>
+</section>
+<section id="filtering">
+<h2>2. Filtering<a class="headerlink" href="#filtering" title="Link to this heading"></a></h2>
+<p>Filtering means dropping rows or columns that carry no useful
+information. At this stage we just <em>inspect</em> — the actual drop
+happens later if needed.</p>
+<section id="empty-samples">
+<h3>Empty samples<a class="headerlink" href="#empty-samples" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">colSums</span></code> adds up the values column-by-column, giving total
+reads per sample:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">colSums</span><span class="p">(</span><span class="n">human</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this dataset every sample has millions of reads, so no empty
+columns to drop.</p>
+</section>
+<section id="genes-with-no-expression">
+<h3>Genes with no expression<a class="headerlink" href="#genes-with-no-expression" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">rowSums</span></code> adds up across each row — the total reads per gene
+across all samples:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">gene_count_across_tissues</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowSums</span><span class="p">(</span><span class="n">human</span><span class="p">)</span>
+<span class="nf">head</span><span class="p">(</span><span class="n">gene_count_across_tissues</span><span class="p">)</span>
+<span class="nf">summary</span><span class="p">(</span><span class="n">gene_count_across_tissues</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">summary()</span></code> is R’s quick descriptive-stats function (min, 1st
+quartile, median, mean, 3rd quartile, max). It is the closest
+analogue to pandas’ <code class="docutils literal notranslate"><span class="pre">.describe()</span></code>.</p>
+<p>How many genes have zero expression in every tissue?
+<code class="docutils literal notranslate"><span class="pre">gene_count_across_tissues</span> <span class="pre">==</span> <span class="pre">0</span></code> returns a logical vector
+(<code class="docutils literal notranslate"><span class="pre">TRUE</span></code>/<code class="docutils literal notranslate"><span class="pre">FALSE</span></code>), and <code class="docutils literal notranslate"><span class="pre">summary()</span></code> on a logical vector
+prints a count of each value:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">summary</span><span class="p">(</span><span class="n">gene_count_across_tissues</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<span class="c1"># Mode   FALSE    TRUE</span>
+<span class="c1"># logical 14070     674</span>
+</pre></div>
+</div>
+<p>So 674 genes are flat zero across all tissues; 14,070 are
+expressed in at least one tissue.</p>
+</section>
+</section>
+<section id="slicing">
+<h2>3. Slicing<a class="headerlink" href="#slicing" title="Link to this heading"></a></h2>
+<p>Slicing means picking a subset — particular rows, particular
+columns, or both. The base-R bracket form is <code class="docutils literal notranslate"><span class="pre">x[rows,</span> <span class="pre">cols]</span></code>;
+leave a side blank to keep “all”.</p>
+<section id="pick-columns-whose-name-contains-a-word">
+<h3>Pick columns whose name contains a word<a class="headerlink" href="#pick-columns-whose-name-contains-a-word" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">grep(&quot;brain&quot;,</span> <span class="pre">colnames(human))</span></code> returns the <em>positions</em>
+(integers) of column names that match. Wrap it in
+<code class="docutils literal notranslate"><span class="pre">colnames(human)[...]</span></code> to get the names themselves back:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">brain_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">human</span><span class="p">)[</span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;brain&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">human</span><span class="p">))]</span>
+<span class="n">brain_cols</span><span class="w">                  </span><span class="c1"># &quot;human_brain_4&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="pick-rows-by-gene-name">
+<h3>Pick rows by gene name<a class="headerlink" href="#pick-rows-by-gene-name" title="Link to this heading"></a></h3>
+<p>Same idea applied to <code class="docutils literal notranslate"><span class="pre">rownames</span></code>. The <em>DLX</em> genes are a family
+of homeobox transcription factors active in the brain.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">dlx_rows</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">human</span><span class="p">)[</span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;DLX&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">human</span><span class="p">))]</span>
+<span class="n">dlx_rows</span>
+</pre></div>
+</div>
+</section>
+<section id="extract-the-subset-of-data">
+<h3>Extract the subset of data<a class="headerlink" href="#extract-the-subset-of-data" title="Link to this heading"></a></h3>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">brain_cols</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The order is always <code class="docutils literal notranslate"><span class="pre">[rows,</span> <span class="pre">cols]</span></code>. Forgetting the comma is a
+common mistake — <code class="docutils literal notranslate"><span class="pre">human[dlx_rows]</span></code> would try to interpret
+<code class="docutils literal notranslate"><span class="pre">dlx_rows</span></code> as column names and break.</p>
+</section>
+</section>
+<section id="transform-data">
+<h2>4. Transform data<a class="headerlink" href="#transform-data" title="Link to this heading"></a></h2>
+<p>Raw counts are hard to interpret directly for two reasons:</p>
+<ol class="arabic simple">
+<li><p>A handful of highly-expressed genes dominate any plot or
+statistic (outliers).</p></li>
+<li><p>Different samples were sequenced to different depths, so a
+higher count can reflect deeper sequencing rather than higher
+biological expression.</p></li>
+</ol>
+<p>We apply two standard transformations:</p>
+<ul class="simple">
+<li><p><strong>Normalize by library size</strong> (counts per million, CPM) — scale
+each sample so column totals match, making samples comparable.</p></li>
+<li><p><strong>Log-transform</strong> (<code class="docutils literal notranslate"><span class="pre">log1p(x)</span></code> = <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">x)</span></code>) — compresses
+the long tail of highly-expressed genes. <code class="docutils literal notranslate"><span class="pre">log1p(0)</span></code> is
+<code class="docutils literal notranslate"><span class="pre">0</span></code>, so zero counts stay defined.</p></li>
+</ul>
+<section id="wide-vs-long-format">
+<h3>Wide vs long format<a class="headerlink" href="#wide-vs-long-format" title="Link to this heading"></a></h3>
+<p>Before the first plot, one concept that trips up everyone new to
+<code class="docutils literal notranslate"><span class="pre">ggplot2</span></code>: the difference between <strong>wide</strong> and <strong>long</strong> format.</p>
+<p>Our expression table is in <strong>wide</strong> format — one column per
+sample, one row per gene. It is convenient to read and to do
+matrix math on:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Gene</p></th>
+<th class="head"><p>human_brain_4</p></th>
+<th class="head"><p>human_heart_2</p></th>
+<th class="head"><p>human_liver_2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>STAG2</p></td>
+<td><p>2513</p></td>
+<td><p>1734</p></td>
+<td><p>1262</p></td>
+</tr>
+<tr class="row-odd"><td><p>GOSR2</p></td>
+<td><p>40</p></td>
+<td><p>187</p></td>
+<td><p>87</p></td>
+</tr>
+<tr class="row-even"><td><p>DLX6</p></td>
+<td><p>142</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The same data in <strong>long</strong> format has <em>one row per observation</em> —
+i.e. one row per (gene, sample) pair — with the sample name
+moved into its own column:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Gene</p></th>
+<th class="head"><p>Sample</p></th>
+<th class="head"><p>Expression</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>STAG2</p></td>
+<td><p>human_brain_4</p></td>
+<td><p>2513</p></td>
+</tr>
+<tr class="row-odd"><td><p>STAG2</p></td>
+<td><p>human_heart_2</p></td>
+<td><p>1734</p></td>
+</tr>
+<tr class="row-even"><td><p>STAG2</p></td>
+<td><p>human_liver_2</p></td>
+<td><p>1262</p></td>
+</tr>
+<tr class="row-odd"><td><p>GOSR2</p></td>
+<td><p>human_brain_4</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-even"><td><p>GOSR2</p></td>
+<td><p>human_heart_2</p></td>
+<td><p>187</p></td>
+</tr>
+<tr class="row-odd"><td><p>GOSR2</p></td>
+<td><p>human_liver_2</p></td>
+<td><p>87</p></td>
+</tr>
+<tr class="row-even"><td><p>DLX6</p></td>
+<td><p>human_brain_4</p></td>
+<td><p>142</p></td>
+</tr>
+<tr class="row-odd"><td><p>DLX6</p></td>
+<td><p>human_heart_2</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>DLX6</p></td>
+<td><p>human_liver_2</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Why do we need long format? Because <code class="docutils literal notranslate"><span class="pre">ggplot2</span></code>’s <code class="docutils literal notranslate"><span class="pre">aes()</span></code> maps
+<em>columns</em> of data to visual properties. To draw “one box per
+sample, coloured by sample,” ggplot needs a single <code class="docutils literal notranslate"><span class="pre">Sample</span></code>
+column to point <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span></code> and <code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span></code> at. A wide table has no
+such column — the sample identity is hidden in the <em>names</em> of
+the columns.</p>
+<p>The function that converts wide → long is <code class="docutils literal notranslate"><span class="pre">tidyr::pivot_longer</span></code>:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w">                </span><span class="c1"># collapse everything except Gene</span>
+<span class="w">               </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># column names go here</span>
+<span class="w">               </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1"># values go here</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-Gene</span></code> means “all columns except <code class="docutils literal notranslate"><span class="pre">Gene</span></code>” — those are the
+ones that get stacked.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">names_to</span></code> is the new column that will hold the old column
+names.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">values_to</span></code> is the new column that will hold the old values.</p></li>
+</ul>
+<p>You will see this exact three-line pattern many times below —
+whenever a matrix needs to become a plot.</p>
+</section>
+<section id="a-quick-tour-of-ggplot2">
+<h3>A quick tour of ggplot2<a class="headerlink" href="#a-quick-tour-of-ggplot2" title="Link to this heading"></a></h3>
+<p>With long format sorted out, here is the ggplot mental model.
+<code class="docutils literal notranslate"><span class="pre">ggplot2</span></code> is based on the <em>grammar of graphics</em>: every plot is
+built up by adding <strong>layers</strong> with the <code class="docutils literal notranslate"><span class="pre">+</span></code> operator. A minimal
+plot needs three things:</p>
+<ol class="arabic simple">
+<li><p><strong>Data</strong> — a data frame in long format (one row per
+observation).</p></li>
+<li><p><strong>Aesthetics</strong> — <code class="docutils literal notranslate"><span class="pre">aes(...)</span></code> maps columns of the data to
+visual properties (x, y, colour, fill, size, …).</p></li>
+<li><p><strong>Geometry</strong> — a <code class="docutils literal notranslate"><span class="pre">geom_*()</span></code> layer that says <em>how</em> to draw
+(<code class="docutils literal notranslate"><span class="pre">geom_point</span></code>, <code class="docutils literal notranslate"><span class="pre">geom_boxplot</span></code>, <code class="docutils literal notranslate"><span class="pre">geom_violin</span></code>,
+<code class="docutils literal notranslate"><span class="pre">geom_tile</span></code>, …).</p></li>
+</ol>
+<p>A complete plot reads like a sentence:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ggplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expression</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">   </span><span class="c1"># data + mapping</span>
+<span class="w">    </span><span class="nf">geom_boxplot</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">                               </span><span class="c1"># how to draw</span>
+<span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;...&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">    </span><span class="c1"># labels</span>
+<span class="w">    </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w">                                     </span><span class="c1"># overall look</span>
+</pre></div>
+</div>
+<p>Two practical notes:</p>
+<ul class="simple">
+<li><p><strong>Long format is required.</strong> Each row must be one observation.
+A wide table with one column per sample will not plot directly
+— reshape it first with <code class="docutils literal notranslate"><span class="pre">pivot_longer</span></code>.</p></li>
+<li><p><strong>The plus signs matter.</strong> <code class="docutils literal notranslate"><span class="pre">+</span></code> belongs at the <em>end</em> of the
+previous line; if you put it at the start of the next line, R
+thinks the previous line was complete and runs it on its own.</p></li>
+</ul>
+</section>
+<section id="boxplot-of-raw-counts">
+<h3>Boxplot of raw counts<a class="headerlink" href="#boxplot-of-raw-counts" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ggplot2</span></code> needs long format, so we pivot the wide matrix first.
+<code class="docutils literal notranslate"><span class="pre">rownames_to_column(&quot;Gene&quot;)</span></code> moves the row labels into a
+regular column so <code class="docutils literal notranslate"><span class="pre">pivot_longer</span></code> can leave it alone.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">human_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="n">boxplot_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">human_long</span><span class="p">,</span>
+<span class="w">                        </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Box Plot of expression by samples&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span>
+
+<span class="n">boxplot_human</span>
+</pre></div>
+</div>
+<p>The raw plot is unreadable: a few enormous outlier genes squash
+the rest of the distribution onto the baseline.</p>
+</section>
+<section id="log1p-transform">
+<h3>Log1p transform<a class="headerlink" href="#log1p-transform" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">log1p()</span></code> applied to a data frame returns a new data frame
+where every value has been replaced by <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">value)</span></code>. The
+original is not modified.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">log1p_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log1p</span><span class="p">(</span><span class="n">human</span><span class="p">)</span>
+
+<span class="n">log1p_human_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">log1p_human</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="n">sample_colors</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;lightblue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lightgreen&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lightpink&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lightsalmon&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;lightyellow&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;powderblue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lavender&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thistle&quot;</span>
+<span class="p">)</span>
+
+<span class="nf">ggplot</span><span class="p">(</span><span class="n">log1p_human_long</span><span class="p">,</span>
+<span class="w">       </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_colors</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Box Plot of expression by samples&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;log1p Expression&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now the distributions are visible — but samples still differ in
+overall level because of library size. The next step fixes that.</p>
+</section>
+<section id="normalize-by-library-size-cpm">
+<h3>Normalize by library size (CPM)<a class="headerlink" href="#normalize-by-library-size-cpm" title="Link to this heading"></a></h3>
+<p>The normalization is one line:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">t</span><span class="p">(</span><span class="nf">t</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nf">colSums</span><span class="p">(</span><span class="n">human</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">1e6</span>
+<span class="n">normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Read it from the inside out:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">colSums(human)</span></code> — total reads per sample, a length-8
+vector.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t(human)</span></code> — <em>transpose</em> the table so samples are rows and
+genes are columns.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t(human)</span> <span class="pre">/</span> <span class="pre">colSums(human)</span></code> — now R divides each row of the
+transposed table by the matching element of the vector, which
+is what we want (per-sample division).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t(...)</span></code> — transpose back so genes are rows again.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">1e6</span></code> — rescale to counts per million.</p></li>
+</ol>
+<p>Without the two transposes, R would recycle the column totals
+across rows in the wrong direction and produce nonsense.</p>
+<p>Compare all three views side by side. <code class="docutils literal notranslate"><span class="pre">grid.arrange</span></code> from
+<code class="docutils literal notranslate"><span class="pre">gridExtra</span></code> lays out separate ggplot objects in a grid.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">options</span><span class="p">(</span><span class="n">repr.plot.width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">18</span><span class="p">,</span><span class="w"> </span><span class="n">repr.plot.height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">6</span><span class="p">)</span><span class="w">  </span><span class="c1"># notebook only</span>
+
+<span class="c1"># raw counts</span>
+<span class="n">boxplot_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">human_long</span><span class="p">,</span>
+<span class="w">                        </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_colors</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">        </span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Raw expression&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="c1"># normalized</span>
+<span class="n">normed_human_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="n">boxplot_normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">normed_human_long</span><span class="p">,</span>
+<span class="w">                               </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_colors</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">        </span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Normed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="c1"># log1p of normalized</span>
+<span class="n">log1p_normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)</span>
+<span class="n">log1p_normed_human_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">log1p_normed_human</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="n">boxplot_log1p_normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">log1p_normed_human_long</span><span class="p">,</span>
+<span class="w">                                     </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_colors</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">        </span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;l1p Normed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="nf">grid.arrange</span><span class="p">(</span><span class="n">boxplot_human</span><span class="p">,</span><span class="w"> </span><span class="n">boxplot_normed_human</span><span class="p">,</span>
+<span class="w">             </span><span class="n">boxplot_log1p_normed_human</span><span class="p">,</span><span class="w"> </span><span class="n">ncol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Violin plots show the full distribution shape. <code class="docutils literal notranslate"><span class="pre">geom_violin</span></code> +
+<code class="docutils literal notranslate"><span class="pre">geom_boxplot</span></code> on top of each other is a useful combination —
+the violin gives density, the inner box gives the quartiles.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">violinplot_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">human_long</span><span class="p">,</span>
+<span class="w">                           </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_violin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">21</span><span class="p">,</span>
+<span class="w">               </span><span class="n">outlier.colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">outlier.fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">               </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;black&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_colors</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_bw</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">        </span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Raw expression (violin)&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Tissue sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Expression&quot;</span><span class="p">)</span>
+
+<span class="c1"># build violinplot_normed_human and violinplot_log1p_normed_human</span>
+<span class="c1"># the same way, swapping in normed_human_long / log1p_normed_human_long</span>
+
+<span class="nf">options</span><span class="p">(</span><span class="n">repr.plot.width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">18</span><span class="p">,</span><span class="w"> </span><span class="n">repr.plot.height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12</span><span class="p">)</span>
+<span class="nf">grid.arrange</span><span class="p">(</span><span class="n">boxplot_human</span><span class="p">,</span><span class="w"> </span><span class="n">boxplot_normed_human</span><span class="p">,</span>
+<span class="w">             </span><span class="n">boxplot_log1p_normed_human</span><span class="p">,</span>
+<span class="w">             </span><span class="n">violinplot_human</span><span class="p">,</span><span class="w"> </span><span class="n">violinplot_normed_human</span><span class="p">,</span>
+<span class="w">             </span><span class="n">violinplot_log1p_normed_human</span><span class="p">,</span>
+<span class="w">             </span><span class="n">ncol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">,</span><span class="w"> </span><span class="n">nrow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="fold-change-before-and-after-transformation">
+<h3>Fold change before and after transformation<a class="headerlink" href="#fold-change-before-and-after-transformation" title="Link to this heading"></a></h3>
+<p><strong>Fold change</strong> asks: how much higher (or lower) is gene X in
+sample B compared to a reference sample A? The simple formula is
+<code class="docutils literal notranslate"><span class="pre">(B</span> <span class="pre">-</span> <span class="pre">A)</span> <span class="pre">/</span> <span class="pre">A</span></code>: <code class="docutils literal notranslate"><span class="pre">1</span></code> means twice as high, <code class="docutils literal notranslate"><span class="pre">-0.5</span></code> means half,
+<code class="docutils literal notranslate"><span class="pre">0</span></code> means equal.</p>
+<p>Computing it on raw counts gives implausibly large values driven
+by sequencing depth. Computing it on log1p-normalized values
+gives interpretable numbers.</p>
+<p>The pattern below is from the notebook: <code class="docutils literal notranslate"><span class="pre">sapply</span></code> walks over
+each non-reference column, computes the fold-change against the
+reference, and returns the result as a matrix.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">ref</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;human_brain_4&quot;</span>
+<span class="n">a</span><span class="w">   </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+<span class="n">col_subset</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)[</span><span class="nf">colnames</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+
+<span class="n">normed_human_fold_changes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sapply</span><span class="p">(</span><span class="n">col_subset</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">]</span>
+<span class="w">    </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">a</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sapply(X,</span> <span class="pre">FUN)</span></code> — apply <code class="docutils literal notranslate"><span class="pre">FUN</span></code> to each element of <code class="docutils literal notranslate"><span class="pre">X</span></code>
+and try to simplify the result to a matrix or vector.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">function(c)</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code> — an anonymous function. <code class="docutils literal notranslate"><span class="pre">c</span></code> here is
+one column name from <code class="docutils literal notranslate"><span class="pre">col_subset</span></code> at a time.</p></li>
+</ul>
+<p>The result will contain <code class="docutils literal notranslate"><span class="pre">NaN</span></code> (from <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">/</span> <span class="pre">0</span></code>) and <code class="docutils literal notranslate"><span class="pre">Inf</span></code>
+(from dividing by zero). Patch those up:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># 0 / 0 -&gt; 0</span>
+<span class="n">normed_human_fold_changes</span><span class="p">[</span><span class="nf">is.na</span><span class="p">(</span><span class="n">normed_human_fold_changes</span><span class="p">)]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span>
+
+<span class="c1"># division by zero -&gt; fall back to the raw value</span>
+<span class="n">inf_mask</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">is.infinite</span><span class="p">(</span><span class="n">normed_human_fold_changes</span><span class="p">)</span>
+<span class="n">normed_human_fold_changes</span><span class="p">[</span><span class="n">inf_mask</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span>
+<span class="w">    </span><span class="n">human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">col_subset</span><span class="p">][</span><span class="n">inf_mask</span><span class="p">]</span>
+
+<span class="n">normed_human_fold_changes</span><span class="w"> </span><span class="o">&lt;-</span>
+<span class="w">    </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">normed_human_fold_changes</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlx_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Do the same calculation for raw counts and for log1p-normalized
+counts:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># raw</span>
+<span class="n">a</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+<span class="n">col_subset</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">human</span><span class="p">)[</span><span class="nf">colnames</span><span class="p">(</span><span class="n">human</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+<span class="n">human_fold_changes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sapply</span><span class="p">(</span><span class="n">col_subset</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">]</span>
+<span class="w">    </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">a</span>
+<span class="p">})</span>
+<span class="n">human_fold_changes</span><span class="p">[</span><span class="nf">is.na</span><span class="p">(</span><span class="n">human_fold_changes</span><span class="p">)]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span>
+<span class="n">inf_mask</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">is.infinite</span><span class="p">(</span><span class="n">human_fold_changes</span><span class="p">)</span>
+<span class="n">human_fold_changes</span><span class="p">[</span><span class="n">inf_mask</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">col_subset</span><span class="p">][</span><span class="n">inf_mask</span><span class="p">]</span>
+
+<span class="c1"># log1p of normalized</span>
+<span class="n">l1p_normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">)</span>
+<span class="n">a</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">l1p_normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+<span class="n">col_subset</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">l1p_normed_human</span><span class="p">)[</span><span class="nf">colnames</span><span class="p">(</span><span class="n">l1p_normed_human</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ref</span><span class="p">]</span>
+<span class="n">l1p_normed_human_fold_changes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sapply</span><span class="p">(</span><span class="n">col_subset</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">l1p_normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">]</span>
+<span class="w">    </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">a</span>
+<span class="p">})</span>
+<span class="n">l1p_normed_human_fold_changes</span><span class="p">[</span><span class="nf">is.na</span><span class="p">(</span><span class="n">l1p_normed_human_fold_changes</span><span class="p">)]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span>
+<span class="n">inf_mask</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">is.infinite</span><span class="p">(</span><span class="n">l1p_normed_human_fold_changes</span><span class="p">)</span>
+<span class="n">l1p_normed_human_fold_changes</span><span class="p">[</span><span class="n">inf_mask</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span>
+<span class="w">    </span><span class="n">l1p_normed_human</span><span class="p">[</span><span class="n">dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="n">col_subset</span><span class="p">][</span><span class="n">inf_mask</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="heatmap-of-fold-changes">
+<h3>Heatmap of fold changes<a class="headerlink" href="#heatmap-of-fold-changes" title="Link to this heading"></a></h3>
+<p>Build a heatmap with <code class="docutils literal notranslate"><span class="pre">geom_tile</span></code> (one rectangle per cell) and
+<code class="docutils literal notranslate"><span class="pre">geom_text</span></code> (the number inside it). <code class="docutils literal notranslate"><span class="pre">scale_fill_gradient2</span></code>
+makes blue → white → red with white at zero.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">human_fold_changes_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">human_fold_changes</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="s">&quot;Gene&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">  </span><span class="nf">mutate</span><span class="p">(</span><span class="n">Gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">levels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dlx_rows</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">  </span><span class="c1"># preserve order</span>
+<span class="w">  </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;FoldChange&quot;</span><span class="p">)</span>
+
+<span class="n">plot1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">human_fold_changes_long</span><span class="p">,</span>
+<span class="w">                </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gene</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FoldChange</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_tile</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_fill_gradient2</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;blue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">midpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_text</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sprintf</span><span class="p">(</span><span class="s">&quot;%.2f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">FoldChange</span><span class="p">)),</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_minimal</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">45</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_y_discrete</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rev</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Raw FC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Gene&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Fold Change&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">legend.position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Repeat for <code class="docutils literal notranslate"><span class="pre">normed_human_fold_changes</span></code> and
+<code class="docutils literal notranslate"><span class="pre">l1p_normed_human_fold_changes</span></code> (call them <code class="docutils literal notranslate"><span class="pre">plot2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">plot3</span></code>) and lay them side by side:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">grid.arrange</span><span class="p">(</span><span class="n">plot1</span><span class="p">,</span><span class="w"> </span><span class="n">plot2</span><span class="p">,</span><span class="w"> </span><span class="n">plot3</span><span class="p">,</span><span class="w"> </span><span class="n">ncol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Raw fold-changes contain values like <code class="docutils literal notranslate"><span class="pre">19</span></code> driven entirely by
+library size; the log1p-normalized panel shows interpretable
+values in roughly <code class="docutils literal notranslate"><span class="pre">[-1,</span> <span class="pre">1]</span></code>.</p>
+</section>
+</section>
+<section id="merging-data">
+<h2>5. Merging data<a class="headerlink" href="#merging-data" title="Link to this heading"></a></h2>
+<p>To compare expression across species, we need to align genes:
+<code class="docutils literal notranslate"><span class="pre">STAG2</span></code> in human and <code class="docutils literal notranslate"><span class="pre">Stag2</span></code> in mouse are the same gene. The
+orthologue map provides that link.</p>
+<p>First inspect the mouse side. Note that <code class="docutils literal notranslate"><span class="pre">grep(&quot;DLX&quot;,</span> <span class="pre">toupper(...))</span></code>
+matches <em>DLX</em> regardless of capitalization (the mouse symbols are
+<code class="docutils literal notranslate"><span class="pre">Dlx4</span></code> etc., not <code class="docutils literal notranslate"><span class="pre">DLX4</span></code>):</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">mouse_brain_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">mouse</span><span class="p">)[</span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;brain&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">mouse</span><span class="p">))]</span>
+<span class="n">mouse_dlx_rows</span><span class="w">   </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">mouse</span><span class="p">)[</span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;DLX&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">toupper</span><span class="p">(</span><span class="nf">rownames</span><span class="p">(</span><span class="n">mouse</span><span class="p">)))]</span>
+
+<span class="n">mouse</span><span class="p">[</span><span class="n">mouse_dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Normalize the mouse table the same way:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">normed_mouse</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log1p</span><span class="p">(</span><span class="nf">t</span><span class="p">(</span><span class="nf">t</span><span class="p">(</span><span class="n">mouse</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nf">colSums</span><span class="p">(</span><span class="n">mouse</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">1e6</span><span class="p">)</span>
+<span class="n">normed_mouse</span><span class="p">[</span><span class="n">mouse_dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Filter the gene map to just the DLX orthologue pairs and look up
+those rows in <code class="docutils literal notranslate"><span class="pre">normed_mouse</span></code>:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">gene_map</span><span class="p">[</span><span class="n">gene_map</span><span class="o">$</span><span class="n">mouse</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">mouse_dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+<span class="n">normed_mouse</span><span class="p">[</span><span class="n">gene_map</span><span class="p">[</span><span class="n">gene_map</span><span class="o">$</span><span class="n">mouse</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">mouse_dlx_rows</span><span class="p">,</span><span class="w"> </span><span class="p">]</span><span class="o">$</span><span class="n">mouse</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To join the gene map onto the expression tables we need the
+gene-name to be a regular column (not a row name), because
+<code class="docutils literal notranslate"><span class="pre">left_join</span></code> matches by column. Build “expression + key
+column” data frames for each species:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">mouse_with_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">normed_mouse</span><span class="p">)</span>
+<span class="n">mouse_with_genes</span><span class="o">$</span><span class="n">mouse</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">mouse_with_genes</span><span class="p">)</span>
+
+<span class="n">normed_human_with_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="nf">log1p</span><span class="p">(</span><span class="n">normed_human</span><span class="p">))</span>
+<span class="n">normed_human_with_genes</span><span class="o">$</span><span class="n">human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">normed_human_with_genes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Join each species onto the gene map. <code class="docutils literal notranslate"><span class="pre">left_join</span></code> keeps every
+row from the left table and pulls in matching rows from the right
+table — unmatched rows on the right are dropped.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">star_normed_mouse</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_map</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">left_join</span><span class="p">(</span><span class="n">mouse_with_genes</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;mouse&quot;</span><span class="p">)</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">star_normed_mouse</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">gene_map</span><span class="p">)</span>
+
+<span class="n">star_normed_human</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_map</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">left_join</span><span class="p">(</span><span class="n">normed_human_with_genes</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;human&quot;</span><span class="p">)</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">star_normed_human</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">gene_map</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now both tables have the same row order (one row per ortholog
+pair). Join them and drop the duplicated key columns. After the
+second join, the <code class="docutils literal notranslate"><span class="pre">human</span></code> column appears twice — <code class="docutils literal notranslate"><span class="pre">left_join</span></code>
+disambiguates with <code class="docutils literal notranslate"><span class="pre">.x</span></code> / <code class="docutils literal notranslate"><span class="pre">.y</span></code> suffixes, which we then drop:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">merged_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">star_normed_mouse</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">left_join</span><span class="p">(</span><span class="n">star_normed_human</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;mouse&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">select</span><span class="p">(</span><span class="o">-</span><span class="n">human.x</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">mouse</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">human.y</span><span class="p">)</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">merged_df</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">star_normed_mouse</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="sample-correlation">
+<h3>Sample correlation<a class="headerlink" href="#sample-correlation" title="Link to this heading"></a></h3>
+<p>A correlation heatmap is a quick sanity check: matched tissues
+(human brain ↔ mouse brain) should correlate more strongly than
+mismatched tissues, even across species.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cor()</span></code> computes pairwise Pearson correlation. The argument
+<code class="docutils literal notranslate"><span class="pre">use</span> <span class="pre">=</span> <span class="pre">&quot;pairwise.complete.obs&quot;</span></code> tells it to drop <code class="docutils literal notranslate"><span class="pre">NA</span></code>s
+per pair instead of returning <code class="docutils literal notranslate"><span class="pre">NA</span></code> for the whole matrix if any
+<code class="docutils literal notranslate"><span class="pre">NA</span></code> is present.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">cor_matrix</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">cor</span><span class="p">(</span><span class="n">merged_df</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">use</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pairwise.complete.obs&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pearson&quot;</span><span class="p">)</span>
+<span class="n">cor_matrix</span>
+</pre></div>
+</div>
+<p>Two ways to visualize it.</p>
+<p><strong>Option A — pheatmap</strong> (with built-in clustering):</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">options</span><span class="p">(</span><span class="n">repr.plot.width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12</span><span class="p">,</span><span class="w"> </span><span class="n">repr.plot.height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12</span><span class="p">)</span><span class="w">  </span><span class="c1"># notebook only</span>
+
+<span class="nf">pheatmap</span><span class="p">(</span><span class="n">cor_matrix</span><span class="p">,</span>
+<span class="w">         </span><span class="n">display_numbers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">number_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;%.2f&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">clustering_distance_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;euclidean&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">clustering_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;complete&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">fontsize_number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span><span class="p">,</span>
+<span class="w">         </span><span class="n">angle_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span>
+<span class="w">         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sample Correlation Heatmap&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The clustered version reorders rows and columns by similarity,
+making tissue clusters jump out. Setting
+<code class="docutils literal notranslate"><span class="pre">cluster_rows</span> <span class="pre">=</span> <span class="pre">FALSE,</span> <span class="pre">cluster_cols</span> <span class="pre">=</span> <span class="pre">FALSE</span></code> keeps the original
+order if you prefer.</p>
+<p><strong>Option B — ggplot tile heatmap.</strong> This needs the matrix
+reshaped to long form. <code class="docutils literal notranslate"><span class="pre">reshape2::melt</span></code> is the classic way:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">cor_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">melt</span><span class="p">(</span><span class="n">cor_matrix</span><span class="p">)</span>
+<span class="nf">head</span><span class="p">(</span><span class="n">cor_long</span><span class="p">)</span>
+<span class="c1"># Var1            Var2     value</span>
+<span class="c1"># mouse_adipose_1 mouse_adipose_1 1.000</span>
+<span class="c1"># ...</span>
+
+<span class="nf">ggplot</span><span class="p">(</span><span class="n">cor_long</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var2</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var1</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_tile</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_text</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sprintf</span><span class="p">(</span><span class="s">&quot;%.2f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)),</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_minimal</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Correlation Heatmap&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Correlation&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">coord_fixed</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_y_discrete</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rev</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you prefer to stay inside the tidyverse, <code class="docutils literal notranslate"><span class="pre">pivot_longer</span></code>
+gives the same result. You must first turn the matrix into a
+data frame so it has named columns:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">cor_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">cor_matrix</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Var1&quot;</span><span class="p">)</span>
+
+<span class="n">long_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pivot_longer</span><span class="p">(</span><span class="n">cor_df</span><span class="p">,</span>
+<span class="w">                          </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">Var1</span><span class="p">,</span>
+<span class="w">                          </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Var2&quot;</span><span class="p">,</span>
+<span class="w">                          </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;value&quot;</span><span class="p">)</span>
+
+<span class="nf">ggplot</span><span class="p">(</span><span class="n">long_data</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var2</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var1</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_tile</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_text</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sprintf</span><span class="p">(</span><span class="s">&quot;%.2f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)),</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_minimal</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Correlation Heatmap&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Correlation&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">coord_fixed</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_y_discrete</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rev</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cross-species-correlation-only">
+<h3>Cross-species correlation only<a class="headerlink" href="#cross-species-correlation-only" title="Link to this heading"></a></h3>
+<p>A focused version: correlate the eight mouse samples against the
+eight human samples (an 8 × 8 matrix instead of 16 × 16). Pick
+the species-specific columns with <code class="docutils literal notranslate"><span class="pre">grep</span></code> and pattern-match on
+the <code class="docutils literal notranslate"><span class="pre">^mouse_</span></code> / <code class="docutils literal notranslate"><span class="pre">^human_</span></code> prefixes.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">mouse_columns</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;^mouse_&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">merged_df</span><span class="p">),</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">human_columns</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">grep</span><span class="p">(</span><span class="s">&quot;^human_&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">merged_df</span><span class="p">),</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="n">mouse_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">merged_df</span><span class="p">[,</span><span class="w"> </span><span class="n">mouse_columns</span><span class="p">]</span>
+<span class="n">human_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">merged_df</span><span class="p">[,</span><span class="w"> </span><span class="n">human_columns</span><span class="p">]</span>
+
+<span class="n">cor_matrix</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">cor</span><span class="p">(</span><span class="n">mouse_data</span><span class="p">,</span><span class="w"> </span><span class="n">human_data</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">use</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pairwise.complete.obs&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pearson&quot;</span><span class="p">)</span>
+<span class="n">cor_matrix</span>
+
+<span class="n">cor_long</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">melt</span><span class="p">(</span><span class="n">cor_matrix</span><span class="p">)</span>
+<span class="nf">ggplot</span><span class="p">(</span><span class="n">cor_long</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var2</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Var1</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_tile</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">geom_text</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sprintf</span><span class="p">(</span><span class="s">&quot;%.2f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)),</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme_minimal</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mouse vs Human Correlation&quot;</span><span class="p">,</span>
+<span class="w">       </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Human&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mouse&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Correlation&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">coord_fixed</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">  </span><span class="nf">scale_y_discrete</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rev</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="saving-data">
+<h2>6. Saving data<a class="headerlink" href="#saving-data" title="Link to this heading"></a></h2>
+<p>Write the merged table to disk so the next step in your pipeline
+can read it back. <code class="docutils literal notranslate"><span class="pre">write.csv</span></code> is the base-R writer:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">write.csv</span><span class="p">(</span><span class="n">merged_df</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;./data/human_mouse_merged_expression.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Useful options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">row.names</span> <span class="pre">=</span> <span class="pre">FALSE</span></code> — do not write the row names as a
+leading unnamed column.</p></li>
+<li><p>End the filename with <code class="docutils literal notranslate"><span class="pre">.gz</span></code> and combine with <code class="docutils literal notranslate"><span class="pre">gzfile()</span></code>,
+or use <code class="docutils literal notranslate"><span class="pre">readr::write_csv</span></code> which handles <code class="docutils literal notranslate"><span class="pre">.gz</span></code> directly.</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<p>The merged table produced here is the standard input for the
+downstream tutorials in this resource:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../transcriptomics/bulk_rna_seq.html"><span class="doc">Bulk RNA-seq</span></a> — differential expression.</p></li>
+<li><p><a class="reference internal" href="../transcriptomics/over_representation_analysis.html"><span class="doc">Over-representation analysis</span></a> —
+GO / KEGG over-representation on a DE gene list.</p></li>
+<li><p><a class="reference internal" href="../transcriptomics/gene_set_enrichment_analysis.html"><span class="doc">Gene set enrichment analysis</span></a> — GSEA on
+a ranked gene list.</p></li>
+</ul>
+</section>
 </section>
 
 
