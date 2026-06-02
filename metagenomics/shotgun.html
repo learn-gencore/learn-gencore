@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shotgun &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+  <title>Series of Metagenomics Workshop &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
@@ -54,7 +54,32 @@
 <li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Metagenomics</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Shotgun</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Series of Metagenomics Workshop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#shotgun">Shotgun</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-to-the-hpc">Connecting to the HPC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-a-mac-machine">Using a Mac Machine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-a-windows-machine">Using a Windows Machine</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-1">MODULE 1</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-dataset">The Dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-up-the-working-directory">Setting Up the Working Directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quality-control-and-trimming-qc-qt">Quality Control and Trimming (QC/QT)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-2">MODULE 2</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#taxonomic-classification-with-kraken2">Taxonomic Classification with Kraken2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#abundance-estimation-with-bracken">Abundance Estimation with Bracken</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#diversity-analysis">Diversity Analysis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#alpha-diversity">Alpha Diversity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#beta-diversity">Beta Diversity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#diversity-plots">Diversity Plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="amplicon.html">Amplicon</a></li>
 </ul>
 </li>
@@ -75,7 +100,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Metagenomics</a></li>
-      <li class="breadcrumb-item active">Shotgun</li>
+      <li class="breadcrumb-item active">Series of Metagenomics Workshop</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -84,9 +109,290 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="shotgun">
-<h1>Shotgun<a class="headerlink" href="#shotgun" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+  <section id="series-of-metagenomics-workshop">
+<h1>Series of Metagenomics Workshop<a class="headerlink" href="#series-of-metagenomics-workshop" title="Link to this heading"></a></h1>
+<section id="shotgun">
+<h2>Shotgun<a class="headerlink" href="#shotgun" title="Link to this heading"></a></h2>
+<p>During this course, participants will learn about the concepts and steps involved in analyzing
+the metagenomic data obtained from short read high throughput sequencing.</p>
+<p>Participants are expected to have some basic knowledge of metagenome/microbiome as well as
+some biological knowledge on the subject matter.</p>
+<p>Although the material and the methods are designed to cater for the NYU Abu Dhabi High Performance
+Computing environment, it is possible to run this workshop on any other system provided that the
+necessary software is installed, and the data is uploaded to that environment. It will also be
+necessary to change the input and output directories/files to accommodate such an environment.</p>
+</section>
+<section id="connecting-to-the-hpc">
+<h2>Connecting to the HPC<a class="headerlink" href="#connecting-to-the-hpc" title="Link to this heading"></a></h2>
+<section id="using-a-mac-machine">
+<h3>Using a Mac Machine<a class="headerlink" href="#using-a-mac-machine" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>Open the <strong>Terminal</strong> app and type:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>NetID@jubail.abudhabi.nyu.edu
+</pre></div>
+</div>
+</li>
+<li><p>Enter your NYU password when prompted and hit enter.</p></li>
+<li><p>Once logged in, navigate to your personal <strong>SCRATCH</strong> directory or any other subdirectory
+where you want to run this workshop.</p></li>
+</ol>
+</section>
+<section id="using-a-windows-machine">
+<h3>Using a Windows Machine<a class="headerlink" href="#using-a-windows-machine" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Open the <strong>PuTTY</strong> app, and fill out the fields as follows:</p>
+<ul class="simple">
+<li><p><strong>Host name:</strong> <code class="docutils literal notranslate"><span class="pre">jubail.abudhabi.nyu.edu</span></code></p></li>
+<li><p><strong>Port:</strong> <code class="docutils literal notranslate"><span class="pre">22</span></code></p></li>
+<li><p>Click <strong>Open</strong>.</p></li>
+</ul>
+</li>
+<li><p>Enter your NetID and password when prompted.</p></li>
+<li><p>Once logged in, navigate to your personal <strong>SCRATCH</strong> directory or any other subdirectory
+where you want to run this workshop.</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="module-1">
+<h2>MODULE 1<a class="headerlink" href="#module-1" title="Link to this heading"></a></h2>
+<section id="the-dataset">
+<h3>The Dataset<a class="headerlink" href="#the-dataset" title="Link to this heading"></a></h3>
+<p>The shotgun metagenomic sequencing data used for this hands-on training was obtained from a
+recently published study in <em>Microbiome</em> by Jeilu et al. 2025
+(<a class="reference external" href="https://doi.org/10.1186/s40168-025-02276-7">https://doi.org/10.1186/s40168-025-02276-7</a>).
+The authors deposited the data in the NCBI under the BioProject accession number <strong>PRJNA1228129</strong>.</p>
+<p>Briefly, the study was undertaken for metagenomic profiling of airborne microbial communities
+from aircraft filters and face masks. This study compared the following four groups:</p>
+<ul class="simple">
+<li><p><strong>Aircraft filter</strong> — aircraft cabin filter removed from a commercial airplane after 8039 h of usage</p></li>
+<li><p><strong>Travel</strong> — face masks worn by air travelers</p></li>
+<li><p><strong>Hospital</strong> — face masks worn by healthcare professionals in a hospital</p></li>
+<li><p><strong>Control</strong> — unworn</p></li>
+</ul>
+<p>For the sake of time and resources, we will be using the following two groups in this workshop
+to analyze microbial profiling:</p>
+<ul class="simple">
+<li><p>Aircraft filter</p></li>
+<li><p>Control</p></li>
+</ul>
+<p>We will be using the NYUAD High Performance Computing (HPC) cluster for this workshop; however,
+you can run all of the analysis on any stand-alone machine (server, personal laptop/desktop, etc.)
+provided that the necessary software packages are pre-installed.</p>
+</section>
+<section id="setting-up-the-working-directory">
+<h3>Setting Up the Working Directory<a class="headerlink" href="#setting-up-the-working-directory" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>/scratch/<span class="nv">$USER</span>/metagenomics/
+mkdir<span class="w"> </span>-p<span class="w"> </span>/scratch/<span class="nv">$USER</span>/metagenomics/raw_fastqs/
+<span class="nb">cd</span><span class="w"> </span>/scratch/<span class="nv">$USER</span>/metagenomics/
+cp<span class="w"> </span>-r<span class="w"> </span>/scratch/gencore/metagenomics/*<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="quality-control-and-trimming-qc-qt">
+<h3>Quality Control and Trimming (QC/QT)<a class="headerlink" href="#quality-control-and-trimming-qc-qt" title="Link to this heading"></a></h3>
+<p>We will check the quality of reads, then perform quality trimming to remove low-quality reads,
+adapter sequences, and host (human) sequences. This step produces clean, high-quality reads free
+from host contamination for downstream analysis.</p>
+<p>We will use <strong>KneadData</strong>, part of the Biobakery suite
+(<a class="reference external" href="https://github.com/biobakery/kneaddata">https://github.com/biobakery/kneaddata</a>).</p>
+<p>Load the KneadData module:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>kneaddata/0.12.4
+</pre></div>
+</div>
+<p>Run <code class="docutils literal notranslate"><span class="pre">kneaddata</span> <span class="pre">--help</span></code> to explore available options, then run the tool:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kneaddata<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-i1<span class="w"> </span>raw_fastqs/AF1_1.fastq<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-i2<span class="w"> </span>raw_fastqs/AF1_2.fastq<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--reference-db<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kneaddata_hg39/<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--reference-db<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kneaddata_phix/<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--trimmomatic-options<span class="o">=</span><span class="s2">&quot;SLIDINGWINDOW:4:20&quot;</span><span class="w"> </span>--trimmomatic-options<span class="o">=</span><span class="s2">&quot;MINLEN:50&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--run-trim-repetitive<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>analysis/kneaddata/<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-prefix<span class="w"> </span>AF1<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--remove-intermediate-output<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--fastqc<span class="w"> </span>fastqc<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--threads<span class="w"> </span><span class="m">14</span>
+</pre></div>
+</div>
+<p>Run FastQC on the cleaned output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fastqc<span class="w"> </span>analysis/kneaddata/AF1_paired_1.fastq<span class="w"> </span>-t<span class="w"> </span><span class="m">14</span><span class="w"> </span>-o<span class="w"> </span>analysis/kneaddata/fastqc
+fastqc<span class="w"> </span>analysis/kneaddata/AF1_paired_2.fastq<span class="w"> </span>-t<span class="w"> </span><span class="m">14</span><span class="w"> </span>-o<span class="w"> </span>analysis/kneaddata/fastqc
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The results of this run have been shared with you. Compare the results you obtain by running
+QC/QT with the provided ready-made results. Feel free to ask questions or discuss if you
+obtain very different results between the two sets.</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="module-2">
+<h2>MODULE 2<a class="headerlink" href="#module-2" title="Link to this heading"></a></h2>
+<section id="taxonomic-classification-with-kraken2">
+<h3>Taxonomic Classification with Kraken2<a class="headerlink" href="#taxonomic-classification-with-kraken2" title="Link to this heading"></a></h3>
+<p>Load the required modules and run Kraken2:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+module<span class="w"> </span>load<span class="w"> </span>gencore/3<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+module<span class="w"> </span>load<span class="w"> </span>kraken2/2.17.1
+
+k2<span class="w"> </span>classify<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--db<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kraken2/bacteria<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--threads<span class="w"> </span><span class="m">14</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--confidence<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>analysis/kraken2/AF1.kraken<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--unclassified-out<span class="w"> </span>analysis/kraken2/AF1_unbact#.fastq<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--report<span class="w"> </span>analysis/kraken2/AF1_profile.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--report-zero-counts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--paired<span class="w"> </span>analysis/kneaddata/AF1_paired_1.fastq<span class="w"> </span>analysis/kneaddata/AF1_paired_2.fastq
+</pre></div>
+</div>
+</section>
+<section id="abundance-estimation-with-bracken">
+<h3>Abundance Estimation with Bracken<a class="headerlink" href="#abundance-estimation-with-bracken" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+module<span class="w"> </span>load<span class="w"> </span>bracken/3.1
+
+bracken<span class="w"> </span>-d<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kraken2/bacteria<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-i<span class="w"> </span>analysis/kraken2/AF1_profile.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-o<span class="w"> </span>analysis/bracken/AF1_S.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-r<span class="w"> </span><span class="m">100</span><span class="w"> </span>-l<span class="w"> </span>S<span class="w"> </span>-t<span class="w"> </span><span class="m">10</span><span class="w"> </span>&gt;<span class="w"> </span>analysis/bracken/AF1_log.txt
+</pre></div>
+</div>
+</section>
+</section>
+<section id="diversity-analysis">
+<h2>Diversity Analysis<a class="headerlink" href="#diversity-analysis" title="Link to this heading"></a></h2>
+<p>Load modules:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>R/4.3.1
+module<span class="w"> </span>load<span class="w"> </span>biopython/1.85
+</pre></div>
+</div>
+<section id="alpha-diversity">
+<h3>Alpha Diversity<a class="headerlink" href="#alpha-diversity" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>/scratch/Reference_Genomes/Public/Metagenomic/KrakenTools/DiversityTools/alpha_diversity.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-f<span class="w"> </span>analysis/bracken/AF1_S.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-a<span class="w"> </span>Sh<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&gt;<span class="w"> </span>analysis/alpha_diversity/AF1_Sh.txt
+</pre></div>
+</div>
+</section>
+<section id="beta-diversity">
+<h3>Beta Diversity<a class="headerlink" href="#beta-diversity" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>/scratch/Reference_Genomes/Public/Metagenomic/KrakenTools/DiversityTools/beta_diversity.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-i<span class="w"> </span>analysis/kraken2/*profile.txt<span class="w"> </span>--type<span class="w"> </span>kreport2<span class="w"> </span>-l<span class="w"> </span>S<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&gt;<span class="w"> </span>analysis/beta_diversity/merged_beta_div.txt
+</pre></div>
+</div>
+</section>
+<section id="diversity-plots">
+<h3>Diversity Plots<a class="headerlink" href="#diversity-plots" title="Link to this heading"></a></h3>
+<p>Set up the plots directory and merge diversity outputs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>diversity_plots/
+<span class="nb">cd</span><span class="w"> </span>diversity_plots/
+cp<span class="w"> </span>analysis/kraken2/*_profile.txt<span class="w"> </span>.
+cp<span class="w"> </span>analysis/bracken/*_Sh.txt<span class="w"> </span>.
+
+python<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/KrakenTools/DiversityTools/beta_diversity.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-i<span class="w"> </span>*_profile.txt<span class="w"> </span>--type<span class="w"> </span>kreport2<span class="w"> </span>-l<span class="w"> </span>S<span class="w"> </span>&gt;<span class="w"> </span>merged_beta_div.txt
+
+<span class="o">(</span><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;Sample\tDiversity&quot;</span><span class="p">;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>awk<span class="w"> </span><span class="s1">&#39;FNR==1{f=FILENAME; sub(/^.*\//,&quot;&quot;,f); sub(&quot;_Sh.txt&quot;,&quot;&quot;,f)} \</span>
+<span class="s1">       /Shannon/{print f&quot;\t&quot;$NF}&#39;</span><span class="w"> </span>*_Sh.txt<span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>merged_alpha_div.txt
+
+rm<span class="w"> </span>*_profile.txt
+rm<span class="w"> </span>*_Sh.txt
+</pre></div>
+</div>
+<p>Add group annotations to the alpha diversity table:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<span class="s1">  df &lt;- read.table(&quot;merged_alpha_div.txt&quot;, header=TRUE, stringsAsFactors=FALSE)</span>
+<span class="s1">  df$Group &lt;- ifelse(grepl(&quot;^AF&quot;, df$Sample), &quot;Filter&quot;,</span>
+<span class="s1">                ifelse(grepl(&quot;^C&quot;, df$Sample), &quot;Control&quot;, &quot;Other&quot;))</span>
+<span class="s1">  write.table(df, &quot;merged_alpha_div_with_group.txt&quot;, sep=&quot;\t&quot;, quote=FALSE, row.names=FALSE)</span>
+<span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>Generate a Shannon diversity boxplot with Wilcoxon test:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<span class="s1">  df &lt;- read.table(&quot;merged_alpha_div_with_group.txt&quot;, header=TRUE, stringsAsFactors=FALSE)</span>
+<span class="s1">  ymax &lt;- max(df$Diversity) * 1.15</span>
+<span class="s1">  png(&quot;diversity_boxplot_stats.png&quot;, width=800, height=600, res=120)</span>
+<span class="s1">  boxplot(Diversity ~ Group, data=df, col=c(&quot;steelblue&quot;,&quot;orange&quot;),</span>
+<span class="s1">          ylab=&quot;Shannon Diversity&quot;, main=&quot;Shannon Diversity by Group&quot;,</span>
+<span class="s1">          ylim=c(min(df$Diversity), ymax))</span>
+<span class="s1">  stripchart(Diversity ~ Group, data=df, vertical=TRUE, method=&quot;jitter&quot;,</span>
+<span class="s1">             pch=16, col=&quot;black&quot;, add=TRUE)</span>
+<span class="s1">  w &lt;- wilcox.test(Diversity ~ Group, data=df)</span>
+<span class="s1">  p_txt &lt;- paste0(&quot;Wilcoxon p = &quot;, signif(w$p.value, 3))</span>
+<span class="s1">  text(x=1.5, y=ymax, labels=p_txt)</span>
+<span class="s1">  dev.off()</span>
+<span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>Clean the beta diversity matrix:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<span class="s1">  args &lt;- commandArgs(trailingOnly=TRUE)</span>
+<span class="s1">  infile &lt;- args[1]; outfile &lt;- args[2]</span>
+<span class="s1">  lines &lt;- readLines(infile)</span>
+<span class="s1">  samp_lines &lt;- grep(&quot;^#&quot;, lines, value=TRUE)</span>
+<span class="s1">  samps &lt;- sub(&quot;^#\\d+\\s+&quot;,&quot;&quot;, samp_lines)</span>
+<span class="s1">  samps &lt;- sub(&quot;_profile.txt.*&quot;,&quot;&quot;, samps)</span>
+<span class="s1">  start &lt;- grep(&quot;^x\\s&quot;, lines)</span>
+<span class="s1">  mat &lt;- read.table(text=lines[start:length(lines)], header=TRUE,</span>
+<span class="s1">                    stringsAsFactors=FALSE, check.names=FALSE)</span>
+<span class="s1">  mat &lt;- mat[, -1]</span>
+<span class="s1">  mat[mat==&quot;x.xxx&quot;] &lt;- NA</span>
+<span class="s1">  mat &lt;- as.matrix(sapply(mat, as.numeric))</span>
+<span class="s1">  rownames(mat) &lt;- samps; colnames(mat) &lt;- samps</span>
+<span class="s1">  mat[lower.tri(mat)] &lt;- t(mat)[lower.tri(mat)]</span>
+<span class="s1">  diag(mat) &lt;- 0</span>
+<span class="s1">  write.table(mat, file=outfile, sep=&quot;\t&quot;, quote=FALSE, col.names=NA)</span>
+<span class="s1">&#39;</span><span class="w"> </span>merged_beta_div.txt<span class="w"> </span>cleaned_beta_matrix.txt
+</pre></div>
+</div>
+<p>Generate a PCoA plot of beta diversity:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<span class="s1">  library(vegan)</span>
+<span class="s1">  mat &lt;- as.matrix(read.table(&quot;cleaned_beta_matrix.txt&quot;, header=TRUE,</span>
+<span class="s1">                               check.names=FALSE, row.names=1))</span>
+<span class="s1">  d &lt;- as.dist(mat)</span>
+<span class="s1">  p &lt;- cmdscale(d, k=2, eig=TRUE)</span>
+<span class="s1">  scores &lt;- as.data.frame(p$points)</span>
+<span class="s1">  scores$Sample &lt;- rownames(scores)</span>
+<span class="s1">  scores$Group &lt;- ifelse(grepl(&quot;^AF&quot;, scores$Sample), &quot;AirFilter&quot;,</span>
+<span class="s1">                   ifelse(grepl(&quot;^C&quot;, scores$Sample), &quot;Control&quot;, &quot;Other&quot;))</span>
+<span class="s1">  ad &lt;- adonis2(d ~ Group, data=scores)</span>
+<span class="s1">  pval &lt;- ad$&quot;Pr(&gt;F)&quot;[1]</span>
+<span class="s1">  var_expl &lt;- round(p$eig / sum(p$eig) * 100, 1)</span>
+<span class="s1">  png(&quot;beta_pcoa.png&quot;, width=800, height=600, res=120)</span>
+<span class="s1">  par(mar=c(5,5,4,2))</span>
+<span class="s1">  cols &lt;- c(AirFilter=&quot;steelblue&quot;, Control=&quot;orange&quot;, Other=&quot;gray&quot;)</span>
+<span class="s1">  plot(scores$V1, scores$V2,</span>
+<span class="s1">       xlab=paste0(&quot;PCoA1 (&quot;, var_expl[1], &quot;%)&quot;),</span>
+<span class="s1">       ylab=paste0(&quot;PCoA2 (&quot;, var_expl[2], &quot;%)&quot;),</span>
+<span class="s1">       pch=16, col=cols[scores$Group],</span>
+<span class="s1">       main=&quot;PCoA of beta diversity&quot;)</span>
+<span class="s1">  legend(&quot;topright&quot;, legend=unique(scores$Group),</span>
+<span class="s1">         col=cols[unique(scores$Group)], pch=16, bty=&quot;n&quot;)</span>
+<span class="s1">  text(x=min(scores$V1), y=max(scores$V2),</span>
+<span class="s1">       labels=paste0(&quot;PERMANOVA p = &quot;, signif(pval, 3)), adj=c(0,1))</span>
+<span class="s1">  dev.off()</span>
+<span class="s1">&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
