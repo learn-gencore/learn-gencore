@@ -1,0 +1,11 @@
+Page Not Found
+==============
+
+Redirecting to the homepage...
+
+.. raw:: html
+
+   <meta http-equiv="refresh" content="0; url=/">
+   <script>
+       window.location.replace("/");
+   </script>
