@@ -1,9 +1,13 @@
-Page Not Found
-==============
-
-Redirecting...
-
 .. raw:: html
+
+   <style>
+     html, body {
+       background: #ffffff;
+       margin: 0;
+       padding: 0;
+       visibility: hidden;
+     }
+   </style>
 
    <script>
    const redirects = {
@@ -35,6 +39,7 @@ Redirecting...
    if (redirects[path]) {
        window.location.replace(redirects[path]);
    } else {
+       document.body.style.visibility = "visible";
        window.location.replace("/");
    }
    </script>
