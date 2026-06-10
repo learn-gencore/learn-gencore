@@ -1,11 +1,40 @@
 Page Not Found
 ==============
 
-Redirecting to the homepage...
+Redirecting...
 
 .. raw:: html
 
-   <meta http-equiv="refresh" content="0; url=/">
    <script>
+   const redirects = {
+     "/rna-seq-analysis/over-representation-analysis/":
+       "/transcriptomics/over_representation_analysis.html",
+
+     "/rna-seq-analysis/gene-set-enrichment-analysis/":
+       "/transcriptomics/gene_set_enrichment_analysis.html",
+
+     "/variant-calling/":
+       "/variant_detection/wgs.html",
+
+     "/variant-calling/pre-processing/":
+       "/variant_detection/wgs.html",
+
+     "/variant-calling/variant-discovery/":
+       "/variant_detection/wgs.html",
+
+     "/hpc/slurm/":
+       "/programming/slurm.html",
+
+     "/pre-requisites/intro-to-r/":
+       "/programming/r.html"
+   };
+
+   let path = window.location.pathname;
+   if (!path.endsWith("/")) path += "/";
+
+   if (redirects[path]) {
+       window.location.replace(redirects[path]);
+   } else {
        window.location.replace("/");
+   }
    </script>
