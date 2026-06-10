@@ -87,6 +87,9 @@
 </style>
 
 <script>
+let path = window.location.pathname;
+if (!path.endsWith("/")) path += "/";
+
 const redirects = {
   "/rna-seq-analysis/over-representation-analysis/":
     "/transcriptomics/over_representation_analysis.html",
@@ -103,6 +106,9 @@ const redirects = {
   "/variant-calling/variant-discovery/":
     "/variant_detection/wgs.html",
 
+  "/visualization/":
+    "/visualization/igv.html",
+
   "/hpc/slurm/":
     "/programming/slurm.html",
 
@@ -110,13 +116,25 @@ const redirects = {
     "/programming/r.html"
 };
 
-let path = window.location.pathname;
-if (!path.endsWith("/")) path += "/";
-
 if (redirects[path]) {
     window.location.replace(redirects[path]);
-} else {
-    document.body.style.visibility = "visible";
+}
+else if (path.startsWith("/rna-seq-analysis/")) {
+    window.location.replace("/transcriptomics/bulk_rna_seq.html");
+}
+else if (path.startsWith("/single-cell-rnaseq/")) {
+    window.location.replace("/transcriptomics/single_cell_rna_seq.html");
+}
+else if (path.startsWith("/chipseq-analysis/")) {
+    window.location.replace("/epigenomics/chip_seq.html");
+}
+else if (path.startsWith("/de-novo-genome-assembly/")) {
+    window.location.replace("/denovo/genome.html");
+}
+else if (path.startsWith("/metgenomics/")) {
+    window.location.replace("/metagenomics/shotgun.html");
+}
+else {
     window.location.replace("/");
 }
 </script>
