@@ -5,3 +5,4 @@ Visualization
    :maxdepth: 1
 
    igv
+   jbrowse
