@@ -8,3 +8,4 @@ Programming
    r
    shell
    slurm
+   unix_environment
