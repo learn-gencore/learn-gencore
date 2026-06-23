@@ -244,9 +244,28 @@ account where to find them. So, if we print the $PATH variable:
    /opt/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 
 You might see something like this, a list of directory paths, separated by
-``:``. If we ``ls`` one of those directories, say ``/bin``, you will see a lot
-of the commands you use on a daily basis in the terminal (``ls``, ``pwd``,
-``cp``). The ``$PATH`` variable is how your account can keep track of what
+``:``. If we ``ls`` one of those directories, say ``/bin``:
+
+.. code-block:: bash
+
+   ls /bin
+   bash          bzmore  dir        fuser   kill        lsblk   nc.openbsd    ntfsfix   pwd        sh            systemd-inhibit         uname       zfgrep
+   bunzip2       cat     dmesg      fusermount  kmod        lsmod   netcat        ntfsinfo  rbash      sh.distrib        systemd-machine-id-setup    uncompress      zforce
+   busybox       chacl   dnsdomainname  getfacl     less        mkdir   netstat       ntfsls    readlink   sleep         systemd-notify          unicode_start   zgrep
+   bzcat         chgrp   domainname     grep    lessecho    mknod   networkctl    ntfsmove  red        ss            systemd-tmpfiles        vdir        zless
+   bzcmp         chmod   dumpkeys       gunzip  lessfile    mktemp  nisdomainname     ntfstruncate  rm     static-sh         systemd-tty-ask-password-agent  vmmouse_detect  zmore
+   bzdiff        chown   echo       gzexe   lesskey     more    ntfs-3g       ntfswipe  rmdir      stty          tailf               wdctl       znew
+   bzegrep       chvt    ed         gzip    lesspipe    mount   ntfs-3g.probe     open      rnano      su            tar                 which       zsh
+   bzexe         cp      efibootmgr     hciconfig   ln      mountpoint  ntfs-3g.secaudit  openvt    run-parts  sync          tempfile            whiptail    zsh5
+   bzfgrep       cpio    egrep      hostname    loadkeys    mt      ntfs-3g.usermap   pidof     rzsh       systemctl         touch               ypdomainname
+   bzgrep        dash    false      ip      login       mt-gnu  ntfscat       ping      sed        systemd       true                zcat
+   bzip2         date    fgconsole      journalctl  loginctl    mv      ntfscluster       ping6     setfacl    systemd-ask-password  udevadm             zcmp
+   bzip2recover  dd      fgrep      kbd_mode    lowntfs-3g  nano    ntfscmp       plymouth  setfont    systemd-escape    ulockmgr_server         zdiff
+   bzless        df      findmnt        keyctl  ls      nc      ntfsfallocate     ps        setupcon   systemd-hwdb      umount
+
+These are a lot of the commands you use on a daily basis in the terminal
+(``ls``, ``pwd``, ``cp``). The ``$PATH`` variable is how your account can
+keep track of what
 commands to provide your user as different users have different setups,
 privileges, software, etc.
 
@@ -257,7 +276,8 @@ access them from anywhere within the filesystem. If a file is executable and it
 resides in one of the paths in our ``$PATH`` variable, it can be executed from
 anywhere.
 
-To do this, we need to append the path to the ``$PATH`` variable.
+To do this, we need to append the path (either the full or relative are fine)
+to the ``$PATH`` variable.
 **IMPORTANT:** Make sure that you follow the commands exactly and not overwrite
 the ``$PATH`` variable but append to it. If you overwrite it, the operating
 system will not be able to find any of the necessary commands since their paths
@@ -335,8 +355,9 @@ open it up and add these lines:
 
 .. code-block:: bash
 
-   # NOTE: you can change the server to any other server you'd like
-   # Also NOTE: you can change $USER to whatever username you use for that server
+   # NOTE: you can change the server to any other server you'd like, you do not have to use prince.hpc.nyu.edu
+   # Also NOTE: you can change $USER to whatever username you use for that server.
+   # For example, my laptop user is alan, but my hpc user is at120. So for this example I would use at120 instead of $USER
    alias prince='ssh -X $USER@prince.hpc.nyu.edu'
 
    source ~/.bashrc
@@ -365,7 +386,9 @@ stored in the ``~/.ssh`` folder. If that folder doesn't exist then create it:
 
    # Then ls the .ssh directory to check to see if you have an RSA key already.
    # It will be in the id_rsa.pub file.
+   # Your directory, if it exists, may look something like this
    ls ~/.ssh
+   config  id_rsa  id_rsa.orig  id_rsa.pem  id_rsa.pub  id_rsa.pub.orig  keras-workshop.pem  known_hosts
 
    # If id_rsa.pub exists, then skip the command immediately below.
    # If it does not exist, we can create an RSA key with the following command
@@ -377,7 +400,8 @@ stored in the ``~/.ssh`` folder. If that folder doesn't exist then create it:
 
 Now what we want to do is give our public RSA key to the server you're going
 to access (presumably the one you used to create your alias for!). We can do
-that with the following command:
+that with a slightly sophisticated command (but don't worry, you'll learn what
+it means in one of our later posts):
 
 .. code-block:: bash
 
