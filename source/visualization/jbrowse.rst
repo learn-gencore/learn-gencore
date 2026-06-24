@@ -1,5 +1,5 @@
-JBrowse
-=======
+JBrowse: Visualizing Data Quickly & Easily
+==========================================
 
 Watch the September 24, 2020 BADAS `here
 <https://nyu.zoom.us/rec/share/UIV6lkiETWwXHc-NOZK93MWnSGFfZ7XTK8rvasszTKz21EqlQAMnhjlG9UHppPU.ZhvKwBHFC7SlNLoB>`_.
@@ -40,12 +40,11 @@ the **samplelist** text file. It is used to tell JBrowse how to group the files
 after upload, saving you the hassle of manually manipulating the configuration
 file.
 
-To upload, run the following but only change the part in bold and replace with
-your netID.
+To upload, run the following but replace ``netID`` with your actual netID.
 
 .. code-block:: bash
 
-   cgsb_upload2jbrowse -p demo -d **netID** -f /beegfs/eb167/yeast
+   cgsb_upload2jbrowse -p demo -d netID -f /beegfs/eb167/yeast
 
 You will be prompted for your password twice in this process, but once you
 `request access <https://forms.bio.nyu.edu/>`_ to a PI lab passwordless
