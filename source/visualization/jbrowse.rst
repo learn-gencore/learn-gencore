@@ -11,10 +11,9 @@ During the 2020 Summer of COVID-19, the Ghedin and Gresham labs sequenced
 SARS-CoV-2 isolates. To visualize and share this data with collaborators
 the web-based genome visualization software JBrowse was used.
 
-.. tip::
+.. raw:: html
 
-   Explore the live JBrowse instance for SARS-CoV-2 data:
-   https://jbrowse.bio.nyu.edu/covid-19
+   <iframe src="https://jbrowse.bio.nyu.edu/covid-19" style="border: 1px solid black" width="100%" height="300"></iframe>
 
 To benefit all researchers at NYU engaged in genomics research, a centralized
 JBrowse service has been published at http://jbrowse.bio.nyu.edu/ for PIs and
