@@ -5,5 +5,5 @@ Epigenomics
    :maxdepth: 1
 
    atac_seq
-   chip_seq
+   chipseq
    scatac
