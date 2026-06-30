@@ -11,6 +11,7 @@ Contents:
    :maxdepth: 2
 
 
+   primary_analysis/index
    transcriptomics/index
    variant_detection/index
    epigenomics/index
