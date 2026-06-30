@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChIP-Seq Analysis: From Aligned BAM Files to Differential Binding &amp; Enrichment &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ChIP-Seq Analysis: From Aligned BAM Files to Differential Binding &amp; Enrichment</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chip-seq-analysis-from-aligned-bam-files-to-differential-binding-enrichment">
+<h1>ChIP-Seq Analysis: From Aligned BAM Files to Differential Binding &amp; Enrichment<a class="headerlink" href="#chip-seq-analysis-from-aligned-bam-files-to-differential-binding-enrichment" title="Link to this heading"></a></h1>
+<p>Post-alignment QC, peak calling, differential binding analysis, and functional annotation of a <strong>ChIP-seq</strong> experiment, starting from already aligned (BAM) reads.</p>
+<p>This workshop uses publicly available ENCODE ChIP-seq data for the transcription factor <strong>CTCF</strong> in two human cell lines, <strong>GM12878</strong> and <strong>K562</strong>, each with a matched input/control. Reads are already aligned (BWA, hg38), so the workflow picks up at quality control: signal QC with <code class="docutils literal notranslate"><span class="pre">deeptools</span></code>, peak calling with <code class="docutils literal notranslate"><span class="pre">MACS2</span></code>, differential binding between cell lines with <code class="docutils literal notranslate"><span class="pre">DiffBind</span></code>/<code class="docutils literal notranslate"><span class="pre">DESeq2</span></code>, and annotation/enrichment with <code class="docutils literal notranslate"><span class="pre">ChIPseeker</span></code> and <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code>.</p>
+<p>Scope is limited to a <strong>single, guided end-to-end pass</strong> comparing CTCF binding between two cell lines. It does not cover read trimming/alignment (assumed already done), motif discovery, or multi-factor analyses. The aim is a reference workflow you can adapt to your own ChIP-seq/CUT&amp;RUN data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Commands below assume a <code class="docutils literal notranslate"><span class="pre">conda</span></code>-managed environment on a standalone machine or HPC cluster. SLURM directives are shown where relevant but are ignored if you run commands directly on the command line.</p>
+</div>
+<section id="pipeline-overview">
+<h2>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">BAM</span> <span class="p">(</span><span class="n">aligned</span> <span class="n">reads</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="n">Post</span><span class="o">-</span><span class="n">alignment</span> <span class="n">QC</span> <span class="o">--------</span> <span class="n">deeptools</span> <span class="p">(</span><span class="n">bamCoverage</span><span class="p">,</span> <span class="n">multiBamSummary</span><span class="p">,</span>
+        <span class="o">|</span>                       <span class="n">plotFingerprint</span><span class="p">,</span> <span class="n">plotCorrelation</span><span class="p">,</span> <span class="n">plotPCA</span><span class="p">)</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="n">Peak</span> <span class="n">calling</span> <span class="o">-------------</span> <span class="n">MACS2</span> <span class="p">(</span><span class="n">callpeak</span><span class="p">,</span> <span class="n">vs</span> <span class="n">matched</span> <span class="nb">input</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="n">Consensus</span> <span class="o">/</span> <span class="n">count</span> <span class="n">matrix</span> <span class="o">-</span> <span class="n">DiffBind</span> <span class="p">(</span><span class="n">dba</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">Differential</span> <span class="n">binding</span> <span class="o">-----</span> <span class="n">DiffBind</span> <span class="o">+</span> <span class="n">DESeq2</span> <span class="p">(</span><span class="n">dba</span><span class="o">.</span><span class="n">analyze</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="n">Annotation</span> <span class="o">----------------</span> <span class="n">ChIPseeker</span> <span class="p">(</span><span class="n">peak</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">gene</span><span class="p">,</span> <span class="n">genomic</span> <span class="n">context</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="n">v</span>
+<span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="n">Enrichment</span> <span class="n">analysis</span> <span class="o">------</span> <span class="n">clusterProfiler</span> <span class="p">(</span><span class="n">GO</span> <span class="o">/</span> <span class="n">KEGG</span> <span class="o">/</span> <span class="n">Reactome</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The BAM files are the hub: QC tells you whether the IP worked at all, peak calling turns signal into discrete binding sites, differential analysis compares those sites between conditions, and annotation/enrichment turns genomic coordinates into biology.</p>
+</section>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Assess IP quality and reproducibility directly from BAMs with <strong>deeptools</strong>.</p></li>
+<li><p>Call peaks per replicate with <strong>MACS2</strong>, against matched input control.</p></li>
+<li><p>Build a consensus peak set and count matrix with <strong>DiffBind</strong>.</p></li>
+<li><p>Run differential binding analysis between GM12878 and K562 with <strong>DiffBind/DESeq2</strong>.</p></li>
+<li><p>Annotate peaks to genes and genomic features with <strong>ChIPseeker</strong>.</p></li>
+<li><p>Run GO/KEGG enrichment on the bound/differential genes with <strong>clusterProfiler</strong>.</p></li>
+</ol>
+</section>
+<section id="environment">
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<p>This workshop spans two different environments:</p>
+<ul class="simple">
+<li><p><strong>Steps 1-2</strong> (deeptools, MACS2) are command-line tools, run either via
+HPC environment modules or a conda environment – see “Loading the
+necessary software environment” at the start of each of those steps.</p></li>
+<li><p><strong>Steps 3-6</strong> (DiffBind, DESeq2, ChIPseeker, clusterProfiler) are R/
+Bioconductor analyses, run locally in RStudio on your own machine –
+see <a class="reference internal" href="#moving-to-a-local-rstudio-session">Moving to a local RStudio session</a> at the start of Step 3.
+Package installation for these is embedded directly in each step’s R
+code, so there’s nothing to set up in advance.</p></li>
+</ul>
+<p>For the command-line tools, versions below are pinned loosely; substitute
+what’s available to you, but verify flags against your installed version.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># create one environment for the command-line tools</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>chipseq<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">deeptools</span><span class="o">=</span><span class="m">3</span>.5<span class="w"> </span><span class="nv">macs2</span><span class="o">=</span><span class="m">2</span>.2.9.1<span class="w"> </span><span class="nv">samtools</span><span class="o">=</span><span class="m">1</span>.20<span class="w"> </span><span class="nv">bedtools</span><span class="o">=</span><span class="m">2</span>.31<span class="w"> </span>ucsc-bedclip<span class="w"> </span>ucsc-bedgraphtobigwig
+conda<span class="w"> </span>activate<span class="w"> </span>chipseq
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">deeptools</span></code>/<code class="docutils literal notranslate"><span class="pre">MACS2</span></code>/<code class="docutils literal notranslate"><span class="pre">samtools</span></code> live happily in one conda environment. The R/Bioconductor side is handled separately, locally, in RStudio – see Step 3.</p>
+</div>
+<p>The tools used across the workshop, with upstream documentation:</p>
+<ul class="simple">
+<li><p>deeptools — <a class="reference external" href="https://deeptools.readthedocs.io/">https://deeptools.readthedocs.io/</a></p></li>
+<li><p>MACS2 — <a class="reference external" href="https://github.com/macs3-project/MACS">https://github.com/macs3-project/MACS</a></p></li>
+<li><p>DiffBind — <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/DiffBind.html">https://bioconductor.org/packages/release/bioc/html/DiffBind.html</a></p></li>
+<li><p>DESeq2 — <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html">https://bioconductor.org/packages/release/bioc/html/DESeq2.html</a></p></li>
+<li><p>ChIPseeker — <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/ChIPseeker.html">https://bioconductor.org/packages/release/bioc/html/ChIPseeker.html</a></p></li>
+<li><p>clusterProfiler — <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html">https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html</a></p></li>
+<li><p>samtools — <a class="reference external" href="https://www.htslib.org/">https://www.htslib.org/</a></p></li>
+<li><p>bedtools — <a class="reference external" href="https://bedtools.readthedocs.io/">https://bedtools.readthedocs.io/</a></p></li>
+<li><p>R — <a class="reference external" href="https://cran.r-project.org/">https://cran.r-project.org/</a></p></li>
+<li><p>RStudio Desktop — <a class="reference external" href="https://posit.co/download/rstudio-desktop/">https://posit.co/download/rstudio-desktop/</a></p></li>
+</ul>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>Before running the pipeline you need:</p>
+<ul class="simple">
+<li><p><strong>Coordinate-sorted, indexed BAM files</strong>, one per IP replicate plus a matched input/control, for each condition. This workshop uses 2 cell lines × (2 CTCF replicates + 1 input) = 6 BAM files, aligned to <strong>GRCh38</strong>.</p></li>
+<li><p>A <strong>sample sheet</strong> (<code class="docutils literal notranslate"><span class="pre">samples.csv</span></code>) describing each BAM, its condition, replicate number, and which input it pairs with (format given in <a class="reference external" href="#building-the-sample-sheet">Building the sample sheet</a>).</p></li>
+<li><p>The <strong>hg38 genome</strong> (chromosome sizes file, used by deeptools) and a <strong>TxDb annotation</strong> (used by ChIPseeker), both obtained automatically by the R packages above — no separate download needed.</p></li>
+</ul>
+<p>File formats you will encounter (assumed familiar): BAM, BED, narrowPeak, bigWig.</p>
+</section>
+<section id="getting-the-data">
+<h2>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h2>
+<p>This tutorial uses ENCODE CTCF ChIP-seq BAM files for GM12878 and K562
+(GRCh38), each with a matched input control. These are ENCODE2-era
+experiments, so each biological replicate ships as two technical-replicate
+BAM files (same biological replicate, different lanes/runs) that were
+merged with <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">merge</span></code> into a single BAM per biological replicate
+before any downstream analysis, then re-sorted and indexed.</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">ENCODE source files used in this tutorial</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 12.0%" />
+<col style="width: 16.0%" />
+<col style="width: 16.0%" />
+<col style="width: 28.0%" />
+<col style="width: 28.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cell line</p></th>
+<th class="head"><p>Experiment</p></th>
+<th class="head"><p>Control experiment</p></th>
+<th class="head"><p>IP BAM accessions (bio rep -&gt; files, merged)</p></th>
+<th class="head"><p>Input BAM accessions (merged)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GM12878</p></td>
+<td><p><a class="reference external" href="https://www.encodeproject.org/experiments/ENCSR000DZN/">ENCSR000DZN</a></p></td>
+<td><p><a class="reference external" href="https://www.encodeproject.org/experiments/ENCSR000EYX/">ENCSR000EYX</a></p></td>
+<td><p>rep1: ENCFF162QXM, ENCFF747TJH; rep2: ENCFF033WII, ENCFF876QCV</p></td>
+<td><p>ENCFF157YWH, ENCFF658PBP (rep1)</p></td>
+</tr>
+<tr class="row-odd"><td><p>K562</p></td>
+<td><p><a class="reference external" href="https://www.encodeproject.org/experiments/ENCSR000DWE/">ENCSR000DWE</a></p></td>
+<td><p><a class="reference external" href="https://www.encodeproject.org/experiments/ENCSR000DWA/">ENCSR000DWA</a></p></td>
+<td><p>rep1: ENCFF081HVQ, ENCFF800GVR; rep2: ENCFF494VZW, ENCFF196QVZ</p></td>
+<td><p>ENCFF873PSH, ENCFF897QAS (rep1)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The result is exactly the six BAM files (plus <code class="docutils literal notranslate"><span class="pre">.bai</span></code> indexes) used
+throughout the rest of this tutorial: <code class="docutils literal notranslate"><span class="pre">bam/gm12878_ctcf_rep1.bam</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bam/gm12878_ctcf_rep2.bam</span></code>, <code class="docutils literal notranslate"><span class="pre">bam/gm12878_input.bam</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bam/k562_ctcf_rep1.bam</span></code>, <code class="docutils literal notranslate"><span class="pre">bam/k562_ctcf_rep2.bam</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bam/k562_input.bam</span></code>.</p>
+<p>These pre-merged, pre-indexed BAM/BAI files are available directly from
+this shared folder, so you don’t need to repeat the download-and-merge
+steps yourself:</p>
+<p><a class="reference external" href="https://drive.google.com/drive/folders/1_XPBJ1b0VGs6ThYi4dyj2_RkOBXGyIfj?usp=sharing">Download the merged BAM/BAI files</a></p>
+<p>Download all six <code class="docutils literal notranslate"><span class="pre">.bam</span></code> files and their matching <code class="docutils literal notranslate"><span class="pre">.bai</span></code> indexes from
+that folder into a local <code class="docutils literal notranslate"><span class="pre">bam/</span></code> directory before continuing to the QC
+steps below.</p>
+<p>If you’d rather resolve current accessions programmatically instead (e.g.
+for a different factor or cell line), the script below queries the ENCODE
+REST API directly:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>ENCODE BAMs ship coordinate-sorted but usually unindexed and sometimes without the conventional <code class="docutils literal notranslate"><span class="pre">chr</span></code> prefix matching your TxDb. Confirm with <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">view</span> <span class="pre">-H</span> <span class="pre">file.bam</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">^&#64;SQ</span></code> before proceeding.</p>
+</div>
+</section>
+<section id="the-data">
+<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading"></a></h2>
+<p>The dataset is paired-end CTCF ChIP-seq, GRCh38, two human cell lines:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Sample</p></th>
+<th class="head"><p>Cell line</p></th>
+<th class="head"><p>Factor</p></th>
+<th class="head"><p>Replicates</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gm12878_ctcf_rep1/2</span></code></p></td>
+<td><p>GM12878 (lymphoblastoid)</p></td>
+<td><p>CTCF</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gm12878_input</span></code></p></td>
+<td><p>GM12878</p></td>
+<td><p>input</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">k562_ctcf_rep1/2</span></code></p></td>
+<td><p>K562 (myelogenous leukemia)</p></td>
+<td><p>CTCF</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">k562_input</span></code></p></td>
+<td><p>K562</p></td>
+<td><p>input</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+<p>CTCF is a good first ChIP-seq factor to learn on: it gives sharp, abundant, well-characterized peaks (tens of thousands genome-wide), so QC and peak calling behave predictably and there’s a large literature to sanity-check results against.</p>
+<section id="building-the-sample-sheet">
+<h3>Building the sample sheet<a class="headerlink" href="#building-the-sample-sheet" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">samples.csv</span></code>, used by DiffBind in <a class="reference external" href="#step-3-consensus-peak-set-and-count-matrix-diffbind">Step 3</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SampleID</span><span class="p">,</span><span class="n">Condition</span><span class="p">,</span><span class="n">Replicate</span><span class="p">,</span><span class="n">bamReads</span><span class="p">,</span><span class="n">ControlID</span><span class="p">,</span><span class="n">bamControl</span><span class="p">,</span><span class="n">Peaks</span><span class="p">,</span><span class="n">PeakCaller</span>
+<span class="n">GM12878_CTCF_1</span><span class="p">,</span><span class="n">GM12878</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">gm12878_ctcf_rep1</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">GM12878_input</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">gm12878_input</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">macs2</span><span class="o">/</span><span class="n">GM12878_rep1_peaks</span><span class="o">.</span><span class="n">narrowPeak</span><span class="p">,</span><span class="n">narrow</span>
+<span class="n">GM12878_CTCF_2</span><span class="p">,</span><span class="n">GM12878</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">gm12878_ctcf_rep2</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">GM12878_input</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">gm12878_input</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">macs2</span><span class="o">/</span><span class="n">GM12878_rep2_peaks</span><span class="o">.</span><span class="n">narrowPeak</span><span class="p">,</span><span class="n">narrow</span>
+<span class="n">K562_CTCF_1</span><span class="p">,</span><span class="n">K562</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">k562_ctcf_rep1</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">K562_input</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">k562_input</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">macs2</span><span class="o">/</span><span class="n">K562_rep1_peaks</span><span class="o">.</span><span class="n">narrowPeak</span><span class="p">,</span><span class="n">narrow</span>
+<span class="n">K562_CTCF_2</span><span class="p">,</span><span class="n">K562</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">k562_ctcf_rep2</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">K562_input</span><span class="p">,</span><span class="n">bam</span><span class="o">/</span><span class="n">k562_input</span><span class="o">.</span><span class="n">bam</span><span class="p">,</span><span class="n">macs2</span><span class="o">/</span><span class="n">K562_rep2_peaks</span><span class="o">.</span><span class="n">narrowPeak</span><span class="p">,</span><span class="n">narrow</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">Peaks</span></code>/<code class="docutils literal notranslate"><span class="pre">PeakCaller</span></code> columns point at files produced in Step 2 — leave the sheet open and fill them in as you go.</p>
+</section>
+</section>
+<section id="step-1-post-alignment-qc-deeptools">
+<h2>Step 1: Post-alignment QC (deeptools)<a class="headerlink" href="#step-1-post-alignment-qc-deeptools" title="Link to this heading"></a></h2>
+<section id="loading-the-necessary-software-environment-deeptools">
+<h3>Loading the necessary software environment (deeptools)<a class="headerlink" href="#loading-the-necessary-software-environment-deeptools" title="Link to this heading"></a></h3>
+<p>If you’re working on an HPC cluster with environment modules (e.g. the
+Jubail cluster at NYUAD), load the relevant module instead of activating
+conda:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>deeptools
+</pre></div>
+</div>
+<p>Otherwise, activate the conda (or equivalent) environment containing this
+step’s tools (see <a class="reference internal" href="#environment">Environment</a> above):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>chipseq
+</pre></div>
+</div>
+<p>Before calling peaks, confirm the IP actually enriched for your factor and
+that replicates agree with each other.</p>
+<p>If you downloaded the pre-merged BAM/BAI files from the shared folder
+above, indexing is already done – just confirm each <code class="docutils literal notranslate"><span class="pre">.bai</span></code> is present
+and sits alongside its BAM:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span>b<span class="w"> </span><span class="k">in</span><span class="w"> </span>bam/*.bam<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">b</span><span class="si">}</span><span class="s2">.bai&quot;</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;MISSING INDEX: </span><span class="si">${</span><span class="nv">b</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>If you’re working from your own BAMs instead (e.g. freshly merged or
+downloaded without indexes), index them first:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span>b<span class="w"> </span><span class="k">in</span><span class="w"> </span>bam/*.bam<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>samtools<span class="w"> </span>index<span class="w"> </span>-@<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$b</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
+</pre></div>
+</div>
+</section>
+<section id="signal-tracks">
+<h3>Signal tracks<a class="headerlink" href="#signal-tracks" title="Link to this heading"></a></h3>
+<p>Convert each BAM to a normalized bigWig for visual inspection in IGV and as input to several deeptools QC plots:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>bigwig
+<span class="k">for</span><span class="w"> </span>b<span class="w"> </span><span class="k">in</span><span class="w"> </span>bam/*.bam<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="nv">name</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$b</span><span class="s2">&quot;</span><span class="w"> </span>.bam<span class="k">)</span>
+<span class="w">  </span>bamCoverage<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>-b<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$b</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>-o<span class="w"> </span>bigwig/<span class="si">${</span><span class="nv">name</span><span class="si">}</span>.bw<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--binSize<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--normalizeUsing<span class="w"> </span>RPGC<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--effectiveGenomeSize<span class="w"> </span><span class="m">2913022398</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--extendReads<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>-p<span class="w"> </span><span class="m">8</span>
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--normalizeUsing</span> <span class="pre">RPGC</span></code> — normalize to 1x average genome coverage, making samples comparable regardless of sequencing depth.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--effectiveGenomeSize</span> <span class="pre">2913022398</span></code> — the GRCh38 effective genome size (non-N, mappable bases); see the deeptools table for other genomes/read lengths (<a class="reference external" href="https://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html">https://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--extendReads</span></code> — extend single-end reads to the estimated fragment size; for paired-end BAMs (as here) deeptools uses the actual fragment size from the read pairs instead.</p></li>
+</ul>
+</section>
+<section id="ip-strength-plotfingerprint">
+<h3>IP strength: plotFingerprint<a class="headerlink" href="#ip-strength-plotfingerprint" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">plotFingerprint</span></code> is the single best deeptools plot for “did the ChIP work?” It plots, per BAM, the cumulative fraction of reads against the cumulative fraction of the genome. A successful IP concentrates reads into a small fraction of the genome (a curve that bows sharply away from the diagonal); input/failed IPs look close to a straight diagonal line.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plotFingerprint<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-b<span class="w"> </span>bam/gm12878_ctcf_rep1.bam<span class="w"> </span>bam/gm12878_ctcf_rep2.bam<span class="w"> </span>bam/gm12878_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>bam/k562_ctcf_rep1.bam<span class="w"> </span>bam/k562_ctcf_rep2.bam<span class="w"> </span>bam/k562_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--labels<span class="w"> </span>GM_rep1<span class="w"> </span>GM_rep2<span class="w"> </span>GM_input<span class="w"> </span>K562_rep1<span class="w"> </span>K562_rep2<span class="w"> </span>K562_input<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--extendReads<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plotFile<span class="w"> </span>fingerprint.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--outRawCounts<span class="w"> </span>fingerprint.tab
+</pre></div>
+</div>
+<p>Expect the two CTCF replicates per cell line to track closely together, both well separated from their matched input.</p>
+</section>
+<section id="replicate-reproducibility-multibamsummary-plotcorrelation-plotpca">
+<h3>Replicate reproducibility: multiBamSummary + plotCorrelation / plotPCA<a class="headerlink" href="#replicate-reproducibility-multibamsummary-plotcorrelation-plotpca" title="Link to this heading"></a></h3>
+<p>Bin the genome and count reads per BAM per bin, then correlate and cluster samples:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>multiBamSummary<span class="w"> </span>bins<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bamfiles<span class="w"> </span>bam/gm12878_ctcf_rep1.bam<span class="w"> </span>bam/gm12878_ctcf_rep2.bam<span class="w"> </span>bam/gm12878_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">               </span>bam/k562_ctcf_rep1.bam<span class="w"> </span>bam/k562_ctcf_rep2.bam<span class="w"> </span>bam/k562_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--labels<span class="w"> </span>GM_rep1<span class="w"> </span>GM_rep2<span class="w"> </span>GM_input<span class="w"> </span>K562_rep1<span class="w"> </span>K562_rep2<span class="w"> </span>K562_input<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--binSize<span class="w"> </span><span class="m">10000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>multiBamSummary.npz
+
+plotCorrelation<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-in<span class="w"> </span>multiBamSummary.npz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--corMethod<span class="w"> </span>spearman<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--whatToPlot<span class="w"> </span>heatmap<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plotFile<span class="w"> </span>correlation_heatmap.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plotNumbers
+
+plotPCA<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-in<span class="w"> </span>multiBamSummary.npz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>pca.png
+</pre></div>
+</div>
+<p>Replicates of the same condition should correlate most strongly with each other and cluster together on the PCA plot; inputs should separate from IP samples on PC1 or PC2. If a replicate is an outlier here, treat its downstream peak calls with caution before you’ve even called peaks.</p>
+</section>
+<section id="strand-cross-correlation-optional-but-informative">
+<h3>Strand cross-correlation (optional but informative)<a class="headerlink" href="#strand-cross-correlation-optional-but-informative" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">plotFingerprint</span></code> and correlation plots cover most of what you need, but if you want classic ENCODE-style QC metrics (NSC/RSC), run <code class="docutils literal notranslate"><span class="pre">phantompeakqualtools</span></code> or the <code class="docutils literal notranslate"><span class="pre">deeptools</span></code> equivalent <code class="docutils literal notranslate"><span class="pre">bamPEFragmentSize</span></code> for paired-end fragment size sanity-checking:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bamPEFragmentSize<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-b<span class="w"> </span>bam/gm12878_ctcf_rep1.bam<span class="w"> </span>bam/k562_ctcf_rep1.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--histogram<span class="w"> </span>fragment_sizes.png<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="step-2-peak-calling-macs2">
+<h2>Step 2: Peak calling (MACS2)<a class="headerlink" href="#step-2-peak-calling-macs2" title="Link to this heading"></a></h2>
+<section id="loading-the-necessary-software-environment-macs2">
+<h3>Loading the necessary software environment (MACS2)<a class="headerlink" href="#loading-the-necessary-software-environment-macs2" title="Link to this heading"></a></h3>
+<p>If you’re working on an HPC cluster with environment modules (e.g. the
+Jubail cluster at NYUAD), load the relevant module instead of activating
+conda:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>macs2
+</pre></div>
+</div>
+<p>Otherwise, activate the conda (or equivalent) environment containing this
+step’s tools (see <a class="reference internal" href="#environment">Environment</a> above):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>chipseq
+</pre></div>
+</div>
+<p>Call peaks per IP replicate against its matched input. CTCF gives sharp narrow peaks, so <code class="docutils literal notranslate"><span class="pre">narrowPeak</span></code> mode is appropriate (use <code class="docutils literal notranslate"><span class="pre">--broad</span></code> instead for diffuse histone marks like H3K27me3 or H3K36me3).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>macs2
+
+macs2<span class="w"> </span>callpeak<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>bam/gm12878_ctcf_rep1.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span>bam/gm12878_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>BAMPE<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-g<span class="w"> </span>hs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-n<span class="w"> </span>GM12878_rep1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--outdir<span class="w"> </span>macs2<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-q<span class="w"> </span><span class="m">0</span>.05
+
+macs2<span class="w"> </span>callpeak<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>bam/gm12878_ctcf_rep2.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span>bam/gm12878_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>BAMPE<span class="w"> </span>-g<span class="w"> </span>hs<span class="w"> </span>-n<span class="w"> </span>GM12878_rep2<span class="w"> </span>--outdir<span class="w"> </span>macs2<span class="w"> </span>-q<span class="w"> </span><span class="m">0</span>.05
+
+macs2<span class="w"> </span>callpeak<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>bam/k562_ctcf_rep1.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span>bam/k562_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>BAMPE<span class="w"> </span>-g<span class="w"> </span>hs<span class="w"> </span>-n<span class="w"> </span>K562_rep1<span class="w"> </span>--outdir<span class="w"> </span>macs2<span class="w"> </span>-q<span class="w"> </span><span class="m">0</span>.05
+
+macs2<span class="w"> </span>callpeak<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>bam/k562_ctcf_rep2.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span>bam/k562_input.bam<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>BAMPE<span class="w"> </span>-g<span class="w"> </span>hs<span class="w"> </span>-n<span class="w"> </span>K562_rep2<span class="w"> </span>--outdir<span class="w"> </span>macs2<span class="w"> </span>-q<span class="w"> </span><span class="m">0</span>.05
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">BAMPE</span></code> — treat the BAM as paired-end and use actual fragment spans rather than estimating fragment length from a single-end model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-g</span> <span class="pre">hs</span></code> — effective genome size shortcut for human.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-q</span> <span class="pre">0.05</span></code> — minimum FDR (q-value) cutoff for peak calling; tighten for a more stringent peak set.</p></li>
+</ul>
+<p>Each run produces <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_peaks.narrowPeak</span></code> (the file referenced in <code class="docutils literal notranslate"><span class="pre">samples.csv</span></code>), <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_summits.bed</span></code>, and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_peaks.xls</span></code>. Quick sanity check on peak counts:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wc<span class="w"> </span>-l<span class="w"> </span>macs2/*_peaks.narrowPeak
+</pre></div>
+</div>
+<p>CTCF in these cell lines typically yields on the order of 30,000–60,000 peaks per replicate; if you see far fewer, revisit the QC plots above before proceeding.</p>
+</section>
+</section>
+<section id="step-3-consensus-peak-set-and-count-matrix-diffbind">
+<h2>Step 3: Consensus peak set and count matrix (DiffBind)<a class="headerlink" href="#step-3-consensus-peak-set-and-count-matrix-diffbind" title="Link to this heading"></a></h2>
+<section id="moving-to-a-local-rstudio-session">
+<h3>Moving to a local RStudio session<a class="headerlink" href="#moving-to-a-local-rstudio-session" title="Link to this heading"></a></h3>
+<p>Steps 3 through 6 are R/Bioconductor analyses, intended to be run on your
+own machine in RStudio rather than on the HPC cluster – it’s an
+interactive, plot-heavy part of the workflow that’s much nicer with a
+local GUI than over a remote terminal.</p>
+<ol class="arabic">
+<li><p><strong>Install R</strong> (if you don’t already have it): <a class="reference external" href="https://cran.r-project.org/">https://cran.r-project.org/</a>
+– pick the installer for your OS (Windows, macOS, or Linux).</p></li>
+<li><p><strong>Install RStudio Desktop</strong>: <a class="reference external" href="https://posit.co/download/rstudio-desktop/">https://posit.co/download/rstudio-desktop/</a>
+– free edition is sufficient.</p></li>
+<li><p><strong>Copy the files you’ll need onto your local machine</strong>, into a single
+project folder (e.g. <code class="docutils literal notranslate"><span class="pre">chipseq_workshop/</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">samples.csv</span></code> (the DiffBind sample sheet from <a class="reference internal" href="#building-the-sample-sheet">Building the sample sheet</a>)</p></li>
+<li><p>the per-replicate peak calls from Step 2: <code class="docutils literal notranslate"><span class="pre">macs2/*_peaks.narrowPeak</span></code></p></li>
+<li><p>the BAM/BAI files from <a class="reference internal" href="#getting-the-data">Getting the data</a>: <code class="docutils literal notranslate"><span class="pre">bam/*.bam</span></code> and <code class="docutils literal notranslate"><span class="pre">bam/*.bam.bai</span></code></p></li>
+</ul>
+<p>Use <code class="docutils literal notranslate"><span class="pre">scp</span></code>/<code class="docutils literal notranslate"><span class="pre">rsync</span></code> from the HPC, or download directly from the
+shared folder if that’s where your BAMs live. Update the paths in
+<code class="docutils literal notranslate"><span class="pre">samples.csv</span></code> to match wherever you put these files locally.</p>
+</li>
+<li><p><strong>Open RStudio</strong>, set your working directory to that project folder
+(Session -&gt; Set Working Directory -&gt; Choose Directory, or
+<code class="docutils literal notranslate"><span class="pre">setwd(&quot;path/to/chipseq_workshop&quot;)</span></code> in the console), and run the R
+code blocks below directly in the console or as an R script.</p></li>
+</ol>
+<p>Each R code block below installs any Bioconductor packages it needs the
+first time it’s run (skipping ones you already have), so the blocks are
+self-contained – you can run Steps 3-6 in one sitting or come back to
+any of them independently.</p>
+<p>With per-replicate peaks called, build a consensus peak set across all samples and count reads in those regions — the input to differential binding analysis.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">requireNamespace</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;DiffBind&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;DESeq2&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="nf">library</span><span class="p">(</span><span class="n">DiffBind</span><span class="p">)</span>
+
+<span class="n">samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&quot;samples.csv&quot;</span><span class="p">)</span>
+<span class="n">dbObj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba</span><span class="p">(</span><span class="n">sampleSheet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="p">)</span>
+
+<span class="c1"># overlap rate across samples, sanity check before counting</span>
+<span class="nf">dba.plotPCA</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_CONDITION</span><span class="p">,</span><span class="w"> </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_ID</span><span class="p">)</span>
+
+<span class="c1"># count reads in the consensus peak set</span>
+<span class="n">dbObj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.count</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">bUseSummarizeOverlaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">dba.plotPCA</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_CONDITION</span><span class="p">,</span><span class="w"> </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dba.count()</span></code> re-centers and merges overlapping peaks into a consensus set, then counts reads per sample within those consensus intervals — directly analogous to building a counts matrix in RNA-seq, but over genomic intervals instead of genes. Re-running the PCA after counting (rather than just on peak overlap) shows whether IP signal, not just peak presence, separates the two cell lines.</p>
+</section>
+</section>
+<section id="step-4-differential-binding-analysis-diffbind-deseq2">
+<h2>Step 4: Differential binding analysis (DiffBind + DESeq2)<a class="headerlink" href="#step-4-differential-binding-analysis-diffbind-deseq2" title="Link to this heading"></a></h2>
+<p>Continuing in the same local RStudio project as Step 3 (<code class="docutils literal notranslate"><span class="pre">dbObj</span></code> carries over).</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">requireNamespace</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;DiffBind&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;DESeq2&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="nf">library</span><span class="p">(</span><span class="n">DiffBind</span><span class="p">)</span>
+
+<span class="n">dbObj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.contrast</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">categories</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_CONDITION</span><span class="p">,</span><span class="w"> </span><span class="n">minMembers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span>
+<span class="n">dbObj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.analyze</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">)</span>
+
+<span class="nf">dba.show</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">bContrasts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="n">res</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.report</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">,</span><span class="w"> </span><span class="n">th</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w">  </span><span class="c1"># th=1 keeps all sites; filter below</span>
+<span class="n">res_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+<span class="c1"># significant differential CTCF sites, GM12878 vs K562</span>
+<span class="n">sig</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">res_df</span><span class="p">,</span><span class="w"> </span><span class="n">FDR</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nf">abs</span><span class="p">(</span><span class="n">Fold</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;diffbind_GM12878_vs_K562_sig.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="nf">dba.plotMA</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">)</span>
+<span class="nf">dba.plotVolcano</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Under the hood <code class="docutils literal notranslate"><span class="pre">dba.analyze(method</span> <span class="pre">=</span> <span class="pre">DBA_DESEQ2)</span></code> hands the consensus count matrix to DESeq2 exactly as you would for RNA-seq differential expression, modeling read counts per peak as negative binomial and testing condition effects — the difference is the “features” are genomic intervals, not genes. <code class="docutils literal notranslate"><span class="pre">Fold</span></code> is the log2 fold change (GM12878 vs K562, by the order of levels in <code class="docutils literal notranslate"><span class="pre">Condition</span></code>); <code class="docutils literal notranslate"><span class="pre">FDR</span></code> is the Benjamini-Hochberg-adjusted p-value.</p>
+<p>CTCF binding is largely invariant across cell types for a substantial fraction of sites (the “constitutive” CTCF sites that anchor TAD boundaries), so expect a sizeable shared peak set alongside a smaller set of cell-type- specific differential sites — these differential sites are usually the biologically interesting ones for cell-type-specific 3D genome structure.</p>
+</section>
+<section id="step-5-peak-annotation-chipseeker">
+<h2>Step 5: Peak annotation (ChIPseeker)<a class="headerlink" href="#step-5-peak-annotation-chipseeker" title="Link to this heading"></a></h2>
+<p>Still in the same local RStudio project (<code class="docutils literal notranslate"><span class="pre">dbObj</span></code>, <code class="docutils literal notranslate"><span class="pre">sig</span></code> carry over from Steps 3-4).</p>
+<p>Annotate both the full consensus peak set and the differential peak set to nearest genes and genomic features (promoter, exon, intron, intergenic).</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">requireNamespace</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;ChIPseeker&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;TxDb.Hsapiens.UCSC.hg38.knownGene&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;org.Hs.eg.db&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GenomicRanges&quot;</span>
+<span class="p">),</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="nf">library</span><span class="p">(</span><span class="n">ChIPseeker</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">TxDb.Hsapiens.UCSC.hg38.knownGene</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">GenomicRanges</span><span class="p">)</span>
+
+<span class="n">txdb</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">TxDb.Hsapiens.UCSC.hg38.knownGene</span>
+
+<span class="c1"># annotate the full consensus set</span>
+<span class="n">all_peaks</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.peakset</span><span class="p">(</span><span class="n">dbObj</span><span class="p">,</span><span class="w"> </span><span class="n">bRetrieve</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">peakAnno</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">annotatePeak</span><span class="p">(</span>
+<span class="w">    </span><span class="n">all_peaks</span><span class="p">,</span>
+<span class="w">    </span><span class="n">tssRegion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3000</span><span class="p">,</span><span class="w"> </span><span class="m">3000</span><span class="p">),</span>
+<span class="w">    </span><span class="n">TxDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">txdb</span><span class="p">,</span>
+<span class="w">    </span><span class="n">annoDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Hs.eg.db&quot;</span>
+<span class="p">)</span>
+
+<span class="nf">plotAnnoPie</span><span class="p">(</span><span class="n">peakAnno</span><span class="p">)</span>
+<span class="nf">plotDistToTSS</span><span class="p">(</span><span class="n">peakAnno</span><span class="p">)</span>
+
+<span class="n">anno_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">peakAnno</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">anno_df</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;all_peaks_annotated.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># annotate just the significant differential sites from Step 4</span>
+<span class="n">sig_gr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">makeGRangesFromDataFrame</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="n">keep.extra.columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">sigAnno</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">annotatePeak</span><span class="p">(</span><span class="n">sig_gr</span><span class="p">,</span><span class="w"> </span><span class="n">tssRegion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3000</span><span class="p">,</span><span class="w"> </span><span class="m">3000</span><span class="p">),</span><span class="w"> </span><span class="n">TxDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">txdb</span><span class="p">,</span><span class="w"> </span><span class="n">annoDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Hs.eg.db&quot;</span><span class="p">)</span>
+<span class="n">sig_anno_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">sigAnno</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">sig_anno_df</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;diff_peaks_annotated.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plotAnnoPie</span></code> summarizes what fraction of peaks fall in promoters, exons, introns, or intergenic space — for CTCF expect a substantial intergenic and intronic fraction, since CTCF binds far more broadly than just at promoters, unlike e.g. H3K4me3. <code class="docutils literal notranslate"><span class="pre">plotDistToTSS</span></code> shows the distance distribution to the nearest transcription start site.</p>
+</section>
+<section id="step-6-enrichment-analysis-clusterprofiler">
+<h2>Step 6: Enrichment analysis (clusterProfiler)<a class="headerlink" href="#step-6-enrichment-analysis-clusterprofiler" title="Link to this heading"></a></h2>
+<p>Still in the same local RStudio project (<code class="docutils literal notranslate"><span class="pre">sig_anno_df</span></code>, <code class="docutils literal notranslate"><span class="pre">anno_df</span></code> carry over from Step 5).</p>
+<p>Take the genes nearest the differential CTCF sites (from <code class="docutils literal notranslate"><span class="pre">diff_peaks_annotated.csv</span></code>) and test for GO/KEGG enrichment relative to all genes near any CTCF peak (the appropriate background for ChIP-seq, rather than the whole genome).</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">requireNamespace</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;clusterProfiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;org.Hs.eg.db&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ReactomePA&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="nf">library</span><span class="p">(</span><span class="n">clusterProfiler</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
+
+<span class="n">diff_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">unique</span><span class="p">(</span><span class="n">sig_anno_df</span><span class="o">$</span><span class="n">geneId</span><span class="p">)</span>
+<span class="n">universe_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">unique</span><span class="p">(</span><span class="n">anno_df</span><span class="o">$</span><span class="n">geneId</span><span class="p">)</span><span class="w">   </span><span class="c1"># all CTCF-bound genes as background</span>
+
+<span class="n">ego</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichGO</span><span class="p">(</span>
+<span class="w">    </span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diff_genes</span><span class="p">,</span>
+<span class="w">    </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">universe_genes</span><span class="p">,</span>
+<span class="w">    </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">,</span>
+<span class="w">    </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BP&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BH&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
+<span class="w">    </span><span class="n">qvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.2</span>
+<span class="p">)</span>
+
+<span class="nf">dotplot</span><span class="p">(</span><span class="n">ego</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">ego</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;GO_BP_enrichment_diff_CTCF.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="n">ekegg</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichKEGG</span><span class="p">(</span>
+<span class="w">    </span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diff_genes</span><span class="p">,</span>
+<span class="w">    </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">universe_genes</span><span class="p">,</span>
+<span class="w">    </span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;hsa&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span>
+<span class="p">)</span>
+
+<span class="nf">dotplot</span><span class="p">(</span><span class="n">ekegg</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">ekegg</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;KEGG_enrichment_diff_CTCF.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using the CTCF-bound gene set as the statistical background (<code class="docutils literal notranslate"><span class="pre">universe</span></code>) rather than the whole genome is the important methodological point here: it controls for the fact that CTCF binding itself is not uniformly distributed across functional gene categories, so testing against the whole genome would inflate enrichment from CTCF’s baseline binding preferences rather than isolating what’s specific to the cell-type-differential sites.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For histone marks or factors with broader regulatory roles, also consider <code class="docutils literal notranslate"><span class="pre">ReactomePA::enrichPathway()</span></code> for pathway-level enrichment (installed above), and GSEA-style analysis (<code class="docutils literal notranslate"><span class="pre">gseGO</span></code>/<code class="docutils literal notranslate"><span class="pre">gseKEGG</span></code>) ranking all bound genes by fold change rather than thresholding to a “significant” gene list, which avoids an arbitrary cutoff.</p>
+</div>
+</section>
+<section id="visualization">
+<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h2>
+<p>With results generated, bring everything together visually:</p>
+<ul class="simple">
+<li><p><strong>IGV</strong> — load the bigWig tracks from Step 1 alongside the <code class="docutils literal notranslate"><span class="pre">narrowPeak</span></code> files from Step 2 and the differential site BED file to inspect individual loci: <a class="reference external" href="https://igv.org/">https://igv.org/</a></p></li>
+<li><p><strong>deeptools ``plotHeatmap``/``computeMatrix``</strong> — signal heatmaps centered on peak summits or TSSs, useful for a publication-style summary figure:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>computeMatrix<span class="w"> </span>reference-point<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-S<span class="w"> </span>bigwig/gm12878_ctcf_rep1.bw<span class="w"> </span>bigwig/k562_ctcf_rep1.bw<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span>macs2/GM12878_rep1_summits.bed<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--referencePoint<span class="w"> </span>center<span class="w"> </span>-a<span class="w"> </span><span class="m">2000</span><span class="w"> </span>-b<span class="w"> </span><span class="m">2000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>matrix.gz<span class="w"> </span>-p<span class="w"> </span><span class="m">8</span>
+
+plotHeatmap<span class="w"> </span>-m<span class="w"> </span>matrix.gz<span class="w"> </span>-o<span class="w"> </span>heatmap.png
+</pre></div>
+</div>
+<p>This concludes the workshop. For questions or comments, treat this as a starting template and adapt the cell lines, factor, and contrasts to your own BAM files.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
