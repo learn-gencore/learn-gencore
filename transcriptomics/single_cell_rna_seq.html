@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Single-cell RNA-seq &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+  <title>Single-cell RNA-seq analysis with Scanpy &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
@@ -49,7 +49,166 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Transcriptomics</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="bulk_rna_seq.html">Bulk RNA-seq</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Single-cell RNA-seq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Single-cell RNA-seq analysis with Scanpy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#learning-objectives">Learning objectives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-10x-data">1. Read 10x data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#motivation">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read-a-10x-matrix-directory">Read a 10x matrix directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read-a-10x-hdf5-file">Read a 10x HDF5 file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pbmc-example">PBMC example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#preserve-raw-counts">2. Preserve raw counts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#compute-qc-metrics">3. Compute QC metrics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#detect-putative-doublets">Detect putative doublets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#visualize-qc-distributions">4. Visualize QC distributions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pbmc-example-output">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#define-data-driven-qc-flags">5. Define data-driven QC flags</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id9">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataset-level-data-driven-thresholds">Dataset-level data-driven thresholds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plot-percentile-thresholds">Plot percentile thresholds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flag-qc-outliers-but-do-not-remove-them-yet">Flag QC outliers, but do not remove them yet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inspect-flagged-cells">Inspect flagged cells</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keep-the-original-object-for-review">Keep the original object for review</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-first-pass-analysis-object">Prepare first-pass analysis object</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#normalize-count-depth">6. Normalize count depth</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id13">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#log-transform-normalized-counts">7. Log-transform normalized counts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id16">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id17">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id18">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#score-cell-cycle-state">8. Score cell cycle state</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id19">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#select-highly-variable-genes">9. Select highly variable genes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id23">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id24">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id25">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id26">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scale-data">10. Scale data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id27">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id28">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id29">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#run-pca">11. Run PCA</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id30">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id31">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id32">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id33">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#choose-number-of-pcs">Choose number of PCs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#build-the-neighbor-graph">12. Build the neighbor graph</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id34">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id35">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id36">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cluster-cells">13. Cluster cells</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id37">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id38">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id39">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#compute-umap">14. Compute UMAP</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id40">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id41">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id42">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id43">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#summarize-qc-flags-and-cell-cycle-by-cluster">Summarize QC flags and cell cycle by cluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id44">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#review-qc-decisions-and-rerun-representation">15. Review QC decisions and rerun representation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id45">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id46">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id47">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id48">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-covariate-handling">Optional covariate handling</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#inspect-known-marker-genes">16. Inspect known marker genes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id49">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id50">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-marker-list">Example marker list</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dot-plot">Dot plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id51">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#umap-marker-overlays">UMAP marker overlays</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id52">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#find-cluster-marker-genes">17. Find cluster marker genes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id53">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id54">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id55">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id56">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#annotate-clusters">18. Annotate clusters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id57">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id58">Motivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id59">Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id60">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-iterative-clustering-for-subtypes">Optional: iterative clustering for subtypes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id61">PBMC example output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id62">PBMC example output</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#save-the-processed-object">19. Save the processed object</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id63">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id64">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#recommended-qc-reporting">20. Recommended QC reporting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id65">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#recommended-report-items">Recommended report items</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-summary-table">Example summary table</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-summary">21. Workflow summary</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id66">Conclusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#workflow">Workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#key-cautions">Key cautions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="multiome.html">Multiome</a></li>
 <li class="toctree-l2"><a class="reference internal" href="over_representation_analysis.html">Over-representation analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gene_set_enrichment_analysis.html">Gene set enrichment analysis</a></li>
@@ -79,7 +238,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
-      <li class="breadcrumb-item active">Single-cell RNA-seq</li>
+      <li class="breadcrumb-item active">Single-cell RNA-seq analysis with Scanpy</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -88,9 +247,1593 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="single-cell-rna-seq">
-<h1>Single-cell RNA-seq<a class="headerlink" href="#single-cell-rna-seq" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+  <section id="single-cell-rna-seq-analysis-with-scanpy">
+<h1>Single-cell RNA-seq analysis with Scanpy<a class="headerlink" href="#single-cell-rna-seq-analysis-with-scanpy" title="Link to this heading"></a></h1>
+<p>This tutorial introduces a dataset-specific single-cell RNA-seq analysis
+workflow using Scanpy. It starts from a 10x Genomics count matrix, computes QC
+and doublet flags, scores cell cycle state, builds an initial embedding for QC
+review, removes cells only after inspection, and then reruns PCA, clustering,
+UMAP visualization, and marker-gene plots on the cleaned dataset.</p>
+<p>The goal is not only to run the code, but to understand why each step is used.
+Batch correction and data integration are important, but they should be handled
+in a separate tutorial after sample-level QC has been completed.</p>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>By the end of this tutorial, you should be able to:</p>
+<ul class="simple">
+<li><p>Load 10x Genomics data from either a matrix directory or an HDF5 file.</p></li>
+<li><p>Compute and visualize quality-control metrics.</p></li>
+<li><p>Choose data-driven QC flags using percentile-based starting thresholds.</p></li>
+<li><p>Detect and review putative doublets.</p></li>
+<li><p>Score cell cycle state and inspect whether it explains clustering.</p></li>
+<li><p>Use a first-pass UMAP and cluster-level QC summaries to decide what to remove.</p></li>
+<li><p>Normalize and log-transform single-cell counts.</p></li>
+<li><p>Select highly variable genes.</p></li>
+<li><p>Run PCA, neighbor graph construction, Leiden clustering, and UMAP.</p></li>
+<li><p>Visualize marker genes across clusters using dot plots.</p></li>
+<li><p>Understand when broad cell classes may need separate subclustering.</p></li>
+<li><p>Understand which steps are used for representation and which support biological interpretation.</p></li>
+</ul>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>scanpy<span class="w"> </span>anndata<span class="w"> </span>matplotlib<span class="w"> </span>pandas<span class="w"> </span>numpy<span class="w"> </span>leidenalg<span class="w"> </span>igraph<span class="w"> </span>scrublet
+</pre></div>
+</div>
+</section>
+<section id="imports">
+<h2>Imports<a class="headerlink" href="#imports" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scrublet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">set_figure_params</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="read-10x-data">
+<h2>1. Read 10x data<a class="headerlink" href="#read-10x-data" title="Link to this heading"></a></h2>
+<section id="conclusion">
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h3>
+<p>The 10x count matrix is the starting point, not the biological result.</p>
+</section>
+<section id="motivation">
+<h3>Motivation<a class="headerlink" href="#motivation" title="Link to this heading"></a></h3>
+<p>A 10x Genomics gene-expression run usually produces either a matrix directory
+containing <code class="docutils literal notranslate"><span class="pre">matrix.mtx.gz</span></code>, <code class="docutils literal notranslate"><span class="pre">features.tsv.gz</span></code>, and <code class="docutils literal notranslate"><span class="pre">barcodes.tsv.gz</span></code>, or a
+single HDF5 file such as <code class="docutils literal notranslate"><span class="pre">filtered_feature_bc_matrix.h5</span></code>. Scanpy stores this
+in an AnnData object. The main matrix, <code class="docutils literal notranslate"><span class="pre">adata.X</span></code>, has cells as rows and genes
+as columns.</p>
+</section>
+<section id="read-a-10x-matrix-directory">
+<h3>Read a 10x matrix directory<a class="headerlink" href="#read-a-10x-matrix-directory" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;path/to/filtered_feature_bc_matrix&quot;</span>
+
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span>
+    <span class="n">data_dir</span><span class="p">,</span>
+    <span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;gene_symbols&quot;</span><span class="p">,</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+<span class="n">adata</span>
+</pre></div>
+</div>
+</section>
+<section id="read-a-10x-hdf5-file">
+<h3>Read a 10x HDF5 file<a class="headerlink" href="#read-a-10x-hdf5-file" title="Link to this heading"></a></h3>
+<p>Use this instead if Cell Ranger output is stored as <code class="docutils literal notranslate"><span class="pre">filtered_feature_bc_matrix.h5</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">h5_file</span> <span class="o">=</span> <span class="s2">&quot;path/to/filtered_feature_bc_matrix.h5&quot;</span>
+
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_h5</span><span class="p">(</span><span class="n">h5_file</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+<span class="n">adata</span>
+</pre></div>
+</div>
+<p>Inspect the object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="pbmc-example">
+<h3>PBMC example<a class="headerlink" href="#pbmc-example" title="Link to this heading"></a></h3>
+<p>If you do not have a dataset ready, you can run the tutorial with the public
+PBMC 3k example distributed through Scanpy. Use this block instead of the
+<code class="docutils literal notranslate"><span class="pre">read_10x_mtx</span></code> block above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">pbmc3k</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+<span class="n">adata</span>
+</pre></div>
+</div>
+<p>The PBMC figures shown below were generated with
+<code class="docutils literal notranslate"><span class="pre">source/transcriptomics/scripts/generate_pbmc_scrna_figures.py</span></code>.
+For speed and reproducibility, those example figures explicitly omit Scrublet
+doublet detection. Real datasets should still run the doublet-detection block
+above and review <code class="docutils literal notranslate"><span class="pre">doublet_score</span></code> and <code class="docutils literal notranslate"><span class="pre">predicted_doublet</span></code>.</p>
+</section>
+</section>
+<section id="preserve-raw-counts">
+<h2>2. Preserve raw counts<a class="headerlink" href="#preserve-raw-counts" title="Link to this heading"></a></h2>
+<section id="id1">
+<h3>Conclusion<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>Raw counts should be preserved before normalization changes the representation.</p>
+</section>
+<section id="id2">
+<h3>Motivation<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>Normalization and log transformation are useful for clustering and visualization,
+but count-based downstream analyses often require raw counts. Store counts in a
+layer before modifying <code class="docutils literal notranslate"><span class="pre">adata.X</span></code>.</p>
+</section>
+<section id="code">
+<h3>Code<a class="headerlink" href="#code" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="compute-qc-metrics">
+<h2>3. Compute QC metrics<a class="headerlink" href="#compute-qc-metrics" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>Conclusion<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<p>QC metrics identify cells whose profiles may be technically unreliable.</p>
+</section>
+<section id="id4">
+<h3>Motivation<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>Common QC metrics include:</p>
+<ul class="simple">
+<li><p>total counts per cell</p></li>
+<li><p>number of detected genes per cell</p></li>
+<li><p>mitochondrial fraction</p></li>
+<li><p>ribosomal fraction</p></li>
+<li><p>doublet score and predicted doublet status</p></li>
+</ul>
+<p>These metrics should be interpreted jointly rather than with one universal
+cutoff. A high mitochondrial fraction or high gene content may indicate poor
+quality, but it can also reflect the biology of the experiment. QC should be
+run and interpreted for each experiment or capture before integration.</p>
+</section>
+<section id="id5">
+<h3>Code<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Human gene naming convention.</span>
+<span class="c1"># For mouse, mitochondrial genes usually start with &quot;mt-&quot;.</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MT-&quot;</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;ribo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;RPS&quot;</span><span class="p">,</span> <span class="s2">&quot;RPL&quot;</span><span class="p">))</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">qc_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">,</span> <span class="s2">&quot;ribo&quot;</span><span class="p">],</span>
+    <span class="n">percent_top</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">log1p</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_ribo&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="detect-putative-doublets">
+<h3>Detect putative doublets<a class="headerlink" href="#detect-putative-doublets" title="Link to this heading"></a></h3>
+<p>Doublets are barcodes that likely contain RNA from more than one cell. Their
+rate depends on the loading concentration, cell type mixture, and capture. If
+your object contains multiple independent samples or 10x lanes, run doublet
+detection per sample before combining the decisions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scrub</span> <span class="o">=</span> <span class="n">scr</span><span class="o">.</span><span class="n">Scrublet</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">])</span>
+<span class="n">doublet_scores</span><span class="p">,</span> <span class="n">predicted_doublets</span> <span class="o">=</span> <span class="n">scrub</span><span class="o">.</span><span class="n">scrub_doublets</span><span class="p">()</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;doublet_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doublet_scores</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_doublets</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="visualize-qc-distributions">
+<h2>4. Visualize QC distributions<a class="headerlink" href="#visualize-qc-distributions" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3>Conclusion<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>QC thresholds should be chosen from the observed distribution, not copied from a recipe.</p>
+</section>
+<section id="id7">
+<h3>Motivation<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<p>Different tissues and protocols produce different QC distributions. Before
+filtering, inspect distributions and relationships among QC metrics.</p>
+</section>
+<section id="id8">
+<h3>Code<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_vars</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pct_counts_ribo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">qc_vars</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+    <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pbmc-example-output">
+<h3>PBMC example output<a class="headerlink" href="#pbmc-example-output" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id67">
+<img alt="PBMC 3k QC distributions for total counts, detected genes, mitochondrial fraction, and ribosomal fraction." src="../_images/pbmc_qc_distributions.png" />
+<figcaption>
+<p><span class="caption-text">Example QC distributions from the Scanpy PBMC 3k dataset. These plots show
+why thresholds should be derived from the observed dataset rather than copied
+from a fixed recipe. The PBMC example figure omits doublet scores; run
+Scrublet on your own dataset before making doublet decisions.</span><a class="headerlink" href="#id67" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="define-data-driven-qc-flags">
+<h2>5. Define data-driven QC flags<a class="headerlink" href="#define-data-driven-qc-flags" title="Link to this heading"></a></h2>
+<section id="id9">
+<h3>Conclusion<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<p>Percentile-based thresholds provide dataset-specific QC flags.</p>
+</section>
+<section id="id10">
+<h3>Motivation<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>Fixed cutoffs can be misleading. A mitochondrial threshold that is strict for one
+tissue may be permissive for another. A better strategy is to inspect the
+distribution and flag cells using lower and upper percentiles as a starting
+rule. The 2.5th and 97.5th percentiles are not universal cutoffs. Treat them as
+initial guidelines, plot them on the data, and adjust them when the observed
+distribution and experiment justify a different decision.</p>
+<p>Do not reject cells at this stage. The flags are carried into the first PCA,
+clustering, and UMAP so you can decide whether they mark technical artifacts or
+real biology in the current experiment.</p>
+</section>
+<section id="dataset-level-data-driven-thresholds">
+<h3>Dataset-level data-driven thresholds<a class="headerlink" href="#dataset-level-data-driven-thresholds" title="Link to this heading"></a></h3>
+<p>These thresholds are computed from the current dataset. If the object contains
+multiple samples, captures, or chemistries, compare QC distributions by those
+metadata columns before making final decisions. Splitting and integrating
+multi-sample objects is covered in a separate tutorial.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lower_q</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="n">upper_q</span> <span class="o">=</span> <span class="mf">97.5</span>
+
+<span class="n">gene_lo</span><span class="p">,</span> <span class="n">gene_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">count_lo</span><span class="p">,</span> <span class="n">count_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">mt_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Percentile starting thresholds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_genes_by_counts: lower=</span><span class="si">{</span><span class="n">gene_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">gene_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;total_counts:      lower=</span><span class="si">{</span><span class="n">count_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">count_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pct_counts_mt:     upper=</span><span class="si">{</span><span class="n">mt_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plot-percentile-thresholds">
+<h3>Plot percentile thresholds<a class="headerlink" href="#plot-percentile-thresholds" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mt_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>PBMC example output<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id68">
+<img alt="PBMC 3k QC scatter plots with 2.5th and 97.5th percentile starting thresholds." src="../_images/pbmc_percentile_thresholds.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k QC scatter plots with percentile starting thresholds overlaid. These
+lines are a first pass, not final decisions; a different dataset can require
+different thresholds after visual inspection.</span><a class="headerlink" href="#id68" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="flag-qc-outliers-but-do-not-remove-them-yet">
+<h3>Flag QC outliers, but do not remove them yet<a class="headerlink" href="#flag-qc-outliers-but-do-not-remove-them-yet" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">gene_lo</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">gene_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">count_lo</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">count_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mt_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]</span>
+    <span class="o">&amp;</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+<span class="n">qc_flag_columns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;qc_low_genes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_high_genes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_low_counts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_high_counts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_high_mt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_qc_flags</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a readable, multi-label QC flag string for one cell.&quot;&quot;&quot;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_counts_low_genes&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;low_genes&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_counts&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_genes&quot;</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_genes&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;low_counts&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_mt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;pass&quot;</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="n">encode_qc_flags</span><span class="p">,</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The boolean columns support filtering logic. <code class="docutils literal notranslate"><span class="pre">qc_flags</span></code> records the named
+reason or reasons for each cell, such as <code class="docutils literal notranslate"><span class="pre">low_counts</span></code>, <code class="docutils literal notranslate"><span class="pre">high_counts</span></code>,
+<code class="docutils literal notranslate"><span class="pre">high_mt</span></code>, or <code class="docutils literal notranslate"><span class="pre">predicted_doublet</span></code>. <code class="docutils literal notranslate"><span class="pre">primary_qc_flag</span></code> stores one
+plot-friendly category per cell.</p>
+</section>
+<section id="inspect-flagged-cells">
+<h3>Inspect flagged cells<a class="headerlink" href="#inspect-flagged-cells" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+    <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>PBMC example output<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id69">
+<img alt="PBMC 3k flagged-cell inspection plots." src="../_images/pbmc_flagged_cells.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k flagged-cell inspection plots. The same percentile guidelines can
+flag different patterns across datasets, so these plots should be reviewed
+before any removal.</span><a class="headerlink" href="#id69" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="keep-the-original-object-for-review">
+<h3>Keep the original object for review<a class="headerlink" href="#keep-the-original-object-for-review" title="Link to this heading"></a></h3>
+<p>At this point, the cells are only flagged. A high mitochondrial fraction could
+represent damaged cells, but it can also be plausible in some cell states. High
+gene and count content can indicate doublets, but it can also reflect larger or
+more transcriptionally active cells. High UMI/count depth with low detected-gene
+content can reflect signal concentrated in a small set of genes, ambient or
+damaged-cell signal, or a real cell state with dominant transcripts. The first
+embedding should show where these flags fall before cells are removed. Keep the
+encoded <code class="docutils literal notranslate"><span class="pre">qc_flags</span></code> column so each cell carries the reason it was flagged.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;keep_for_first_pass&quot;</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">],</span> <span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;flagged_for_review&quot;</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="prepare-first-pass-analysis-object">
+<h3>Prepare first-pass analysis object<a class="headerlink" href="#prepare-first-pass-analysis-object" title="Link to this heading"></a></h3>
+<p>Filter genes for the first-pass embedding, but keep all cells so QC flags can be
+seen on PCA, clusters, and UMAP.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_work</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Data-driven gene filtering:</span>
+<span class="c1"># keep genes detected in at least 0.1% of cells, with a minimum of 3 cells.</span>
+<span class="n">min_cells_fraction</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">min_cells</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">min_cells_fraction</span> <span class="o">*</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">n_obs</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells&quot;</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">adata_work</span><span class="p">,</span> <span class="n">min_cells</span><span class="o">=</span><span class="n">min_cells</span><span class="p">)</span>
+
+<span class="n">adata_work</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="normalize-count-depth">
+<h2>6. Normalize count depth<a class="headerlink" href="#normalize-count-depth" title="Link to this heading"></a></h2>
+<section id="id13">
+<h3>Conclusion<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<p>Normalization makes cells more comparable by reducing library-size effects.</p>
+</section>
+<section id="id14">
+<h3>Motivation<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<p>Cells differ in the total number of captured molecules. Without normalization,
+high-depth cells may appear to express more of many genes simply because more
+molecules were sampled.</p>
+</section>
+<section id="id15">
+<h3>Code<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="log-transform-normalized-counts">
+<h2>7. Log-transform normalized counts<a class="headerlink" href="#log-transform-normalized-counts" title="Link to this heading"></a></h2>
+<section id="id16">
+<h3>Conclusion<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<p>Log transformation compresses dynamic range and improves the geometry used by PCA and clustering.</p>
+</section>
+<section id="id17">
+<h3>Motivation<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<p>Highly expressed genes can dominate distances between cells. <code class="docutils literal notranslate"><span class="pre">log1p</span></code> compresses
+large values while remaining defined at zero.</p>
+</section>
+<section id="id18">
+<h3>Code<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata_work</span><span class="p">)</span>
+<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="score-cell-cycle-state">
+<h2>8. Score cell cycle state<a class="headerlink" href="#score-cell-cycle-state" title="Link to this heading"></a></h2>
+<section id="id19">
+<h3>Conclusion<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<p>Cell cycle scores are biological/context covariates, not automatic QC failures.</p>
+</section>
+<section id="id20">
+<h3>Motivation<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<p>Cell cycle can be a biological signal or a confounder, depending on the
+experiment. Score it before PCA so you can inspect whether clusters or UMAP
+structure are dominated by S phase or G2/M phase. Do not regress out or remove
+cell cycle effects by default; decide after inspecting the experiment.</p>
+<p>The example below uses human gene symbols. For mouse or Ensembl identifiers,
+convert the list to match <code class="docutils literal notranslate"><span class="pre">adata.var_names</span></code> first.</p>
+</section>
+<section id="id21">
+<h3>Code<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s_genes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;MCM5&quot;</span><span class="p">,</span> <span class="s2">&quot;PCNA&quot;</span><span class="p">,</span> <span class="s2">&quot;TYMS&quot;</span><span class="p">,</span> <span class="s2">&quot;FEN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM2&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM4&quot;</span><span class="p">,</span> <span class="s2">&quot;RRM1&quot;</span><span class="p">,</span> <span class="s2">&quot;UNG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GINS2&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM6&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA7&quot;</span><span class="p">,</span> <span class="s2">&quot;DTL&quot;</span><span class="p">,</span> <span class="s2">&quot;PRIM1&quot;</span><span class="p">,</span> <span class="s2">&quot;UHRF1&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPU&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HELLS&quot;</span><span class="p">,</span> <span class="s2">&quot;RFC2&quot;</span><span class="p">,</span> <span class="s2">&quot;RPA2&quot;</span><span class="p">,</span> <span class="s2">&quot;NASP&quot;</span><span class="p">,</span> <span class="s2">&quot;RAD51AP1&quot;</span><span class="p">,</span> <span class="s2">&quot;GMNN&quot;</span><span class="p">,</span> <span class="s2">&quot;WDR76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLBP&quot;</span><span class="p">,</span> <span class="s2">&quot;CCNE2&quot;</span><span class="p">,</span> <span class="s2">&quot;UBR7&quot;</span><span class="p">,</span> <span class="s2">&quot;POLD3&quot;</span><span class="p">,</span> <span class="s2">&quot;MSH2&quot;</span><span class="p">,</span> <span class="s2">&quot;ATAD2&quot;</span><span class="p">,</span> <span class="s2">&quot;RAD51&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RRM2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC45&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC6&quot;</span><span class="p">,</span> <span class="s2">&quot;EXO1&quot;</span><span class="p">,</span> <span class="s2">&quot;TIPIN&quot;</span><span class="p">,</span> <span class="s2">&quot;DSCC1&quot;</span><span class="p">,</span> <span class="s2">&quot;BLM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CASP8AP2&quot;</span><span class="p">,</span> <span class="s2">&quot;USP1&quot;</span><span class="p">,</span> <span class="s2">&quot;CLSPN&quot;</span><span class="p">,</span> <span class="s2">&quot;POLA1&quot;</span><span class="p">,</span> <span class="s2">&quot;CHAF1B&quot;</span><span class="p">,</span> <span class="s2">&quot;BRIP1&quot;</span><span class="p">,</span> <span class="s2">&quot;E2F8&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">g2m_genes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;HMGB2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDK1&quot;</span><span class="p">,</span> <span class="s2">&quot;NUSAP1&quot;</span><span class="p">,</span> <span class="s2">&quot;UBE2C&quot;</span><span class="p">,</span> <span class="s2">&quot;BIRC5&quot;</span><span class="p">,</span> <span class="s2">&quot;TPX2&quot;</span><span class="p">,</span> <span class="s2">&quot;TOP2A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NDC80&quot;</span><span class="p">,</span> <span class="s2">&quot;CKS2&quot;</span><span class="p">,</span> <span class="s2">&quot;NUF2&quot;</span><span class="p">,</span> <span class="s2">&quot;CKS1B&quot;</span><span class="p">,</span> <span class="s2">&quot;MKI67&quot;</span><span class="p">,</span> <span class="s2">&quot;TMPO&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TACC3&quot;</span><span class="p">,</span> <span class="s2">&quot;FAM64A&quot;</span><span class="p">,</span> <span class="s2">&quot;SMC4&quot;</span><span class="p">,</span> <span class="s2">&quot;CCNB2&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP2L&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP2&quot;</span><span class="p">,</span> <span class="s2">&quot;AURKB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BUB1&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF11&quot;</span><span class="p">,</span> <span class="s2">&quot;ANP32E&quot;</span><span class="p">,</span> <span class="s2">&quot;TUBB4B&quot;</span><span class="p">,</span> <span class="s2">&quot;GTSE1&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF20B&quot;</span><span class="p">,</span> <span class="s2">&quot;HJURP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CDCA3&quot;</span><span class="p">,</span> <span class="s2">&quot;HN1&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC20&quot;</span><span class="p">,</span> <span class="s2">&quot;TTK&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC25C&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF2C&quot;</span><span class="p">,</span> <span class="s2">&quot;RANGAP1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NCAPD2&quot;</span><span class="p">,</span> <span class="s2">&quot;DLGAP5&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA8&quot;</span><span class="p">,</span> <span class="s2">&quot;ECT2&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF23&quot;</span><span class="p">,</span> <span class="s2">&quot;HMMR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AURKA&quot;</span><span class="p">,</span> <span class="s2">&quot;PSRC1&quot;</span><span class="p">,</span> <span class="s2">&quot;ANLN&quot;</span><span class="p">,</span> <span class="s2">&quot;LBR&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP5&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPE&quot;</span><span class="p">,</span> <span class="s2">&quot;CTCF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NEK2&quot;</span><span class="p">,</span> <span class="s2">&quot;G2E3&quot;</span><span class="p">,</span> <span class="s2">&quot;GAS2L3&quot;</span><span class="p">,</span> <span class="s2">&quot;CBX5&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPA&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">s_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">s_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+<span class="n">g2m_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">g2m_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">g2m_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No cell cycle genes found. Check gene identifiers.&quot;</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">score_genes_cell_cycle</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">s_genes</span><span class="o">=</span><span class="n">s_genes_present</span><span class="p">,</span>
+    <span class="n">g2m_genes</span><span class="o">=</span><span class="n">g2m_genes_present</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
+    <span class="p">[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">]</span>
+<span class="p">]</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id22">
+<h3>PBMC example output<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id70">
+<img alt="PBMC 3k cell cycle score violin plots grouped by assigned phase." src="../_images/pbmc_cell_cycle_scores.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k cell cycle scores. These plots show whether S-phase and G2/M scores
+separate a subset of cells enough to consider during cluster interpretation.</span><a class="headerlink" href="#id70" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="select-highly-variable-genes">
+<h2>9. Select highly variable genes<a class="headerlink" href="#select-highly-variable-genes" title="Link to this heading"></a></h2>
+<section id="id23">
+<h3>Conclusion<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<p>Highly variable genes define which signals enter dimensionality reduction
+without dropping other genes from the cleaned object.</p>
+</section>
+<section id="id24">
+<h3>Motivation<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<p>Single-cell datasets contain thousands of genes, but many are uninformative for
+cell-state structure. Highly variable gene selection focuses the analysis on genes
+whose variation is higher than expected for their mean expression. Use HVGs as a
+feature mask for PCA, neighbors, clustering, and UMAP. Keep all genes in the main
+AnnData object for marker inspection, annotation, and saving.</p>
+</section>
+<section id="id25">
+<h3>Code<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span><span class="n">adata_work</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">adata_work</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="id26">
+<h3>PBMC example output<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id71">
+<img alt="PBMC 3k highly variable gene selection plot." src="../_images/pbmc_highly_variable_genes.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k highly variable gene selection. HVGs are used as a feature mask for
+PCA and graph construction while the full cleaned object is retained.</span><a class="headerlink" href="#id71" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="scale-data">
+<h2>10. Scale data<a class="headerlink" href="#scale-data" title="Link to this heading"></a></h2>
+<section id="id27">
+<h3>Conclusion<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<p>Scaling prepares the expression matrix for PCA.</p>
+</section>
+<section id="id28">
+<h3>Motivation<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<p>PCA is sensitive to feature scale. Scaling centers each gene and gives it unit
+variance. Values are often clipped to reduce the influence of extreme outliers.
+The full object is retained; HVGs are selected as a PCA feature mask in the next
+step.</p>
+</section>
+<section id="id29">
+<h3>Code<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata_work</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="run-pca">
+<h2>11. Run PCA<a class="headerlink" href="#run-pca" title="Link to this heading"></a></h2>
+<section id="id30">
+<h3>Conclusion<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<p>PCA compresses thousands of genes into a smaller set of variation axes.</p>
+</section>
+<section id="id31">
+<h3>Motivation<a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<p>PCA identifies linear combinations of genes that explain major axes of variation.
+Here, PCA uses the highly variable genes without subsetting the AnnData object.
+These axes can reflect biology, but also batch, count depth, mitochondrial
+content, or other technical structure.</p>
+</section>
+<section id="id32">
+<h3>Code<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca_variance_ratio</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id33">
+<h3>PBMC example output<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id72">
+<img alt="PBMC 3k PCA variance-ratio elbow plot." src="../_images/pbmc_pca_elbow.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k PCA variance-ratio elbow plot. The curve helps choose a starting
+number of PCs for the neighbor graph.</span><a class="headerlink" href="#id72" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id73">
+<img alt="PBMC 3k PCA plots colored by QC metrics and cell cycle scores." src="../_images/pbmc_pca_qc.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k PCA colored by QC metrics and cell cycle state. This checks whether
+major PCs are dominated by count depth, mitochondrial fraction, or cell
+cycle.</span><a class="headerlink" href="#id73" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="choose-number-of-pcs">
+<h3>Choose number of PCs<a class="headerlink" href="#choose-number-of-pcs" title="Link to this heading"></a></h3>
+<p>The PCA variance-ratio plot is the elbow plot for this workflow. It shows how
+much variance is explained by each successive principal component. A useful
+starting point is the region where the curve begins to flatten: PCs before that
+point usually capture stronger structure, while PCs far into the flat tail are
+more likely to add noise.</p>
+<p>The elbow is a guideline, not a rule. Too few PCs can merge real cell states,
+rare populations, or continuous gradients. Too many PCs can carry technical
+variation, low-quality-cell structure, or noise into the neighbor graph. Small,
+fairly homogeneous datasets may work well with 15-30 PCs. Larger datasets,
+complex tissues, tumor samples, developmental trajectories, immune atlases, or
+datasets with rare cell populations may need 40, 50, or more PCs.</p>
+<p>After choosing <code class="docutils literal notranslate"><span class="pre">n_pcs</span></code>, inspect whether clusters have coherent marker genes
+and whether UMAP structure is dominated by QC metrics such as count depth,
+mitochondrial fraction, doublet score, or cell cycle. If the representation is
+unstable or biologically implausible, rerun the neighbor graph and UMAP with a
+different PC count.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start near the elbow, then adjust based on dataset complexity and QC review.</span>
+<span class="n">n_pcs</span> <span class="o">=</span> <span class="mi">30</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="build-the-neighbor-graph">
+<h2>12. Build the neighbor graph<a class="headerlink" href="#build-the-neighbor-graph" title="Link to this heading"></a></h2>
+<section id="id34">
+<h3>Conclusion<a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
+<p>The neighbor graph defines which cells are considered locally similar.</p>
+</section>
+<section id="id35">
+<h3>Motivation<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<p>Clustering and UMAP are based on a graph of nearest neighbors. This graph is
+usually built from PCA coordinates, not directly from all genes. The <code class="docutils literal notranslate"><span class="pre">n_pcs</span></code>
+choice controls which PCA dimensions are passed into this graph, so it directly
+affects clustering and UMAP.</p>
+</section>
+<section id="id36">
+<h3>Code<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="o">=</span><span class="n">n_pcs</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cluster-cells">
+<h2>13. Cluster cells<a class="headerlink" href="#cluster-cells" title="Link to this heading"></a></h2>
+<section id="id37">
+<h3>Conclusion<a class="headerlink" href="#id37" title="Link to this heading"></a></h3>
+<p>Clustering partitions the neighbor graph into groups of transcriptionally similar cells.</p>
+</section>
+<section id="id38">
+<h3>Motivation<a class="headerlink" href="#id38" title="Link to this heading"></a></h3>
+<p>Leiden clustering identifies communities in the neighbor graph. The resolution
+parameter controls granularity. There is no universally correct resolution.</p>
+</section>
+<section id="id39">
+<h3>Code<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_1_0&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="s2">&quot;leiden_1_0&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="compute-umap">
+<h2>14. Compute UMAP<a class="headerlink" href="#compute-umap" title="Link to this heading"></a></h2>
+<section id="id40">
+<h3>Conclusion<a class="headerlink" href="#id40" title="Link to this heading"></a></h3>
+<p>UMAP visualizes the neighbor graph and helps inspect QC flags; it does not prove
+cluster identity.</p>
+</section>
+<section id="id41">
+<h3>Motivation<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
+<p>UMAP projects the neighbor graph into two dimensions. It is useful for inspection
+and communication, but distances and separations in UMAP should not be
+overinterpreted. In the first pass, include QC flags, doublet scores, core QC
+metrics, and cell cycle scores on the UMAP. A cluster enriched for QC flags or
+cell cycle phase is a reason to inspect the cells, not automatic proof that the
+cluster should be removed.</p>
+</section>
+<section id="id42">
+<h3>Code<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">adata_work</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;qc_flag_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;predicted_doublet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If sample metadata exist:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">metadata_colors</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">col</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span>
+<span class="p">]</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata_colors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+        <span class="n">adata_work</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">metadata_colors</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id43">
+<h3>PBMC example output<a class="headerlink" href="#id43" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id74">
+<img alt="PBMC 3k first-pass UMAP colored by Leiden cluster, primary QC flag, detected genes, mitochondrial fraction, and cell cycle phase." src="../_images/pbmc_first_pass_umap_qc.png" />
+<figcaption>
+<p><span class="caption-text">First-pass PBMC 3k UMAP used for QC review. Encoded QC flags and cell cycle
+phase are inspected in the same embedding as the clustering result before
+cells are removed.</span><a class="headerlink" href="#id74" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="summarize-qc-flags-and-cell-cycle-by-cluster">
+<h3>Summarize QC flags and cell cycle by cluster<a class="headerlink" href="#summarize-qc-flags-and-cell-cycle-by-cluster" title="Link to this heading"></a></h3>
+<p>Cluster-level summaries help identify groups dominated by low-quality cells or
+putative doublets. They also show whether clusters are dominated by cell cycle
+phase. Interpret these summaries alongside marker genes and the biology of the
+experiment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_by_cluster</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span>
+    <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+        <span class="n">qc_flag_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">high_counts_low_genes_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
+            <span class="s2">&quot;qc_high_counts_low_genes&quot;</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">predicted_doublet_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">s_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">),</span>
+        <span class="n">g2m_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;G2M&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">n_cells</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;qc_flag_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">),</span>
+        <span class="n">qc_flag_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;qc_flag_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+        <span class="n">high_counts_low_genes_fraction</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;high_counts_low_genes_bool&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">doublet_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;predicted_doublet_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+        <span class="n">median_genes</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
+        <span class="n">median_counts</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
+        <span class="n">median_pct_counts_mt</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
+        <span class="n">median_s_score</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
+        <span class="n">median_g2m_score</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
+        <span class="n">s_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;s_phase_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+        <span class="n">g2m_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;g2m_phase_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;qc_flag_fraction&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">qc_by_cluster</span>
+
+<span class="n">qc_primary_by_cluster</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">],</span>
+    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">],</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">qc_primary_by_cluster</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">qc_primary_by_cluster</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+    <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="n">width</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Leiden cluster&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Fraction of cells&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Primary QC flag composition by cluster&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Primary QC flag&quot;</span><span class="p">,</span>
+    <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span>
+    <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This plot makes it easier to see whether one cluster is mostly flagged cells or
+whether QC flags are scattered across the embedding. A cluster enriched for one
+QC reason should be inspected with marker genes and experiment metadata before
+being removed.</p>
+</section>
+<section id="id44">
+<h3>PBMC example output<a class="headerlink" href="#id44" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id75">
+<img alt="PBMC 3k stacked bar plot showing primary QC flag proportions by Leiden cluster." src="../_images/pbmc_qc_flags_by_cluster.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k primary QC flag proportions by first-pass Leiden cluster. The plot
+summarizes whether QC flags are concentrated in specific clusters or spread
+across the dataset.</span><a class="headerlink" href="#id75" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="review-qc-decisions-and-rerun-representation">
+<h2>15. Review QC decisions and rerun representation<a class="headerlink" href="#review-qc-decisions-and-rerun-representation" title="Link to this heading"></a></h2>
+<section id="id45">
+<h3>Conclusion<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
+<p>Cells should be removed after QC review, then PCA, clustering, and UMAP should
+be rerun on the cleaned dataset.</p>
+</section>
+<section id="id46">
+<h3>Motivation<a class="headerlink" href="#id46" title="Link to this heading"></a></h3>
+<p>The first-pass embedding is a diagnostic view. It answers questions such as:</p>
+<ul class="simple">
+<li><p>Do high-mitochondrial cells form a low-gene, low-count cluster consistent with
+damaged cells?</p></li>
+<li><p>Do high-gene and high-count cells also have high doublet scores?</p></li>
+<li><p>Do high-count cells with low detected-gene content cluster together, and do their
+marker genes suggest a technical artifact or expected biology?</p></li>
+<li><p>Do clusters separate primarily by cell cycle phase, and is proliferation
+expected for the sample?</p></li>
+<li><p>Are flagged cells concentrated in one sample, one capture, or one cluster?</p></li>
+<li><p>Could high mitochondrial or gene content be expected for this experiment?</p></li>
+</ul>
+<p>After this review, define a removal rule that matches the experiment. The
+example below removes low-gene cells, high-count low-gene cells, and predicted
+doublets. High mitochondrial cells are left as a commented
+decision because they require experiment-specific interpretation.</p>
+</section>
+<section id="id47">
+<h3>Code<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Add high-mitochondrial cells only if inspection supports removal.</span>
+<span class="c1"># adata.obs[&quot;remove_after_qc_review&quot;] |= adata.obs[&quot;qc_high_mt&quot;]</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+
+<span class="n">adata_qc</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="o">~</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">min_cells_fraction</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">min_cells</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">min_cells_fraction</span> <span class="o">*</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_obs</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells&quot;</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">min_cells</span><span class="o">=</span><span class="n">min_cells</span><span class="p">)</span>
+
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">)</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">)</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">adata_qc</span>
+
+<span class="n">s_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">s_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+<span class="n">g2m_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">g2m_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">g2m_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No cell cycle genes found. Check gene identifiers.&quot;</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">score_genes_cell_cycle</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">s_genes</span><span class="o">=</span><span class="n">s_genes_present</span><span class="p">,</span>
+    <span class="n">g2m_genes</span><span class="o">=</span><span class="n">g2m_genes_present</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="o">=</span><span class="n">n_pcs</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Restore the main matrix to log-normalized expression before saving.</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id48">
+<h3>PBMC example output<a class="headerlink" href="#id48" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id76">
+<img alt="PBMC 3k final UMAP after QC review and rerunning PCA, clustering, and UMAP." src="../_images/pbmc_final_umap_qc.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k final UMAP after reviewed filtering and rerunning the representation.
+The cleaned embedding should be inspected again for QC and cell cycle
+structure.</span><a class="headerlink" href="#id76" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="optional-covariate-handling">
+<h3>Optional covariate handling<a class="headerlink" href="#optional-covariate-handling" title="Link to this heading"></a></h3>
+<p>Cell cycle score, sample identity, mitochondrial fraction, count depth,
+detected-gene content, and doublet score can all explain structure. Inspect them before
+deciding whether to regress, stratify, correct, or leave them unchanged.
+Regression is not shown here because it should follow from the biological
+question and experimental design.</p>
+<p>Ambient RNA or background correction can be important, especially for droplet
+datasets with substantial empty-droplet signal. That topic is also outside the
+scope of this introductory tutorial.</p>
+</section>
+</section>
+<section id="inspect-known-marker-genes">
+<h2>16. Inspect known marker genes<a class="headerlink" href="#inspect-known-marker-genes" title="Link to this heading"></a></h2>
+<section id="id49">
+<h3>Conclusion<a class="headerlink" href="#id49" title="Link to this heading"></a></h3>
+<p>Cluster labels should be assigned from marker evidence, not from the cluster number.</p>
+</section>
+<section id="id50">
+<h3>Motivation<a class="headerlink" href="#id50" title="Link to this heading"></a></h3>
+<p>Clusters are algorithmic groups. Annotation requires biological interpretation.
+Known marker genes help determine whether clusters correspond to expected cell
+types or states.</p>
+</section>
+<section id="example-marker-list">
+<h3>Example marker list<a class="headerlink" href="#example-marker-list" title="Link to this heading"></a></h3>
+<p>Modify this list for your tissue.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">marker_genes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;CD3E&quot;</span><span class="p">,</span> <span class="s2">&quot;TRAC&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;CD4 T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD4&quot;</span><span class="p">,</span> <span class="s2">&quot;IL7R&quot;</span><span class="p">,</span> <span class="s2">&quot;CCR7&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;CD8 T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD8A&quot;</span><span class="p">,</span> <span class="s2">&quot;CD8B&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;B cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;CD79A&quot;</span><span class="p">,</span> <span class="s2">&quot;CD74&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;NK cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GNLY&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span> <span class="s2">&quot;KLRD1&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Monocytes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;LYZ&quot;</span><span class="p">,</span> <span class="s2">&quot;S100A8&quot;</span><span class="p">,</span> <span class="s2">&quot;S100A9&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Dendritic cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FCER1A&quot;</span><span class="p">,</span> <span class="s2">&quot;CST3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Platelets&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PPBP&quot;</span><span class="p">,</span> <span class="s2">&quot;PF4&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">marker_genes_present</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">cell_type</span><span class="p">:</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">cell_type</span><span class="p">,</span> <span class="n">genes</span> <span class="ow">in</span> <span class="n">marker_genes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">marker_genes_present</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">cell_type</span><span class="p">:</span> <span class="n">genes</span>
+    <span class="k">for</span> <span class="n">cell_type</span><span class="p">,</span> <span class="n">genes</span> <span class="ow">in</span> <span class="n">marker_genes_present</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="dot-plot">
+<h3>Dot plot<a class="headerlink" href="#dot-plot" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">dotplot</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">marker_genes_present</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+    <span class="n">standard_scale</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span>
+    <span class="n">dendrogram</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id51">
+<h3>PBMC example output<a class="headerlink" href="#id51" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id77">
+<img alt="PBMC 3k marker gene dot plot across Leiden clusters." src="../_images/pbmc_marker_dotplot.png" />
+<figcaption>
+<p><span class="caption-text">Example PBMC 3k marker dot plot after reviewed filtering and rerunning the
+representation. Marker inspection uses the full cleaned object, not only HVGs.</span><a class="headerlink" href="#id77" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="umap-marker-overlays">
+<h3>UMAP marker overlays<a class="headerlink" href="#umap-marker-overlays" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">genes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;LYZ&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span> <span class="s2">&quot;PPBP&quot;</span><span class="p">]</span>
+<span class="n">genes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">genes_to_plot</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">genes_to_plot</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="s2">&quot;p99&quot;</span><span class="p">,</span>
+    <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id52">
+<h3>PBMC example output<a class="headerlink" href="#id52" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id78">
+<img alt="PBMC 3k UMAP marker overlays for CD3D, MS4A1, LYZ, NKG7, and PPBP." src="../_images/pbmc_marker_umaps.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k marker overlays on the final UMAP. Marker overlays help connect
+clusters to expected cell classes before assigning labels.</span><a class="headerlink" href="#id78" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="find-cluster-marker-genes">
+<h2>17. Find cluster marker genes<a class="headerlink" href="#find-cluster-marker-genes" title="Link to this heading"></a></h2>
+<section id="id53">
+<h3>Conclusion<a class="headerlink" href="#id53" title="Link to this heading"></a></h3>
+<p>Marker-gene tests rank genes that distinguish clusters, but they are not automatically condition-level inference.</p>
+</section>
+<section id="id54">
+<h3>Motivation<a class="headerlink" href="#id54" title="Link to this heading"></a></h3>
+<p>Cluster marker discovery asks which genes distinguish one cluster from others.
+This is useful for annotation. It is not the same as testing disease versus
+control across biological replicates.</p>
+</section>
+<section id="id55">
+<h3>Code<a class="headerlink" href="#id55" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span><span class="p">,</span>
+    <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">n_genes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">sharey</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">marker_table</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">rank_genes_groups_df</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">marker_table</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+<span class="n">marker_table</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;cluster_markers_wilcoxon.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id56">
+<h3>PBMC example output<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id79">
+<img alt="PBMC 3k ranked marker genes by Leiden cluster." src="../_images/pbmc_rank_genes_groups.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k ranked marker genes by Leiden cluster. These rankings support
+annotation, but they are not condition-level differential expression.</span><a class="headerlink" href="#id79" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="annotate-clusters">
+<h2>18. Annotate clusters<a class="headerlink" href="#annotate-clusters" title="Link to this heading"></a></h2>
+<section id="id57">
+<h3>Conclusion<a class="headerlink" href="#id57" title="Link to this heading"></a></h3>
+<p>Annotation converts algorithmic clusters into biological hypotheses.</p>
+</section>
+<section id="id58">
+<h3>Motivation<a class="headerlink" href="#id58" title="Link to this heading"></a></h3>
+<p>Annotation should combine known markers, cluster-specific marker results,
+metadata, and biological context. Ambiguous clusters should remain annotated as
+ambiguous until additional evidence is available.</p>
+</section>
+<section id="id59">
+<h3>Code<a class="headerlink" href="#id59" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cluster_to_celltype</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;T cells&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;Monocytes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;B cells&quot;</span><span class="p">,</span>
+    <span class="c1"># Edit after inspecting marker expression.</span>
+<span class="p">}</span>
+
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cluster_to_celltype</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_type&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id60">
+<h3>PBMC example output<a class="headerlink" href="#id60" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id80">
+<img alt="PBMC 3k UMAP colored by Leiden cluster and provisional broad cell type." src="../_images/pbmc_cell_type_umap.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k UMAP with provisional broad cell-type labels. In your own analysis,
+edit the cluster-to-cell-type mapping after marker review.</span><a class="headerlink" href="#id80" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="optional-iterative-clustering-for-subtypes">
+<h3>Optional: iterative clustering for subtypes<a class="headerlink" href="#optional-iterative-clustering-for-subtypes" title="Link to this heading"></a></h3>
+<p>A single global clustering is often enough to identify broad cell classes, such
+as T cells, B cells, monocytes, epithelial cells, stromal cells, or endothelial
+cells. It is often not enough to resolve subtypes within each class. For
+example, a global PBMC analysis may separate T cells from monocytes and B cells,
+but CD4 T-cell states, CD8 T-cell states, regulatory T cells, cycling T cells,
+or activation states may require a T-cell-only analysis.</p>
+<p>The usual strategy is iterative:</p>
+<ul class="simple">
+<li><p>assign broad cell classes from the cleaned global object</p></li>
+<li><p>subset one broad class</p></li>
+<li><p>rerun HVG selection, PCA, neighbor graph construction, clustering, and UMAP
+within that subset</p></li>
+<li><p>inspect QC metrics, cell cycle, and marker genes again</p></li>
+<li><p>map the subtype labels back to the full object</p></li>
+</ul>
+<p>This is not the same as increasing global Leiden resolution until more clusters
+appear. Subclustering changes the feature selection and representation so that
+variation within one cell class is no longer dominated by differences between
+major cell classes.</p>
+<p>Example code for one broad class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">broad_class</span> <span class="o">=</span> <span class="s2">&quot;T cells&quot;</span>
+
+<span class="n">adata_sub</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="p">[</span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">broad_class</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Restart from log-normalized expression, not the globally scaled matrix.</span>
+<span class="n">adata_sub</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata_sub</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca_variance_ratio</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sub_n_pcs</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="o">=</span><span class="n">sub_n_pcs</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">adata_sub</span><span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span><span class="p">,</span>
+    <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+    <span class="n">adata_sub</span><span class="p">,</span>
+    <span class="n">n_genes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">sharey</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id61">
+<h3>PBMC example output<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id81">
+<img alt="PBMC 3k T-cell subclustering PCA elbow plot." src="../_images/pbmc_t_cell_subclustering_elbow.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k T-cell-only PCA elbow plot. Subclustering should choose PCs from the
+subset representation, not from the global representation.</span><a class="headerlink" href="#id81" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id82">
+<img alt="PBMC 3k T-cell subclustering UMAP colored by subcluster, QC flag, and cell cycle phase." src="../_images/pbmc_t_cell_subclustering_umap.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k T-cell-only UMAP colored by subcluster, QC flag, and cell cycle
+phase. The same QC review logic applies inside the subset.</span><a class="headerlink" href="#id82" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id83">
+<img alt="PBMC 3k ranked marker genes for T-cell subclusters." src="../_images/pbmc_t_cell_subclustering_rank_genes.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k ranked marker genes for T-cell subclusters. Subtype labels should be
+assigned only after reviewing these markers and the experiment context.</span><a class="headerlink" href="#id83" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Map subtype labels back to the full cleaned object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;subcluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata_sub</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="s2">&quot;subcluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">broad_class</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;subcluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+    <span class="n">adata_qc</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;subcluster_label&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id62">
+<h3>PBMC example output<a class="headerlink" href="#id62" title="Link to this heading"></a></h3>
+<figure class="align-default" id="id84">
+<img alt="PBMC 3k full UMAP with T-cell subcluster labels mapped back to the full object." src="../_images/pbmc_t_cell_subcluster_labels_full_umap.png" />
+<figcaption>
+<p><span class="caption-text">PBMC 3k full UMAP with T-cell subcluster labels mapped back onto the cleaned
+object. Subtype labels should remain nested within their broad cell class.</span><a class="headerlink" href="#id84" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Only report subtypes when they have enough cells, coherent marker genes, and a
+reasonable relationship to the experiment. Very small subclusters, clusters
+dominated by QC flags, or clusters defined mostly by count depth, mitochondrial
+fraction, or cell cycle should be treated cautiously.</p>
+</section>
+</section>
+<section id="save-the-processed-object">
+<h2>19. Save the processed object<a class="headerlink" href="#save-the-processed-object" title="Link to this heading"></a></h2>
+<section id="id63">
+<h3>Conclusion<a class="headerlink" href="#id63" title="Link to this heading"></a></h3>
+<p>Save the full cleaned object, not only the HVG feature subset. The saved object
+should retain all genes that passed gene filtering, raw counts, normalized/log
+layers, QC columns, cell cycle scores, PCA, clusters, UMAP coordinates, and
+annotations. Because scaling overwrites <code class="docutils literal notranslate"><span class="pre">adata_qc.X</span></code> during PCA preparation,
+restore <code class="docutils literal notranslate"><span class="pre">adata_qc.X</span></code> to log-normalized expression before writing the object.</p>
+</section>
+<section id="id64">
+<h3>Code<a class="headerlink" href="#id64" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;scanpy_tutorial_processed_full.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="recommended-qc-reporting">
+<h2>20. Recommended QC reporting<a class="headerlink" href="#recommended-qc-reporting" title="Link to this heading"></a></h2>
+<section id="id65">
+<h3>Conclusion<a class="headerlink" href="#id65" title="Link to this heading"></a></h3>
+<p>A reproducible tutorial should report both thresholds and their motivation.</p>
+</section>
+<section id="recommended-report-items">
+<h3>Recommended report items<a class="headerlink" href="#recommended-report-items" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Number of cells before and after QC.</p></li>
+<li><p>Number of genes before and after filtering.</p></li>
+<li><p>QC metrics used.</p></li>
+<li><p>Dataset-level percentile values used.</p></li>
+<li><p>Gene detection threshold used for gene filtering.</p></li>
+<li><p>Cell cycle gene set used and whether gene identifiers were converted.</p></li>
+<li><p>Number of PCs used and how the elbow plot informed that choice.</p></li>
+<li><p>Whether any covariates were regressed, corrected, stratified, or left unchanged.</p></li>
+<li><p>Whether ambient RNA/background correction was considered.</p></li>
+<li><p>Number and fraction of cells flagged before removal.</p></li>
+<li><p>Counts and fractions for encoded QC reasons in <code class="docutils literal notranslate"><span class="pre">qc_flags</span></code> and <code class="docutils literal notranslate"><span class="pre">primary_qc_flag</span></code>.</p></li>
+<li><p>Number and fraction of cells removed after QC review.</p></li>
+<li><p>First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.</p></li>
+<li><p>Proportion of QC-flagged cells per first-pass cluster.</p></li>
+<li><p>Stacked bar plot of primary QC flag proportions per first-pass cluster.</p></li>
+<li><p>Proportion of high-count, low-gene cells per first-pass cluster.</p></li>
+<li><p>Proportion of S-phase and G2/M-phase cells per first-pass cluster.</p></li>
+<li><p>Final UMAP after reviewed filtering and rerunning PCA, clustering, and UMAP.</p></li>
+<li><p>Marker-gene dot plot used for annotation.</p></li>
+<li><p>Whether broad cell classes were subclustered, with subtype-specific PCs,
+resolution, markers, and QC review.</p></li>
+</ul>
+</section>
+<section id="example-summary-table">
+<h3>Example summary table<a class="headerlink" href="#example-summary-table" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_report</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;cells_before_qc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_flagged_for_review&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_high_counts_low_genes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_s_phase&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_g2m_phase&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_removed_after_review&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cells_after_qc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;genes_after_qc&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">n_obs</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;G2M&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_obs</span><span class="p">,</span>
+        <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_vars</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">})</span>
+
+<span class="n">qc_report</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;qc_report_summary.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">qc_report</span>
+
+<span class="n">qc_reason_counts</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">qc_reason_fractions</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">qc_reason_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;n_cells&quot;</span><span class="p">:</span> <span class="n">qc_reason_counts</span><span class="p">,</span>
+    <span class="s2">&quot;fraction&quot;</span><span class="p">:</span> <span class="n">qc_reason_fractions</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="n">qc_reason_summary</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;qc_flag_reason_summary.csv&quot;</span><span class="p">)</span>
+<span class="n">qc_reason_summary</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="workflow-summary">
+<h2>21. Workflow summary<a class="headerlink" href="#workflow-summary" title="Link to this heading"></a></h2>
+<section id="id66">
+<h3>Conclusion<a class="headerlink" href="#id66" title="Link to this heading"></a></h3>
+<p>The workflow turns raw counts into an interpretable cell-state representation.</p>
+</section>
+<section id="workflow">
+<h3>Workflow<a class="headerlink" href="#workflow" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>10x matrix directory or HDF5 file
+   ↓
+AnnData object
+   ↓
+raw counts preserved
+   ↓
+QC metrics computed
+   ↓
+data-driven QC flags selected
+   ↓
+first-pass gene filtering
+   ↓
+first-pass normalization and log1p transformation
+   ↓
+cell cycle scored
+   ↓
+first-pass HVG feature mask, PCA, clustering, and UMAP
+   ↓
+UMAP and cluster-level QC and cell cycle proportions reviewed
+   ↓
+cells removed after experiment-specific QC decision
+   ↓
+genes filtered on cleaned dataset
+   ↓
+library-size normalization
+   ↓
+log1p transformation
+   ↓
+highly variable gene selection
+   ↓
+scaling
+   ↓
+PCA
+   ↓
+neighbor graph
+   ↓
+Leiden clustering
+   ↓
+UMAP visualization
+   ↓
+marker-gene dot plot and cluster annotation
+   ↓
+optional cell-class-specific subclustering for subtype annotation
+</pre></div>
+</div>
+</section>
+</section>
+<section id="key-cautions">
+<h2>Key cautions<a class="headerlink" href="#key-cautions" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>QC thresholds are dataset-specific.</p></li>
+<li><p>QC should be run on individual experiments or captures before integration.</p></li>
+<li><p>Flag questionable cells before removing them.</p></li>
+<li><p>High mitochondrial content or high gene content can be biological in some experiments.</p></li>
+<li><p>High UMI/count depth with low detected-gene content should be inspected before removal.</p></li>
+<li><p>Cell cycle can be expected biology, a confounder, or both; inspect before regression or removal.</p></li>
+<li><p>Ambient RNA correction can matter, but is outside the scope of this tutorial.</p></li>
+<li><p>Batch correction and integration require separate analysis decisions.</p></li>
+<li><p>Subtype discovery often requires cell-class-specific subclustering after
+broad annotation.</p></li>
+<li><p>UMAP is a visualization, not a statistical test.</p></li>
+<li><p>Cluster marker genes are useful for annotation but are not the same as condition-level DGE.</p></li>
+<li><p>Raw counts should be preserved for downstream count-based analyses.</p></li>
+<li><p>Biological replication is defined by samples or donors, not by cells.</p></li>
+</ul>
+</section>
 </section>
 
 
