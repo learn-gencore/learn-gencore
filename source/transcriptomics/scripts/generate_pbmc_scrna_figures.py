@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import scanpy as sc
 
@@ -65,6 +66,29 @@ def score_cell_cycle(adata):
     sc.tl.score_genes_cell_cycle(adata, s_genes=s_present, g2m_genes=g2m_present)
 
 
+def encode_qc_flags(row):
+    labels = []
+
+    if row["qc_high_counts_low_genes"]:
+        labels.append("high_counts_low_genes")
+    else:
+        if row["qc_low_genes"]:
+            labels.append("low_genes")
+        if row["qc_high_counts"]:
+            labels.append("high_counts")
+
+    if row["qc_high_genes"]:
+        labels.append("high_genes")
+    if row["qc_low_counts"]:
+        labels.append("low_counts")
+    if row["qc_high_mt"]:
+        labels.append("high_mt")
+    if row["qc_predicted_doublet"]:
+        labels.append("predicted_doublet")
+
+    return ";".join(labels) if labels else "pass"
+
+
 def add_qc_flags(adata):
     thresholds = percentile_thresholds(adata)
     adata.uns["qc_thresholds"] = thresholds
@@ -100,6 +124,16 @@ def add_qc_flags(adata):
     ]
     adata.obs["qc_flag"] = adata.obs[qc_flag_columns].any(axis=1)
     adata.obs["qc_flag_count"] = adata.obs[qc_flag_columns].sum(axis=1)
+    adata.obs["qc_flags"] = adata.obs[qc_flag_columns].apply(
+        encode_qc_flags,
+        axis=1,
+    )
+    adata.obs["primary_qc_flag"] = (
+        adata.obs["qc_flags"]
+        .str.split(";")
+        .str[0]
+        .astype("category")
+    )
 
 
 def plot_percentile_thresholds(adata):
@@ -144,7 +178,18 @@ def plot_percentile_thresholds(adata):
 def plot_flagged_cells(adata):
     fig, axes = plt.subplots(1, 3, figsize=(14, 4), constrained_layout=True)
 
-    colors = adata.obs["qc_flag"].map({False: "#1f77b4", True: "#ff7f0e"})
+    flag_palette = {
+        "pass": "#1f77b4",
+        "high_counts_low_genes": "#d62728",
+        "low_genes": "#ff7f0e",
+        "high_counts": "#9467bd",
+        "high_genes": "#2ca02c",
+        "low_counts": "#8c564b",
+        "high_mt": "#e377c2",
+        "predicted_doublet": "#7f7f7f",
+    }
+    primary_flags = adata.obs["primary_qc_flag"].astype(str)
+    colors = primary_flags.map(flag_palette).fillna("#7f7f7f")
     axes[0].scatter(
         adata.obs["total_counts"],
         adata.obs["n_genes_by_counts"],
@@ -155,7 +200,23 @@ def plot_flagged_cells(adata):
     )
     axes[0].set_xlabel("total_counts")
     axes[0].set_ylabel("n_genes_by_counts")
-    axes[0].set_title("Any QC flag")
+    axes[0].set_title("Primary QC flag")
+    present_flags = [
+        flag for flag in flag_palette if flag in set(primary_flags)
+    ]
+    handles = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="white",
+            markerfacecolor=flag_palette[flag],
+            markersize=5,
+            label=flag,
+        )
+        for flag in present_flags
+    ]
+    axes[0].legend(handles=handles, frameon=False, fontsize=7, loc="best")
 
     colors = adata.obs["qc_high_mt"].map({False: "#1f77b4", True: "#ff7f0e"})
     axes[1].scatter(
@@ -246,7 +307,8 @@ def main():
         adata_work,
         color=[
             "leiden_0_5",
-            "qc_flag",
+            "primary_qc_flag",
+            "qc_flag_count",
             "n_genes_by_counts",
             "pct_counts_mt",
             "phase",

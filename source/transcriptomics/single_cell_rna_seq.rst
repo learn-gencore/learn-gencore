@@ -403,7 +403,48 @@ Flag QC outliers, but do not remove them yet
    adata.obs["qc_flag"] = adata.obs[qc_flag_columns].any(axis=1)
    adata.obs["qc_flag_count"] = adata.obs[qc_flag_columns].sum(axis=1)
 
+   def encode_qc_flags(row):
+       """Return a readable, multi-label QC flag string for one cell."""
+       labels = []
+
+       if row["qc_high_counts_low_genes"]:
+           labels.append("high_counts_low_genes")
+       else:
+           if row["qc_low_genes"]:
+               labels.append("low_genes")
+           if row["qc_high_counts"]:
+               labels.append("high_counts")
+
+       if row["qc_high_genes"]:
+           labels.append("high_genes")
+       if row["qc_low_counts"]:
+           labels.append("low_counts")
+       if row["qc_high_mt"]:
+           labels.append("high_mt")
+       if row["qc_predicted_doublet"]:
+           labels.append("predicted_doublet")
+
+       return ";".join(labels) if len(labels) > 0 else "pass"
+
+   adata.obs["qc_flags"] = adata.obs[qc_flag_columns].apply(
+       encode_qc_flags,
+       axis=1,
+   )
+   adata.obs["primary_qc_flag"] = (
+       adata.obs["qc_flags"]
+       .str.split(";")
+       .str[0]
+       .astype("category")
+   )
+
    adata.obs[qc_flag_columns + ["qc_flag"]].sum().sort_values(ascending=False)
+   adata.obs["qc_flags"].value_counts()
+   adata.obs["primary_qc_flag"].value_counts()
+
+The boolean columns support filtering logic. ``qc_flags`` records the named
+reason or reasons for each cell, such as ``low_counts``, ``high_counts``,
+``high_mt``, or ``predicted_doublet``. ``primary_qc_flag`` stores one
+plot-friendly category per cell.
 
 
 Inspect flagged cells
@@ -419,7 +460,7 @@ Inspect flagged cells
            "pct_counts_mt",
            "doublet_score",
        ],
-       groupby="qc_flag",
+       groupby="primary_qc_flag",
        multi_panel=True,
        jitter=0.4,
    )
@@ -428,7 +469,7 @@ Inspect flagged cells
        adata,
        x="total_counts",
        y="n_genes_by_counts",
-       color="qc_flag",
+       color="primary_qc_flag",
    )
 
    sc.pl.scatter(
@@ -464,7 +505,8 @@ gene and count content can indicate doublets, but it can also reflect larger or
 more transcriptionally active cells. High UMI/count depth with low detected-gene
 content can reflect signal concentrated in a small set of genes, ambient or
 damaged-cell signal, or a real cell state with dominant transcripts. The first
-embedding should show where these flags fall before cells are removed.
+embedding should show where these flags fall before cells are removed. Keep the
+encoded ``qc_flags`` column so each cell carries the reason it was flagged.
 
 .. code-block:: python
 
@@ -720,10 +762,31 @@ Code
        ],
    )
 
-Choose number of PCs:
+Choose number of PCs
+~~~~~~~~~~~~~~~~~~~~
+
+The PCA variance-ratio plot is the elbow plot for this workflow. It shows how
+much variance is explained by each successive principal component. A useful
+starting point is the region where the curve begins to flatten: PCs before that
+point usually capture stronger structure, while PCs far into the flat tail are
+more likely to add noise.
+
+The elbow is a guideline, not a rule. Too few PCs can merge real cell states,
+rare populations, or continuous gradients. Too many PCs can carry technical
+variation, low-quality-cell structure, or noise into the neighbor graph. Small,
+fairly homogeneous datasets may work well with 15-30 PCs. Larger datasets,
+complex tissues, tumor samples, developmental trajectories, immune atlases, or
+datasets with rare cell populations may need 40, 50, or more PCs.
+
+After choosing ``n_pcs``, inspect whether clusters have coherent marker genes
+and whether UMAP structure is dominated by QC metrics such as count depth,
+mitochondrial fraction, doublet score, or cell cycle. If the representation is
+unstable or biologically implausible, rerun the neighbor graph and UMAP with a
+different PC count.
 
 .. code-block:: python
 
+   # Start near the elbow, then adjust based on dataset complexity and QC review.
    n_pcs = 30
 
 
@@ -739,7 +802,9 @@ Motivation
 ~~~~~~~~~~
 
 Clustering and UMAP are based on a graph of nearest neighbors. This graph is
-usually built from PCA coordinates, not directly from all genes.
+usually built from PCA coordinates, not directly from all genes. The ``n_pcs``
+choice controls which PCA dimensions are passed into this graph, so it directly
+affects clustering and UMAP.
 
 Code
 ~~~~
@@ -817,7 +882,7 @@ Code
        adata_work,
        color=[
            "leiden_0_5",
-           "qc_flag",
+           "primary_qc_flag",
            "qc_flag_count",
            "qc_high_counts_low_genes",
            "predicted_doublet",
@@ -837,7 +902,13 @@ If sample metadata exist:
 
    metadata_colors = [
        col
-       for col in ["sample", "condition", "leiden_0_5", "qc_flag", "phase"]
+       for col in [
+           "sample",
+           "condition",
+           "leiden_0_5",
+           "primary_qc_flag",
+           "phase",
+       ]
        if col in adata_work.obs
    ]
 
@@ -851,11 +922,11 @@ PBMC example output
 ~~~~~~~~~~~~~~~~~~~
 
 .. figure:: ../img/transcriptomics/scrna/pbmc_first_pass_umap_qc.png
-   :alt: PBMC 3k first-pass UMAP colored by Leiden cluster, QC flag, detected genes, mitochondrial fraction, and cell cycle phase.
+   :alt: PBMC 3k first-pass UMAP colored by Leiden cluster, primary QC flag, detected genes, mitochondrial fraction, and cell cycle phase.
 
-   First-pass PBMC 3k UMAP used for QC review. QC flags and cell cycle phase are
-   inspected in the same embedding as the clustering result before cells are
-   removed.
+   First-pass PBMC 3k UMAP used for QC review. Encoded QC flags and cell cycle
+   phase are inspected in the same embedding as the clustering result before
+   cells are removed.
 
 
 Summarize QC flags and cell cycle by cluster
@@ -900,6 +971,14 @@ experiment.
    )
 
    qc_by_cluster
+
+   qc_primary_by_cluster = pd.crosstab(
+       adata_work.obs["leiden_0_5"],
+       adata_work.obs["primary_qc_flag"],
+       normalize="index",
+   )
+
+   qc_primary_by_cluster
 
 
 15. Review QC decisions and rerun representation
@@ -1232,9 +1311,11 @@ Recommended report items
 * Dataset-level percentile values used.
 * Gene detection threshold used for gene filtering.
 * Cell cycle gene set used and whether gene identifiers were converted.
+* Number of PCs used and how the elbow plot informed that choice.
 * Whether any covariates were regressed, corrected, stratified, or left unchanged.
 * Whether ambient RNA/background correction was considered.
 * Number and fraction of cells flagged before removal.
+* Counts and fractions for encoded QC reasons in ``qc_flags`` and ``primary_qc_flag``.
 * Number and fraction of cells removed after QC review.
 * First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.
 * Proportion of QC-flagged cells per first-pass cluster.
@@ -1273,6 +1354,17 @@ Example summary table
 
    qc_report.to_csv("qc_report_summary.csv", index=False)
    qc_report
+
+   qc_reason_counts = adata.obs["primary_qc_flag"].value_counts()
+   qc_reason_fractions = adata.obs["primary_qc_flag"].value_counts(normalize=True)
+
+   qc_reason_summary = pd.DataFrame({
+       "n_cells": qc_reason_counts,
+       "fraction": qc_reason_fractions,
+   })
+
+   qc_reason_summary.to_csv("qc_flag_reason_summary.csv")
+   qc_reason_summary
 
 
 21. Workflow summary
