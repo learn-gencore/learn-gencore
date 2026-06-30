@@ -980,6 +980,39 @@ experiment.
 
    qc_primary_by_cluster
 
+   ax = qc_primary_by_cluster.plot(
+       kind="bar",
+       stacked=True,
+       figsize=(8, 4),
+       width=0.85,
+   )
+   ax.set_xlabel("Leiden cluster")
+   ax.set_ylabel("Fraction of cells")
+   ax.set_title("Primary QC flag composition by cluster")
+   ax.legend(
+       title="Primary QC flag",
+       bbox_to_anchor=(1.02, 1),
+       loc="upper left",
+       frameon=False,
+   )
+   plt.tight_layout()
+   plt.show()
+
+This plot makes it easier to see whether one cluster is mostly flagged cells or
+whether QC flags are scattered across the embedding. A cluster enriched for one
+QC reason should be inspected with marker genes and experiment metadata before
+being removed.
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_qc_flags_by_cluster.png
+   :alt: PBMC 3k stacked bar plot showing primary QC flag proportions by Leiden cluster.
+
+   PBMC 3k primary QC flag proportions by first-pass Leiden cluster. The plot
+   summarizes whether QC flags are concentrated in specific clusters or spread
+   across the dataset.
+
 
 15. Review QC decisions and rerun representation
 ------------------------------------------------
@@ -1319,6 +1352,7 @@ Recommended report items
 * Number and fraction of cells removed after QC review.
 * First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.
 * Proportion of QC-flagged cells per first-pass cluster.
+* Stacked bar plot of primary QC flag proportions per first-pass cluster.
 * Proportion of high-count, low-gene cells per first-pass cluster.
 * Proportion of S-phase and G2/M-phase cells per first-pass cluster.
 * Final UMAP after reviewed filtering and rerunning PCA, clustering, and UMAP.

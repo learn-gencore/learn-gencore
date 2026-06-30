@@ -7,6 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
+import pandas as pd
 import scanpy as sc
 
 
@@ -16,6 +17,17 @@ OUTDIR.mkdir(parents=True, exist_ok=True)
 sc.settings.verbosity = 1
 sc.settings.datasetdir = "/private/tmp/scanpy-data"
 sc.settings.set_figure_params(dpi=120, facecolor="white", frameon=False)
+
+FLAG_PALETTE = {
+    "pass": "#1f77b4",
+    "high_counts_low_genes": "#d62728",
+    "low_genes": "#ff7f0e",
+    "high_counts": "#9467bd",
+    "high_genes": "#2ca02c",
+    "low_counts": "#8c564b",
+    "high_mt": "#e377c2",
+    "predicted_doublet": "#7f7f7f",
+}
 
 
 def percentile_thresholds(adata, lower_q=2.5, upper_q=97.5):
@@ -178,18 +190,8 @@ def plot_percentile_thresholds(adata):
 def plot_flagged_cells(adata):
     fig, axes = plt.subplots(1, 3, figsize=(14, 4), constrained_layout=True)
 
-    flag_palette = {
-        "pass": "#1f77b4",
-        "high_counts_low_genes": "#d62728",
-        "low_genes": "#ff7f0e",
-        "high_counts": "#9467bd",
-        "high_genes": "#2ca02c",
-        "low_counts": "#8c564b",
-        "high_mt": "#e377c2",
-        "predicted_doublet": "#7f7f7f",
-    }
     primary_flags = adata.obs["primary_qc_flag"].astype(str)
-    colors = primary_flags.map(flag_palette).fillna("#7f7f7f")
+    colors = primary_flags.map(FLAG_PALETTE).fillna("#7f7f7f")
     axes[0].scatter(
         adata.obs["total_counts"],
         adata.obs["n_genes_by_counts"],
@@ -202,7 +204,7 @@ def plot_flagged_cells(adata):
     axes[0].set_ylabel("n_genes_by_counts")
     axes[0].set_title("Primary QC flag")
     present_flags = [
-        flag for flag in flag_palette if flag in set(primary_flags)
+        flag for flag in FLAG_PALETTE if flag in set(primary_flags)
     ]
     handles = [
         Line2D(
@@ -210,7 +212,7 @@ def plot_flagged_cells(adata):
             [0],
             marker="o",
             color="white",
-            markerfacecolor=flag_palette[flag],
+            markerfacecolor=FLAG_PALETTE[flag],
             markersize=5,
             label=flag,
         )
@@ -257,6 +259,40 @@ def run_representation(adata):
     sc.pp.neighbors(adata, n_neighbors=15, n_pcs=30)
     sc.tl.leiden(adata, resolution=0.5, key_added="leiden_0_5")
     sc.tl.umap(adata)
+
+
+def plot_qc_flags_by_cluster(adata):
+    qc_primary_by_cluster = pd.crosstab(
+        adata.obs["leiden_0_5"],
+        adata.obs["primary_qc_flag"],
+        normalize="index",
+    )
+    ordered_columns = [
+        flag for flag in FLAG_PALETTE if flag in qc_primary_by_cluster.columns
+    ]
+    qc_primary_by_cluster = qc_primary_by_cluster[ordered_columns]
+
+    ax = qc_primary_by_cluster.plot(
+        kind="bar",
+        stacked=True,
+        figsize=(8, 4),
+        width=0.85,
+        color=[FLAG_PALETTE[flag] for flag in qc_primary_by_cluster.columns],
+    )
+    ax.set_xlabel("Leiden cluster")
+    ax.set_ylabel("Fraction of cells")
+    ax.set_title("Primary QC flag composition by cluster")
+    ax.legend(
+        title="Primary QC flag",
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+        frameon=False,
+        fontsize=8,
+        title_fontsize=8,
+    )
+    ax.figure.tight_layout()
+    ax.figure.savefig(OUTDIR / "pbmc_qc_flags_by_cluster.png", bbox_inches="tight")
+    plt.close(ax.figure)
 
 
 def main():
@@ -318,6 +354,7 @@ def main():
     )
     plt.savefig(OUTDIR / "pbmc_first_pass_umap_qc.png", bbox_inches="tight")
     plt.close("all")
+    plot_qc_flags_by_cluster(adata_work)
 
     adata.obs["remove_after_qc_review"] = (
         adata.obs["qc_low_genes"]
