@@ -16,7 +16,7 @@ Learning objectives
 
 By the end of this tutorial, you should be able to:
 
-* Load 10x Genomics data into an AnnData object.
+* Load 10x Genomics data from either a matrix directory or an HDF5 file.
 * Compute and visualize quality-control metrics.
 * Choose data-driven QC flags using percentiles and MAD-based summaries.
 * Detect and review putative doublets.
@@ -63,12 +63,14 @@ The 10x count matrix is the starting point, not the biological result.
 Motivation
 ~~~~~~~~~~
 
-A 10x Genomics gene-expression run usually produces a sparse matrix, feature
-annotations, and cell barcodes. Scanpy stores this in an AnnData object. The main
-matrix, ``adata.X``, has cells as rows and genes as columns.
+A 10x Genomics gene-expression run usually produces either a matrix directory
+containing ``matrix.mtx.gz``, ``features.tsv.gz``, and ``barcodes.tsv.gz``, or a
+single HDF5 file such as ``filtered_feature_bc_matrix.h5``. Scanpy stores this
+in an AnnData object. The main matrix, ``adata.X``, has cells as rows and genes
+as columns.
 
-Code
-~~~~
+Read a 10x matrix directory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -83,6 +85,19 @@ Code
    adata.var_names_make_unique()
    adata
 
+Read a 10x HDF5 file
+~~~~~~~~~~~~~~~~~~~~
+
+Use this instead if Cell Ranger output is stored as ``filtered_feature_bc_matrix.h5``.
+
+.. code-block:: python
+
+   h5_file = "path/to/filtered_feature_bc_matrix.h5"
+
+   adata = sc.read_10x_h5(h5_file)
+   adata.var_names_make_unique()
+   adata
+
 Inspect the object:
 
 .. code-block:: python
@@ -90,6 +105,19 @@ Inspect the object:
    print(adata)
    print(adata.obs.head())
    print(adata.var.head())
+
+Optional sample metadata
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the object already contains a ``sample``, ``library``, ``donor``, or
+``condition`` column, keep it. If it does not, add those columns before QC when
+the information is available. Splitting multi-sample objects and integrating
+them is beyond the scope of this tutorial.
+
+.. code-block:: python
+
+   # Example only. Replace with real metadata for your experiment.
+   adata.obs["sample"] = "sample_1"
 
 PBMC example
 ~~~~~~~~~~~~
@@ -103,6 +131,9 @@ PBMC 3k example distributed through Scanpy. Use this block instead of the
    adata = sc.datasets.pbmc3k()
    adata.var_names_make_unique()
    adata
+
+The PBMC figures shown below were generated with
+``source/transcriptomics/scripts/generate_pbmc_scrna_figures.py``.
 
 
 2. Preserve raw counts
@@ -266,6 +297,16 @@ Code
        color="n_genes_by_counts",
    )
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_qc_distributions.png
+   :alt: PBMC 3k QC distributions for total counts, detected genes, gene complexity, and mitochondrial fraction.
+
+   Example QC distributions from the Scanpy PBMC 3k dataset. These plots show
+   why thresholds should be derived from the observed dataset rather than copied
+   from a fixed recipe.
+
 
 5. Define data-driven QC flags
 ------------------------------
@@ -309,8 +350,13 @@ Helper functions
        return np.nanpercentile(x, lower_q), np.nanpercentile(x, upper_q)
 
 
-Global data-driven thresholds
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dataset-level data-driven thresholds
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These thresholds are computed from the current dataset. If the object contains
+multiple samples, captures, or chemistries, compare QC distributions by those
+metadata columns before making final decisions. Splitting and integrating
+multi-sample objects is covered in a separate tutorial.
 
 .. code-block:: python
 
@@ -441,9 +487,9 @@ Keep the original object for review
 At this point, the cells are only flagged. A high mitochondrial fraction could
 represent damaged cells, but it can also be plausible in some cell states. High
 gene and count content can indicate doublets, but it can also reflect larger or
-more transcriptionally active cells. High counts with low gene complexity can
-reflect reads concentrated in a small set of genes, ambient or damaged-cell
-signal, or a real cell state with dominant transcripts. The first embedding
+more transcriptionally active cells. High UMI/count depth with low gene
+complexity can reflect signal concentrated in a small set of genes, ambient or
+damaged-cell signal, or a real cell state with dominant transcripts. The first embedding
 should show where these flags fall before cells are removed.
 
 .. code-block:: python
@@ -466,7 +512,8 @@ seen on PCA, clusters, and UMAP.
 
    # Data-driven gene filtering:
    # keep genes detected in at least 0.1% of cells, with a minimum of 3 cells.
-   min_cells = max(3, int(np.ceil(0.001 * adata_work.n_obs)))
+   min_cells_fraction = 0.001
+   min_cells = max(3, int(np.ceil(min_cells_fraction * adata_work.n_obs)))
 
    print(f"Filtering genes detected in fewer than {min_cells} cells")
    sc.pp.filter_genes(adata_work, min_cells=min_cells)
@@ -527,8 +574,16 @@ Code
    adata_work.layers["lognorm"] = adata_work.X.copy()
 
 
-Cell cycle score analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~
+8. Score cell cycle state
+-------------------------
+
+Conclusion
+~~~~~~~~~~
+
+Cell cycle scores are biological/context covariates, not automatic QC failures.
+
+Motivation
+~~~~~~~~~~
 
 Cell cycle can be a biological signal or a confounder, depending on the
 experiment. Score it before PCA so you can inspect whether clusters or UMAP
@@ -537,6 +592,9 @@ cell cycle effects by default; decide after inspecting the experiment.
 
 The example below uses human gene symbols. For mouse or Ensembl identifiers,
 convert the list to match ``adata.var_names`` first.
+
+Code
+~~~~
 
 .. code-block:: python
 
@@ -585,20 +643,23 @@ convert the list to match ``adata.var_names`` first.
    )
 
 
-8. Select highly variable genes
+9. Select highly variable genes
 -------------------------------
 
 Conclusion
 ~~~~~~~~~~
 
-Highly variable genes define which signals enter dimensionality reduction.
+Highly variable genes define which signals enter dimensionality reduction
+without dropping other genes from the cleaned object.
 
 Motivation
 ~~~~~~~~~~
 
 Single-cell datasets contain thousands of genes, but many are uninformative for
 cell-state structure. Highly variable gene selection focuses the analysis on genes
-whose variation is higher than expected for their mean expression.
+whose variation is higher than expected for their mean expression. Use HVGs as a
+feature mask for PCA, neighbors, clustering, and UMAP. Keep all genes in the main
+AnnData object for marker inspection, annotation, and saving.
 
 Code
 ~~~~
@@ -636,38 +697,31 @@ based on reproducible variability across samples.
        sc.pl.highly_variable_genes(adata_work)
 
 
-Subset to HVGs
-~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   adata_hvg = adata_work[:, adata_work.var["highly_variable"]].copy()
-   adata_hvg
-
-
-9. Scale data
--------------
+10. Scale data
+--------------
 
 Conclusion
 ~~~~~~~~~~
 
-Scaling prevents PCA from being dominated by genes with larger transformed values.
+Scaling prepares the expression matrix for PCA.
 
 Motivation
 ~~~~~~~~~~
 
 PCA is sensitive to feature scale. Scaling centers each gene and gives it unit
 variance. Values are often clipped to reduce the influence of extreme outliers.
+The full object is retained; HVGs are selected as a PCA feature mask in the next
+step.
 
 Code
 ~~~~
 
 .. code-block:: python
 
-   sc.pp.scale(adata_hvg, max_value=10)
+   sc.pp.scale(adata_work, max_value=10)
 
 
-10. Run PCA
+11. Run PCA
 -----------
 
 Conclusion
@@ -679,24 +733,29 @@ Motivation
 ~~~~~~~~~~
 
 PCA identifies linear combinations of genes that explain major axes of variation.
-These axes can reflect biology, but also batch, depth, mitochondrial content, or
-other technical structure.
+Here, PCA uses the highly variable genes without subsetting the AnnData object.
+These axes can reflect biology, but also batch, count depth, mitochondrial
+content, or other technical structure.
 
 Code
 ~~~~
 
 .. code-block:: python
 
-   sc.tl.pca(adata_hvg, svd_solver="arpack")
+   sc.tl.pca(
+       adata_work,
+       svd_solver="arpack",
+       mask_var="highly_variable",
+   )
 
    sc.pl.pca_variance_ratio(
-       adata_hvg,
+       adata_work,
        log=True,
        n_pcs=50,
    )
 
    sc.pl.pca(
-       adata_hvg,
+       adata_work,
        color=[
            "total_counts",
            "n_genes_by_counts",
@@ -714,7 +773,7 @@ Choose number of PCs:
    n_pcs = 30
 
 
-11. Build the neighbor graph
+12. Build the neighbor graph
 ----------------------------
 
 Conclusion
@@ -734,13 +793,13 @@ Code
 .. code-block:: python
 
    sc.pp.neighbors(
-       adata_hvg,
+       adata_work,
        n_neighbors=15,
        n_pcs=n_pcs,
    )
 
 
-12. Cluster cells
+13. Cluster cells
 -----------------
 
 Conclusion
@@ -760,21 +819,21 @@ Code
 .. code-block:: python
 
    sc.tl.leiden(
-       adata_hvg,
+       adata_work,
        resolution=0.5,
        key_added="leiden_0_5",
    )
 
    sc.tl.leiden(
-       adata_hvg,
+       adata_work,
        resolution=1.0,
        key_added="leiden_1_0",
    )
 
-   adata_hvg.obs[["leiden_0_5", "leiden_1_0"]].head()
+   adata_work.obs[["leiden_0_5", "leiden_1_0"]].head()
 
 
-13. Compute UMAP
+14. Compute UMAP
 ----------------
 
 Conclusion
@@ -798,10 +857,10 @@ Code
 
 .. code-block:: python
 
-   sc.tl.umap(adata_hvg)
+   sc.tl.umap(adata_work)
 
    sc.pl.umap(
-       adata_hvg,
+       adata_work,
        color=[
            "leiden_0_5",
            "qc_flag",
@@ -826,14 +885,24 @@ If sample metadata exist:
    metadata_colors = [
        col
        for col in ["sample", "condition", "leiden_0_5", "qc_flag", "phase"]
-       if col in adata_hvg.obs
+       if col in adata_work.obs
    ]
 
    if len(metadata_colors) > 0:
        sc.pl.umap(
-           adata_hvg,
+           adata_work,
            color=metadata_colors,
        )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_first_pass_umap_qc.png
+   :alt: PBMC 3k first-pass UMAP colored by Leiden cluster, QC flag, detected genes, mitochondrial fraction, gene complexity, and cell cycle phase.
+
+   First-pass PBMC 3k UMAP used for QC review. QC flags and cell cycle phase are
+   inspected in the same embedding as the clustering result before cells are
+   removed.
 
 
 Summarize QC flags and cell cycle by cluster
@@ -847,15 +916,15 @@ experiment.
 .. code-block:: python
 
    qc_by_cluster = (
-       adata_hvg.obs
+       adata_work.obs
        .assign(
-           qc_flag_bool=adata_hvg.obs["qc_flag"].astype(bool),
-           high_counts_low_complexity_bool=adata_hvg.obs[
+           qc_flag_bool=adata_work.obs["qc_flag"].astype(bool),
+           high_counts_low_complexity_bool=adata_work.obs[
                "qc_high_counts_low_complexity"
            ].astype(bool),
-           predicted_doublet_bool=adata_hvg.obs["predicted_doublet"].astype(bool),
-           s_phase_bool=adata_hvg.obs["phase"].astype(str).eq("S"),
-           g2m_phase_bool=adata_hvg.obs["phase"].astype(str).eq("G2M"),
+           predicted_doublet_bool=adata_work.obs["predicted_doublet"].astype(bool),
+           s_phase_bool=adata_work.obs["phase"].astype(str).eq("S"),
+           g2m_phase_bool=adata_work.obs["phase"].astype(str).eq("G2M"),
        )
        .groupby("leiden_0_5", observed=True)
        .agg(
@@ -881,7 +950,7 @@ experiment.
    qc_by_cluster
 
 
-14. Review QC decisions and rerun representation
+15. Review QC decisions and rerun representation
 ------------------------------------------------
 
 Conclusion
@@ -929,7 +998,10 @@ Code
 
    adata_qc = adata[~adata.obs["remove_after_qc_review"]].copy()
 
-   min_cells = max(3, int(np.ceil(0.001 * adata_qc.n_obs)))
+   min_cells_fraction = 0.001
+   min_cells = max(3, int(np.ceil(min_cells_fraction * adata_qc.n_obs)))
+
+   print(f"Filtering genes detected in fewer than {min_cells} cells")
    sc.pp.filter_genes(adata_qc, min_cells=min_cells)
 
    adata_qc.layers["counts"] = adata_qc.X.copy()
@@ -939,6 +1011,7 @@ Code
 
    sc.pp.log1p(adata_qc)
    adata_qc.layers["lognorm"] = adata_qc.X.copy()
+   adata_qc.raw = adata_qc
 
    s_genes_present = [gene for gene in s_genes if gene in adata_qc.var_names]
    g2m_genes_present = [gene for gene in g2m_genes if gene in adata_qc.var_names]
@@ -958,26 +1031,30 @@ Code
        flavor="seurat",
    )
 
-   adata_hvg = adata_qc[:, adata_qc.var["highly_variable"]].copy()
-   sc.pp.scale(adata_hvg, max_value=10)
-   sc.tl.pca(adata_hvg, svd_solver="arpack")
+   sc.pp.scale(adata_qc, max_value=10)
+
+   sc.tl.pca(
+       adata_qc,
+       svd_solver="arpack",
+       mask_var="highly_variable",
+   )
 
    sc.pp.neighbors(
-       adata_hvg,
+       adata_qc,
        n_neighbors=15,
        n_pcs=n_pcs,
    )
 
    sc.tl.leiden(
-       adata_hvg,
+       adata_qc,
        resolution=0.5,
        key_added="leiden_0_5",
    )
 
-   sc.tl.umap(adata_hvg)
+   sc.tl.umap(adata_qc)
 
    sc.pl.umap(
-       adata_hvg,
+       adata_qc,
        color=[
            "leiden_0_5",
            "total_counts",
@@ -991,7 +1068,21 @@ Code
    )
 
 
-15. Inspect known marker genes
+Optional covariate handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cell cycle score, sample identity, mitochondrial fraction, count depth, gene
+complexity, and doublet score can all explain structure. Inspect them before
+deciding whether to regress, stratify, correct, or leave them unchanged.
+Regression is not shown here because it should follow from the biological
+question and experimental design.
+
+Ambient RNA or background correction can be important, especially for droplet
+datasets with substantial empty-droplet signal. That topic is also outside the
+scope of this introductory tutorial.
+
+
+16. Inspect known marker genes
 ------------------------------
 
 Conclusion
@@ -1025,7 +1116,7 @@ Modify this list for your tissue.
    }
 
    marker_genes_present = {
-       cell_type: [gene for gene in genes if gene in adata_hvg.var_names]
+       cell_type: [gene for gene in genes if gene in adata_qc.var_names]
        for cell_type, genes in marker_genes.items()
    }
 
@@ -1042,12 +1133,22 @@ Dot plot
 .. code-block:: python
 
    sc.pl.dotplot(
-       adata_hvg,
+       adata_qc,
        marker_genes_present,
        groupby="leiden_0_5",
        standard_scale="var",
        dendrogram=False,
+       use_raw=True,
    )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_marker_dotplot.png
+   :alt: PBMC 3k marker gene dot plot across Leiden clusters.
+
+   Example PBMC 3k marker dot plot after reviewed filtering and rerunning the
+   representation. Marker inspection uses the full cleaned object, not only HVGs.
 
 
 UMAP marker overlays
@@ -1056,16 +1157,17 @@ UMAP marker overlays
 .. code-block:: python
 
    genes_to_plot = ["CD3D", "MS4A1", "LYZ", "NKG7", "PPBP"]
-   genes_to_plot = [g for g in genes_to_plot if g in adata_hvg.var_names]
+   genes_to_plot = [g for g in genes_to_plot if g in adata_qc.var_names]
 
    sc.pl.umap(
-       adata_hvg,
+       adata_qc,
        color=genes_to_plot,
        vmax="p99",
+       use_raw=True,
    )
 
 
-16. Find cluster marker genes
+17. Find cluster marker genes
 -----------------------------
 
 Conclusion
@@ -1086,24 +1188,25 @@ Code
 .. code-block:: python
 
    sc.tl.rank_genes_groups(
-       adata_hvg,
+       adata_qc,
        groupby="leiden_0_5",
        method="wilcoxon",
+       use_raw=True,
    )
 
    sc.pl.rank_genes_groups(
-       adata_hvg,
+       adata_qc,
        n_genes=20,
        sharey=False,
    )
 
-   marker_table = sc.get.rank_genes_groups_df(adata_hvg, group=None)
+   marker_table = sc.get.rank_genes_groups_df(adata_qc, group=None)
    marker_table.head()
 
    marker_table.to_csv("cluster_markers_wilcoxon.csv", index=False)
 
 
-17. Annotate clusters
+18. Annotate clusters
 ---------------------
 
 Conclusion
@@ -1130,35 +1233,38 @@ Code
        # Edit after inspecting marker expression.
    }
 
-   adata_hvg.obs["cell_type"] = (
-       adata_hvg.obs["leiden_0_5"]
+   adata_qc.obs["cell_type"] = (
+       adata_qc.obs["leiden_0_5"]
        .map(cluster_to_celltype)
        .astype("category")
    )
 
    sc.pl.umap(
-       adata_hvg,
+       adata_qc,
        color=["leiden_0_5", "cell_type"],
    )
 
 
-18. Save the processed object
+19. Save the processed object
 -----------------------------
 
 Conclusion
 ~~~~~~~~~~
 
-Saving intermediate objects makes the analysis reproducible and inspectable.
+Save the full cleaned object, not only the HVG feature subset. The saved object
+should retain all genes that passed gene filtering, raw counts, normalized/log
+layers, QC columns, cell cycle scores, PCA, clusters, UMAP coordinates, and
+annotations.
 
 Code
 ~~~~
 
 .. code-block:: python
 
-   adata_hvg.write("scanpy_tutorial_processed_hvg.h5ad")
+   adata_qc.write("scanpy_tutorial_processed_full.h5ad")
 
 
-19. Recommended QC reporting
+20. Recommended QC reporting
 ----------------------------
 
 Conclusion
@@ -1174,7 +1280,10 @@ Recommended report items
 * QC metrics used.
 * Whether thresholds were global or per sample.
 * Percentile and MAD values used.
+* Gene detection threshold used for gene filtering.
 * Cell cycle gene set used and whether gene identifiers were converted.
+* Whether any covariates were regressed, corrected, stratified, or left unchanged.
+* Whether ambient RNA/background correction was considered.
 * Number and fraction of cells flagged before removal.
 * Number and fraction of cells removed after QC review.
 * First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.
@@ -1216,7 +1325,7 @@ Example summary table
    qc_report
 
 
-20. Workflow summary
+21. Workflow summary
 --------------------
 
 Conclusion
@@ -1229,7 +1338,7 @@ Workflow
 
 ::
 
-   10x matrix
+   10x matrix directory or HDF5 file
       ↓
    AnnData object
       ↓
@@ -1245,7 +1354,7 @@ Workflow
       ↓
    cell cycle scored
       ↓
-   first-pass HVG selection, PCA, clustering, and UMAP
+   first-pass HVG feature mask, PCA, clustering, and UMAP
       ↓
    UMAP and cluster-level QC and cell cycle proportions reviewed
       ↓
@@ -1279,8 +1388,9 @@ Key cautions
 * QC should be run on individual experiments or captures before integration.
 * Flag questionable cells before removing them.
 * High mitochondrial content or high gene content can be biological in some experiments.
-* High read or UMI depth with low gene complexity should be inspected before removal.
+* High UMI/count depth with low gene complexity should be inspected before removal.
 * Cell cycle can be expected biology, a confounder, or both; inspect before regression or removal.
+* Ambient RNA correction can matter, but is outside the scope of this tutorial.
 * Batch correction and integration require separate analysis decisions.
 * UMAP is a visualization, not a statistical test.
 * Cluster marker genes are useful for annotation but are not the same as condition-level DGE.
