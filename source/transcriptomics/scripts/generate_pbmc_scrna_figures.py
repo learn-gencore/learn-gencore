@@ -148,6 +148,11 @@ def add_qc_flags(adata):
     )
 
 
+def save_scanpy_plot(filename):
+    plt.savefig(OUTDIR / filename, bbox_inches="tight")
+    plt.close("all")
+
+
 def plot_percentile_thresholds(adata):
     t = adata.uns["qc_thresholds"]
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
@@ -184,6 +189,32 @@ def plot_percentile_thresholds(adata):
     axes[1].set_title("MT upper guide")
 
     fig.savefig(OUTDIR / "pbmc_percentile_thresholds.png", bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_cell_cycle_scores(adata):
+    sc.pl.violin(
+        adata,
+        ["S_score", "G2M_score"],
+        groupby="phase",
+        multi_panel=True,
+        jitter=0.4,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_cell_cycle_scores.png")
+
+
+def plot_pca_elbow(adata, filename, n_pcs=50):
+    variance_ratio = adata.uns["pca"]["variance_ratio"][:n_pcs]
+    pcs = np.arange(1, len(variance_ratio) + 1)
+
+    fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
+    ax.plot(pcs, variance_ratio, marker="o", markersize=3, linewidth=1)
+    ax.set_yscale("log")
+    ax.set_xlabel("Principal component")
+    ax.set_ylabel("Variance ratio, log scale")
+    ax.set_title("PCA elbow plot")
+    fig.savefig(OUTDIR / filename, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -252,11 +283,35 @@ def plot_flagged_cells(adata):
     plt.close(fig)
 
 
-def run_representation(adata):
+def run_representation(adata, n_pcs=30, save_diagnostics=False):
     sc.pp.highly_variable_genes(adata, n_top_genes=2000, flavor="seurat")
+
+    if save_diagnostics:
+        sc.pl.highly_variable_genes(adata, show=False)
+        save_scanpy_plot("pbmc_highly_variable_genes.png")
+
     sc.pp.scale(adata, max_value=10)
     sc.tl.pca(adata, svd_solver="arpack", mask_var="highly_variable")
-    sc.pp.neighbors(adata, n_neighbors=15, n_pcs=30)
+
+    if save_diagnostics:
+        plot_pca_elbow(adata, "pbmc_pca_elbow.png", n_pcs=50)
+
+        sc.pl.pca(
+            adata,
+            color=[
+                "total_counts",
+                "n_genes_by_counts",
+                "pct_counts_mt",
+                "S_score",
+                "G2M_score",
+                "phase",
+            ],
+            ncols=3,
+            show=False,
+        )
+        save_scanpy_plot("pbmc_pca_qc.png")
+
+    sc.pp.neighbors(adata, n_neighbors=15, n_pcs=n_pcs)
     sc.tl.leiden(adata, resolution=0.5, key_added="leiden_0_5")
     sc.tl.umap(adata)
 
@@ -293,6 +348,108 @@ def plot_qc_flags_by_cluster(adata):
     ax.figure.tight_layout()
     ax.figure.savefig(OUTDIR / "pbmc_qc_flags_by_cluster.png", bbox_inches="tight")
     plt.close(ax.figure)
+
+
+def assign_broad_cell_types(adata, marker_genes):
+    score_to_cell_type = {}
+
+    for cell_type, genes in marker_genes.items():
+        genes_present = [gene for gene in genes if gene in adata.raw.var_names]
+        if len(genes_present) == 0:
+            continue
+
+        score_name = (
+            "score_"
+            + cell_type.lower()
+            .replace(" ", "_")
+            .replace("/", "_")
+        )
+        sc.tl.score_genes(
+            adata,
+            gene_list=genes_present,
+            score_name=score_name,
+            random_state=0,
+            use_raw=True,
+        )
+        score_to_cell_type[score_name] = cell_type
+
+    score_columns = list(score_to_cell_type)
+    cluster_scores = (
+        adata.obs
+        .groupby("leiden_0_5", observed=True)[score_columns]
+        .mean()
+    )
+    cluster_to_cell_type = (
+        cluster_scores
+        .idxmax(axis=1)
+        .map(score_to_cell_type)
+    )
+
+    adata.obs["cell_type"] = (
+        adata.obs["leiden_0_5"]
+        .map(cluster_to_cell_type)
+        .astype("category")
+    )
+
+
+def plot_t_cell_subclustering(adata_qc):
+    broad_class = "T cells"
+    is_t_cell = adata_qc.obs["cell_type"].astype(str).eq(broad_class)
+
+    if int(is_t_cell.sum()) < 50:
+        return
+
+    adata_sub = adata_qc[is_t_cell].copy()
+    adata_sub.X = adata_sub.layers["lognorm"].copy()
+
+    sc.pp.highly_variable_genes(
+        adata_sub,
+        n_top_genes=min(1000, adata_sub.n_vars),
+        flavor="seurat",
+    )
+    sc.pp.scale(adata_sub, max_value=10)
+    sc.tl.pca(adata_sub, svd_solver="arpack", mask_var="highly_variable")
+
+    plot_pca_elbow(adata_sub, "pbmc_t_cell_subclustering_elbow.png", n_pcs=50)
+
+    sub_n_pcs = min(20, adata_sub.obsm["X_pca"].shape[1])
+    sc.pp.neighbors(adata_sub, n_neighbors=15, n_pcs=sub_n_pcs)
+    sc.tl.leiden(adata_sub, resolution=0.5, key_added="subcluster")
+    sc.tl.umap(adata_sub)
+
+    sc.pl.umap(
+        adata_sub,
+        color=["subcluster", "primary_qc_flag", "phase"],
+        ncols=3,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_t_cell_subclustering_umap.png")
+
+    sc.tl.rank_genes_groups(
+        adata_sub,
+        groupby="subcluster",
+        method="wilcoxon",
+        use_raw=True,
+    )
+    sc.pl.rank_genes_groups(
+        adata_sub,
+        n_genes=15,
+        sharey=False,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_t_cell_subclustering_rank_genes.png")
+
+    adata_qc.obs["subcluster_label"] = pd.NA
+    adata_qc.obs.loc[adata_sub.obs_names, "subcluster_label"] = (
+        broad_class + "_" + adata_sub.obs["subcluster"].astype(str)
+    )
+
+    sc.pl.umap(
+        adata_qc,
+        color=["cell_type", "subcluster_label"],
+        show=False,
+    )
+    save_scanpy_plot("pbmc_t_cell_subcluster_labels_full_umap.png")
 
 
 def main():
@@ -337,7 +494,8 @@ def main():
     sc.pp.log1p(adata_work)
     adata_work.layers["lognorm"] = adata_work.X.copy()
     score_cell_cycle(adata_work)
-    run_representation(adata_work)
+    plot_cell_cycle_scores(adata_work)
+    run_representation(adata_work, n_pcs=30, save_diagnostics=True)
 
     sc.pl.umap(
         adata_work,
@@ -371,7 +529,23 @@ def main():
     adata_qc.layers["lognorm"] = adata_qc.X.copy()
     adata_qc.raw = adata_qc
     score_cell_cycle(adata_qc)
-    run_representation(adata_qc)
+    run_representation(adata_qc, n_pcs=30)
+
+    sc.pl.umap(
+        adata_qc,
+        color=[
+            "leiden_0_5",
+            "total_counts",
+            "n_genes_by_counts",
+            "pct_counts_mt",
+            "S_score",
+            "G2M_score",
+            "phase",
+        ],
+        ncols=3,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_final_umap_qc.png")
 
     marker_genes = {
         "T cells": ["CD3D", "CD3E", "TRAC"],
@@ -399,6 +573,42 @@ def main():
     )
     dotplot.savefig(OUTDIR / "pbmc_marker_dotplot.png", bbox_inches="tight")
     plt.close("all")
+
+    genes_to_plot = ["CD3D", "MS4A1", "LYZ", "NKG7", "PPBP"]
+    genes_to_plot = [gene for gene in genes_to_plot if gene in adata_qc.var_names]
+    sc.pl.umap(
+        adata_qc,
+        color=genes_to_plot,
+        vmax="p99",
+        use_raw=True,
+        ncols=3,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_marker_umaps.png")
+
+    sc.tl.rank_genes_groups(
+        adata_qc,
+        groupby="leiden_0_5",
+        method="wilcoxon",
+        use_raw=True,
+    )
+    sc.pl.rank_genes_groups(
+        adata_qc,
+        n_genes=15,
+        sharey=False,
+        show=False,
+    )
+    save_scanpy_plot("pbmc_rank_genes_groups.png")
+
+    assign_broad_cell_types(adata_qc, marker_genes)
+    sc.pl.umap(
+        adata_qc,
+        color=["leiden_0_5", "cell_type"],
+        show=False,
+    )
+    save_scanpy_plot("pbmc_cell_type_umap.png")
+
+    plot_t_cell_subclustering(adata_qc)
 
 
 if __name__ == "__main__":

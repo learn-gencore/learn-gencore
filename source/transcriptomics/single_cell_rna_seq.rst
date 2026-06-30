@@ -659,6 +659,15 @@ Code
        jitter=0.4,
    )
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_cell_cycle_scores.png
+   :alt: PBMC 3k cell cycle score violin plots grouped by assigned phase.
+
+   PBMC 3k cell cycle scores. These plots show whether S-phase and G2/M scores
+   separate a subset of cells enough to consider during cluster interpretation.
+
 
 9. Select highly variable genes
 -------------------------------
@@ -692,6 +701,15 @@ Code
    sc.pl.highly_variable_genes(adata_work)
 
    print(adata_work.var["highly_variable"].value_counts())
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_highly_variable_genes.png
+   :alt: PBMC 3k highly variable gene selection plot.
+
+   PBMC 3k highly variable gene selection. HVGs are used as a feature mask for
+   PCA and graph construction while the full cleaned object is retained.
 
 
 10. Scale data
@@ -762,6 +780,22 @@ Code
            "phase",
        ],
    )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_pca_elbow.png
+   :alt: PBMC 3k PCA variance-ratio elbow plot.
+
+   PBMC 3k PCA variance-ratio elbow plot. The curve helps choose a starting
+   number of PCs for the neighbor graph.
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_pca_qc.png
+   :alt: PBMC 3k PCA plots colored by QC metrics and cell cycle scores.
+
+   PBMC 3k PCA colored by QC metrics and cell cycle state. This checks whether
+   major PCs are dominated by count depth, mitochondrial fraction, or cell
+   cycle.
 
 Choose number of PCs
 ~~~~~~~~~~~~~~~~~~~~
@@ -1131,6 +1165,16 @@ Code
        ],
    )
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_final_umap_qc.png
+   :alt: PBMC 3k final UMAP after QC review and rerunning PCA, clustering, and UMAP.
+
+   PBMC 3k final UMAP after reviewed filtering and rerunning the representation.
+   The cleaned embedding should be inspected again for QC and cell cycle
+   structure.
+
 
 Optional covariate handling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1230,6 +1274,15 @@ UMAP marker overlays
        use_raw=True,
    )
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_marker_umaps.png
+   :alt: PBMC 3k UMAP marker overlays for CD3D, MS4A1, LYZ, NKG7, and PPBP.
+
+   PBMC 3k marker overlays on the final UMAP. Marker overlays help connect
+   clusters to expected cell classes before assigning labels.
+
 
 17. Find cluster marker genes
 -----------------------------
@@ -1269,6 +1322,15 @@ Code
 
    marker_table.to_csv("cluster_markers_wilcoxon.csv", index=False)
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_rank_genes_groups.png
+   :alt: PBMC 3k ranked marker genes by Leiden cluster.
+
+   PBMC 3k ranked marker genes by Leiden cluster. These rankings support
+   annotation, but they are not condition-level differential expression.
+
 
 18. Annotate clusters
 ---------------------
@@ -1307,6 +1369,15 @@ Code
        adata_qc,
        color=["leiden_0_5", "cell_type"],
    )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_cell_type_umap.png
+   :alt: PBMC 3k UMAP colored by Leiden cluster and provisional broad cell type.
+
+   PBMC 3k UMAP with provisional broad cell-type labels. In your own analysis,
+   edit the cluster-to-cell-type mapping after marker review.
 
 
 Optional: iterative clustering for subtypes
@@ -1404,6 +1475,27 @@ Example code for one broad class:
        sharey=False,
    )
 
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_t_cell_subclustering_elbow.png
+   :alt: PBMC 3k T-cell subclustering PCA elbow plot.
+
+   PBMC 3k T-cell-only PCA elbow plot. Subclustering should choose PCs from the
+   subset representation, not from the global representation.
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_t_cell_subclustering_umap.png
+   :alt: PBMC 3k T-cell subclustering UMAP colored by subcluster, QC flag, and cell cycle phase.
+
+   PBMC 3k T-cell-only UMAP colored by subcluster, QC flag, and cell cycle
+   phase. The same QC review logic applies inside the subset.
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_t_cell_subclustering_rank_genes.png
+   :alt: PBMC 3k ranked marker genes for T-cell subclusters.
+
+   PBMC 3k ranked marker genes for T-cell subclusters. Subtype labels should be
+   assigned only after reviewing these markers and the experiment context.
+
 Map subtype labels back to the full cleaned object:
 
 .. code-block:: python
@@ -1417,6 +1509,15 @@ Map subtype labels back to the full cleaned object:
        adata_qc,
        color=["cell_type", "subcluster_label"],
    )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_t_cell_subcluster_labels_full_umap.png
+   :alt: PBMC 3k full UMAP with T-cell subcluster labels mapped back to the full object.
+
+   PBMC 3k full UMAP with T-cell subcluster labels mapped back onto the cleaned
+   object. Subtype labels should remain nested within their broad cell class.
 
 Only report subtypes when they have enough cells, coherent marker genes, and a
 reasonable relationship to the experiment. Very small subclusters, clusters
