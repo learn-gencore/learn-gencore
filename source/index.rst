@@ -11,7 +11,6 @@ Contents:
    :maxdepth: 2
 
 
-   primary_analysis/index
    transcriptomics/index
    variant_detection/index
    epigenomics/index
@@ -19,3 +18,4 @@ Contents:
    programming/index
    denovo/index
    metagenomics/index
+   primary_analysis/index
