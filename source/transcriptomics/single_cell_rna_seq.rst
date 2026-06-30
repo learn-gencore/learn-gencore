@@ -18,7 +18,7 @@ By the end of this tutorial, you should be able to:
 
 * Load 10x Genomics data from either a matrix directory or an HDF5 file.
 * Compute and visualize quality-control metrics.
-* Choose data-driven QC flags using percentiles and MAD-based summaries.
+* Choose data-driven QC flags using percentile-based starting thresholds.
 * Detect and review putative doublets.
 * Score cell cycle state and inspect whether it explains clustering.
 * Use a first-pass UMAP and cluster-level QC summaries to decide what to remove.
@@ -106,19 +106,6 @@ Inspect the object:
    print(adata.obs.head())
    print(adata.var.head())
 
-Optional sample metadata
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-If the object already contains a ``sample``, ``library``, ``donor``, or
-``condition`` column, keep it. If it does not, add those columns before QC when
-the information is available. Splitting multi-sample objects and integrating
-them is beyond the scope of this tutorial.
-
-.. code-block:: python
-
-   # Example only. Replace with real metadata for your experiment.
-   adata.obs["sample"] = "sample_1"
-
 PBMC example
 ~~~~~~~~~~~~
 
@@ -176,8 +163,6 @@ Common QC metrics include:
 * number of detected genes per cell
 * mitochondrial fraction
 * ribosomal fraction
-* hemoglobin fraction, especially in blood-like datasets
-* gene complexity ratio, such as detected genes per 1,000 counts
 * doublet score and predicted doublet status
 
 These metrics should be interpreted jointly rather than with one universal
@@ -194,30 +179,21 @@ Code
    # For mouse, mitochondrial genes usually start with "mt-".
    adata.var["mt"] = adata.var_names.str.upper().str.startswith("MT-")
    adata.var["ribo"] = adata.var_names.str.upper().str.startswith(("RPS", "RPL"))
-   adata.var["hb"] = adata.var_names.str.upper().str.match(r"^HB[^(P)]")
 
    sc.pp.calculate_qc_metrics(
        adata,
-       qc_vars=["mt", "ribo", "hb"],
+       qc_vars=["mt", "ribo"],
        percent_top=None,
        log1p=False,
        inplace=True,
-   )
-
-   adata.obs["genes_per_1k_counts"] = (
-       1000
-       * adata.obs["n_genes_by_counts"]
-       / adata.obs["total_counts"].replace(0, np.nan)
    )
 
    adata.obs[
        [
            "total_counts",
            "n_genes_by_counts",
-           "genes_per_1k_counts",
            "pct_counts_mt",
            "pct_counts_ribo",
-           "pct_counts_hb",
        ]
    ].describe()
 
@@ -263,10 +239,8 @@ Code
    qc_vars = [
        "total_counts",
        "n_genes_by_counts",
-       "genes_per_1k_counts",
        "pct_counts_mt",
        "pct_counts_ribo",
-       "pct_counts_hb",
        "doublet_score",
    ]
 
@@ -290,18 +264,11 @@ Code
        y="pct_counts_mt",
    )
 
-   sc.pl.scatter(
-       adata,
-       x="total_counts",
-       y="genes_per_1k_counts",
-       color="n_genes_by_counts",
-   )
-
 PBMC example output
 ~~~~~~~~~~~~~~~~~~~
 
 .. figure:: ../img/transcriptomics/scrna/pbmc_qc_distributions.png
-   :alt: PBMC 3k QC distributions for total counts, detected genes, gene complexity, and mitochondrial fraction.
+   :alt: PBMC 3k QC distributions for total counts, detected genes, mitochondrial fraction, and doublet score.
 
    Example QC distributions from the Scanpy PBMC 3k dataset. These plots show
    why thresholds should be derived from the observed dataset rather than copied
@@ -314,40 +281,21 @@ PBMC example output
 Conclusion
 ~~~~~~~~~~
 
-Percentile and MAD-based thresholds provide dataset-specific QC flags.
+Percentile-based thresholds provide dataset-specific QC flags.
 
 Motivation
 ~~~~~~~~~~
 
 Fixed cutoffs can be misleading. A mitochondrial threshold that is strict for one
 tissue may be permissive for another. A better strategy is to inspect the
-distribution and flag outliers using percentiles or median absolute deviation.
+distribution and flag cells using lower and upper percentiles as a starting
+rule. The 2.5th and 97.5th percentiles are not universal cutoffs. Treat them as
+initial guidelines, plot them on the data, and adjust them when the observed
+distribution and experiment justify a different decision.
+
 Do not reject cells at this stage. The flags are carried into the first PCA,
 clustering, and UMAP so you can decide whether they mark technical artifacts or
 real biology in the current experiment.
-
-Helper functions
-~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   def mad(x):
-       """Median absolute deviation, ignoring NaNs."""
-       x = np.asarray(x)
-       med = np.nanmedian(x)
-       return np.nanmedian(np.abs(x - med))
-
-   def mad_bounds(x, nmads=3, lower=True, upper=True):
-       """Return lower and upper MAD-based bounds."""
-       med = np.nanmedian(x)
-       m = mad(x)
-       lo = med - nmads * m if lower else -np.inf
-       hi = med + nmads * m if upper else np.inf
-       return lo, hi
-
-   def percentile_bounds(x, lower_q=1, upper_q=99):
-       """Return lower and upper percentile bounds."""
-       return np.nanpercentile(x, lower_q), np.nanpercentile(x, upper_q)
 
 
 Dataset-level data-driven thresholds
@@ -360,53 +308,70 @@ multi-sample objects is covered in a separate tutorial.
 
 .. code-block:: python
 
-   gene_lo_mad, gene_hi_mad = mad_bounds(
+   lower_q = 2.5
+   upper_q = 97.5
+
+   gene_lo, gene_hi = np.nanpercentile(
        adata.obs["n_genes_by_counts"],
-       nmads=3,
+       [lower_q, upper_q],
    )
 
-   count_lo_mad, count_hi_mad = mad_bounds(
+   count_lo, count_hi = np.nanpercentile(
        adata.obs["total_counts"],
-       nmads=3,
+       [lower_q, upper_q],
    )
 
-   _, mt_hi_mad = mad_bounds(
+   _, mt_hi = np.nanpercentile(
        adata.obs["pct_counts_mt"],
-       nmads=3,
-       lower=False,
-       upper=True,
+       [lower_q, upper_q],
    )
 
-   complexity_lo_mad, _ = mad_bounds(
-       adata.obs["genes_per_1k_counts"],
-       nmads=3,
-       lower=True,
-       upper=False,
+   print("Percentile starting thresholds")
+   print(f"n_genes_by_counts: lower={gene_lo:.1f}, upper={gene_hi:.1f}")
+   print(f"total_counts:      lower={count_lo:.1f}, upper={count_hi:.1f}")
+   print(f"pct_counts_mt:     upper={mt_hi:.1f}")
+
+
+Plot percentile thresholds
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   sc.pl.scatter(
+       adata,
+       x="total_counts",
+       y="n_genes_by_counts",
+       color="pct_counts_mt",
+       show=False,
    )
 
-   gene_p1, gene_p99 = percentile_bounds(adata.obs["n_genes_by_counts"], 1, 99)
-   count_p1, count_p99 = percentile_bounds(adata.obs["total_counts"], 1, 99)
-   mt_p1, mt_p99 = percentile_bounds(adata.obs["pct_counts_mt"], 1, 99)
-   complexity_p1, complexity_p99 = percentile_bounds(
-       adata.obs["genes_per_1k_counts"],
-       1,
-       99,
+   ax = plt.gca()
+   ax.axvline(count_lo, color="black", linestyle="--", linewidth=1)
+   ax.axvline(count_hi, color="black", linestyle="--", linewidth=1)
+   ax.axhline(gene_lo, color="black", linestyle="--", linewidth=1)
+   ax.axhline(gene_hi, color="black", linestyle="--", linewidth=1)
+
+   sc.pl.scatter(
+       adata,
+       x="total_counts",
+       y="pct_counts_mt",
+       show=False,
    )
 
-   print("MAD-based thresholds")
-   print(f"n_genes_by_counts: lower={gene_lo_mad:.1f}, upper={gene_hi_mad:.1f}")
-   print(f"total_counts:      lower={count_lo_mad:.1f}, upper={count_hi_mad:.1f}")
-   print(f"pct_counts_mt:     upper={mt_hi_mad:.1f}")
-   print(f"genes_per_1k_counts: lower={complexity_lo_mad:.1f}")
+   ax = plt.gca()
+   ax.axvline(count_lo, color="black", linestyle="--", linewidth=1)
+   ax.axvline(count_hi, color="black", linestyle="--", linewidth=1)
+   ax.axhline(mt_hi, color="black", linestyle="--", linewidth=1)
 
-   print("Percentile thresholds")
-   print(f"n_genes_by_counts: p1={gene_p1:.1f}, p99={gene_p99:.1f}")
-   print(f"total_counts:      p1={count_p1:.1f}, p99={count_p99:.1f}")
-   print(f"pct_counts_mt:     p99={mt_p99:.1f}")
-   print(
-       "genes_per_1k_counts: "
-       f"p1={complexity_p1:.1f}, p99={complexity_p99:.1f}"
-   )
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_percentile_thresholds.png
+   :alt: PBMC 3k QC scatter plots with 2.5th and 97.5th percentile starting thresholds.
+
+   PBMC 3k QC scatter plots with percentile starting thresholds overlaid. These
+   lines are a first pass, not final decisions; a different dataset can require
+   different thresholds after visual inspection.
 
 
 Flag QC outliers, but do not remove them yet
@@ -414,14 +379,14 @@ Flag QC outliers, but do not remove them yet
 
 .. code-block:: python
 
-   adata.obs["qc_low_genes"] = adata.obs["n_genes_by_counts"] < gene_lo_mad
-   adata.obs["qc_high_genes"] = adata.obs["n_genes_by_counts"] > gene_hi_mad
-   adata.obs["qc_low_counts"] = adata.obs["total_counts"] < count_lo_mad
-   adata.obs["qc_high_counts"] = adata.obs["total_counts"] > count_hi_mad
-   adata.obs["qc_high_mt"] = adata.obs["pct_counts_mt"] > mt_hi_mad
-   adata.obs["qc_high_counts_low_complexity"] = (
+   adata.obs["qc_low_genes"] = adata.obs["n_genes_by_counts"] < gene_lo
+   adata.obs["qc_high_genes"] = adata.obs["n_genes_by_counts"] > gene_hi
+   adata.obs["qc_low_counts"] = adata.obs["total_counts"] < count_lo
+   adata.obs["qc_high_counts"] = adata.obs["total_counts"] > count_hi
+   adata.obs["qc_high_mt"] = adata.obs["pct_counts_mt"] > mt_hi
+   adata.obs["qc_high_counts_low_genes"] = (
        adata.obs["qc_high_counts"]
-       & (adata.obs["genes_per_1k_counts"] < complexity_lo_mad)
+       & adata.obs["qc_low_genes"]
    )
    adata.obs["qc_predicted_doublet"] = adata.obs["predicted_doublet"].astype(bool)
 
@@ -431,7 +396,7 @@ Flag QC outliers, but do not remove them yet
        "qc_low_counts",
        "qc_high_counts",
        "qc_high_mt",
-       "qc_high_counts_low_complexity",
+       "qc_high_counts_low_genes",
        "qc_predicted_doublet",
    ]
 
@@ -451,7 +416,6 @@ Inspect flagged cells
        [
            "total_counts",
            "n_genes_by_counts",
-           "genes_per_1k_counts",
            "pct_counts_mt",
            "doublet_score",
        ],
@@ -477,9 +441,19 @@ Inspect flagged cells
    sc.pl.scatter(
        adata,
        x="total_counts",
-       y="genes_per_1k_counts",
-       color="qc_high_counts_low_complexity",
+       y="n_genes_by_counts",
+       color="qc_high_counts_low_genes",
    )
+
+PBMC example output
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../img/transcriptomics/scrna/pbmc_flagged_cells.png
+   :alt: PBMC 3k flagged-cell inspection plots.
+
+   PBMC 3k flagged-cell inspection plots. The same percentile guidelines can
+   flag different patterns across datasets, so these plots should be reviewed
+   before any removal.
 
 Keep the original object for review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -487,10 +461,10 @@ Keep the original object for review
 At this point, the cells are only flagged. A high mitochondrial fraction could
 represent damaged cells, but it can also be plausible in some cell states. High
 gene and count content can indicate doublets, but it can also reflect larger or
-more transcriptionally active cells. High UMI/count depth with low gene
-complexity can reflect signal concentrated in a small set of genes, ambient or
-damaged-cell signal, or a real cell state with dominant transcripts. The first embedding
-should show where these flags fall before cells are removed.
+more transcriptionally active cells. High UMI/count depth with low detected-gene
+content can reflect signal concentrated in a small set of genes, ambient or
+damaged-cell signal, or a real cell state with dominant transcripts. The first
+embedding should show where these flags fall before cells are removed.
 
 .. code-block:: python
 
@@ -677,26 +651,6 @@ Code
    print(adata_work.var["highly_variable"].value_counts())
 
 
-Optional: batch-aware HVG selection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If multiple samples are present, use ``batch_key`` so that genes are selected
-based on reproducible variability across samples.
-
-.. code-block:: python
-
-   if "sample" in adata_work.obs:
-       sc.pp.highly_variable_genes(
-           adata_work,
-           n_top_genes=2000,
-           flavor="seurat_v3",
-           layer="counts",
-           batch_key="sample",
-       )
-
-       sc.pl.highly_variable_genes(adata_work)
-
-
 10. Scale data
 --------------
 
@@ -865,12 +819,11 @@ Code
            "leiden_0_5",
            "qc_flag",
            "qc_flag_count",
-           "qc_high_counts_low_complexity",
+           "qc_high_counts_low_genes",
            "predicted_doublet",
            "doublet_score",
            "total_counts",
            "n_genes_by_counts",
-           "genes_per_1k_counts",
            "pct_counts_mt",
            "S_score",
            "G2M_score",
@@ -898,7 +851,7 @@ PBMC example output
 ~~~~~~~~~~~~~~~~~~~
 
 .. figure:: ../img/transcriptomics/scrna/pbmc_first_pass_umap_qc.png
-   :alt: PBMC 3k first-pass UMAP colored by Leiden cluster, QC flag, detected genes, mitochondrial fraction, gene complexity, and cell cycle phase.
+   :alt: PBMC 3k first-pass UMAP colored by Leiden cluster, QC flag, detected genes, mitochondrial fraction, and cell cycle phase.
 
    First-pass PBMC 3k UMAP used for QC review. QC flags and cell cycle phase are
    inspected in the same embedding as the clustering result before cells are
@@ -919,8 +872,8 @@ experiment.
        adata_work.obs
        .assign(
            qc_flag_bool=adata_work.obs["qc_flag"].astype(bool),
-           high_counts_low_complexity_bool=adata_work.obs[
-               "qc_high_counts_low_complexity"
+           high_counts_low_genes_bool=adata_work.obs[
+               "qc_high_counts_low_genes"
            ].astype(bool),
            predicted_doublet_bool=adata_work.obs["predicted_doublet"].astype(bool),
            s_phase_bool=adata_work.obs["phase"].astype(str).eq("S"),
@@ -930,14 +883,13 @@ experiment.
        .agg(
            n_cells=("qc_flag_bool", "size"),
            qc_flag_fraction=("qc_flag_bool", "mean"),
-           high_counts_low_complexity_fraction=(
-               "high_counts_low_complexity_bool",
+           high_counts_low_genes_fraction=(
+               "high_counts_low_genes_bool",
                "mean",
            ),
            doublet_fraction=("predicted_doublet_bool", "mean"),
            median_genes=("n_genes_by_counts", "median"),
            median_counts=("total_counts", "median"),
-           median_genes_per_1k_counts=("genes_per_1k_counts", "median"),
            median_pct_counts_mt=("pct_counts_mt", "median"),
            median_s_score=("S_score", "median"),
            median_g2m_score=("G2M_score", "median"),
@@ -967,7 +919,7 @@ The first-pass embedding is a diagnostic view. It answers questions such as:
 * Do high-mitochondrial cells form a low-gene, low-count cluster consistent with
   damaged cells?
 * Do high-gene and high-count cells also have high doublet scores?
-* Do high-count cells with low gene complexity cluster together, and do their
+* Do high-count cells with low detected-gene content cluster together, and do their
   marker genes suggest a technical artifact or expected biology?
 * Do clusters separate primarily by cell cycle phase, and is proliferation
   expected for the sample?
@@ -975,8 +927,8 @@ The first-pass embedding is a diagnostic view. It answers questions such as:
 * Could high mitochondrial or gene content be expected for this experiment?
 
 After this review, define a removal rule that matches the experiment. The
-example below removes low-complexity cells, high-count low-complexity cells,
-and predicted doublets. High mitochondrial cells are left as a commented
+example below removes low-gene cells, high-count low-gene cells, and predicted
+doublets. High mitochondrial cells are left as a commented
 decision because they require experiment-specific interpretation.
 
 Code
@@ -987,7 +939,7 @@ Code
    adata.obs["remove_after_qc_review"] = (
        adata.obs["qc_low_genes"] |
        adata.obs["qc_low_counts"] |
-       adata.obs["qc_high_counts_low_complexity"] |
+       adata.obs["qc_high_counts_low_genes"] |
        adata.obs["qc_predicted_doublet"]
    )
 
@@ -1059,7 +1011,6 @@ Code
            "leiden_0_5",
            "total_counts",
            "n_genes_by_counts",
-           "genes_per_1k_counts",
            "pct_counts_mt",
            "S_score",
            "G2M_score",
@@ -1071,8 +1022,8 @@ Code
 Optional covariate handling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Cell cycle score, sample identity, mitochondrial fraction, count depth, gene
-complexity, and doublet score can all explain structure. Inspect them before
+Cell cycle score, sample identity, mitochondrial fraction, count depth,
+detected-gene content, and doublet score can all explain structure. Inspect them before
 deciding whether to regress, stratify, correct, or leave them unchanged.
 Regression is not shown here because it should follow from the biological
 question and experimental design.
@@ -1278,8 +1229,7 @@ Recommended report items
 * Number of cells before and after QC.
 * Number of genes before and after filtering.
 * QC metrics used.
-* Whether thresholds were global or per sample.
-* Percentile and MAD values used.
+* Dataset-level percentile values used.
 * Gene detection threshold used for gene filtering.
 * Cell cycle gene set used and whether gene identifiers were converted.
 * Whether any covariates were regressed, corrected, stratified, or left unchanged.
@@ -1288,7 +1238,7 @@ Recommended report items
 * Number and fraction of cells removed after QC review.
 * First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.
 * Proportion of QC-flagged cells per first-pass cluster.
-* Proportion of high-count, low-complexity cells per first-pass cluster.
+* Proportion of high-count, low-gene cells per first-pass cluster.
 * Proportion of S-phase and G2/M-phase cells per first-pass cluster.
 * Final UMAP after reviewed filtering and rerunning PCA, clustering, and UMAP.
 * Marker-gene dot plot used for annotation.
@@ -1302,7 +1252,7 @@ Example summary table
        "metric": [
            "cells_before_qc",
            "cells_flagged_for_review",
-           "cells_high_counts_low_complexity",
+           "cells_high_counts_low_genes",
            "cells_s_phase",
            "cells_g2m_phase",
            "cells_removed_after_review",
@@ -1312,7 +1262,7 @@ Example summary table
        "value": [
            adata.n_obs,
            int(adata.obs["qc_flag"].sum()),
-           int(adata.obs["qc_high_counts_low_complexity"].sum()),
+           int(adata.obs["qc_high_counts_low_genes"].sum()),
            int((adata.obs["phase"].astype(str) == "S").sum()),
            int((adata.obs["phase"].astype(str) == "G2M").sum()),
            int(adata.obs["remove_after_qc_review"].sum()),
@@ -1388,7 +1338,7 @@ Key cautions
 * QC should be run on individual experiments or captures before integration.
 * Flag questionable cells before removing them.
 * High mitochondrial content or high gene content can be biological in some experiments.
-* High UMI/count depth with low gene complexity should be inspected before removal.
+* High UMI/count depth with low detected-gene content should be inspected before removal.
 * Cell cycle can be expected biology, a confounder, or both; inspect before regression or removal.
 * Ambient RNA correction can matter, but is outside the scope of this tutorial.
 * Batch correction and integration require separate analysis decisions.

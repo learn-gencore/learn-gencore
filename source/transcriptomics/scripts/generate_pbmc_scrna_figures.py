@@ -13,21 +13,32 @@ OUTDIR = Path("source/img/transcriptomics/scrna")
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 sc.settings.verbosity = 1
+sc.settings.datasetdir = "/private/tmp/scanpy-data"
 sc.settings.set_figure_params(dpi=120, facecolor="white", frameon=False)
 
 
-def mad(x):
-    x = np.asarray(x)
-    med = np.nanmedian(x)
-    return np.nanmedian(np.abs(x - med))
-
-
-def mad_bounds(x, nmads=3, lower=True, upper=True):
-    med = np.nanmedian(x)
-    m = mad(x)
-    lo = med - nmads * m if lower else -np.inf
-    hi = med + nmads * m if upper else np.inf
-    return lo, hi
+def percentile_thresholds(adata, lower_q=2.5, upper_q=97.5):
+    gene_lo, gene_hi = np.nanpercentile(
+        adata.obs["n_genes_by_counts"],
+        [lower_q, upper_q],
+    )
+    count_lo, count_hi = np.nanpercentile(
+        adata.obs["total_counts"],
+        [lower_q, upper_q],
+    )
+    _, mt_hi = np.nanpercentile(
+        adata.obs["pct_counts_mt"],
+        [lower_q, upper_q],
+    )
+    return {
+        "lower_q": lower_q,
+        "upper_q": upper_q,
+        "gene_lo": gene_lo,
+        "gene_hi": gene_hi,
+        "count_lo": count_lo,
+        "count_hi": count_hi,
+        "mt_hi": mt_hi,
+    }
 
 
 def score_cell_cycle(adata):
@@ -55,24 +66,21 @@ def score_cell_cycle(adata):
 
 
 def add_qc_flags(adata):
-    gene_lo, gene_hi = mad_bounds(adata.obs["n_genes_by_counts"], nmads=3)
-    count_lo, count_hi = mad_bounds(adata.obs["total_counts"], nmads=3)
-    _, mt_hi = mad_bounds(adata.obs["pct_counts_mt"], nmads=3, lower=False)
-    complexity_lo, _ = mad_bounds(
-        adata.obs["genes_per_1k_counts"],
-        nmads=3,
-        lower=True,
-        upper=False,
-    )
+    thresholds = percentile_thresholds(adata)
+    adata.uns["qc_thresholds"] = thresholds
 
-    adata.obs["qc_low_genes"] = adata.obs["n_genes_by_counts"] < gene_lo
-    adata.obs["qc_high_genes"] = adata.obs["n_genes_by_counts"] > gene_hi
-    adata.obs["qc_low_counts"] = adata.obs["total_counts"] < count_lo
-    adata.obs["qc_high_counts"] = adata.obs["total_counts"] > count_hi
-    adata.obs["qc_high_mt"] = adata.obs["pct_counts_mt"] > mt_hi
-    adata.obs["qc_high_counts_low_complexity"] = (
+    adata.obs["qc_low_genes"] = (
+        adata.obs["n_genes_by_counts"] < thresholds["gene_lo"]
+    )
+    adata.obs["qc_high_genes"] = (
+        adata.obs["n_genes_by_counts"] > thresholds["gene_hi"]
+    )
+    adata.obs["qc_low_counts"] = adata.obs["total_counts"] < thresholds["count_lo"]
+    adata.obs["qc_high_counts"] = adata.obs["total_counts"] > thresholds["count_hi"]
+    adata.obs["qc_high_mt"] = adata.obs["pct_counts_mt"] > thresholds["mt_hi"]
+    adata.obs["qc_high_counts_low_genes"] = (
         adata.obs["qc_high_counts"]
-        & (adata.obs["genes_per_1k_counts"] < complexity_lo)
+        & adata.obs["qc_low_genes"]
     )
 
     # Keep the example fast and deterministic. The tutorial text discusses
@@ -87,11 +95,98 @@ def add_qc_flags(adata):
         "qc_low_counts",
         "qc_high_counts",
         "qc_high_mt",
-        "qc_high_counts_low_complexity",
+        "qc_high_counts_low_genes",
         "qc_predicted_doublet",
     ]
     adata.obs["qc_flag"] = adata.obs[qc_flag_columns].any(axis=1)
     adata.obs["qc_flag_count"] = adata.obs[qc_flag_columns].sum(axis=1)
+
+
+def plot_percentile_thresholds(adata):
+    t = adata.uns["qc_thresholds"]
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
+
+    scatter = axes[0].scatter(
+        adata.obs["total_counts"],
+        adata.obs["n_genes_by_counts"],
+        c=adata.obs["pct_counts_mt"],
+        s=8,
+        linewidths=0,
+        alpha=0.75,
+    )
+    axes[0].axvline(t["count_lo"], color="black", linestyle="--", linewidth=1)
+    axes[0].axvline(t["count_hi"], color="black", linestyle="--", linewidth=1)
+    axes[0].axhline(t["gene_lo"], color="black", linestyle="--", linewidth=1)
+    axes[0].axhline(t["gene_hi"], color="black", linestyle="--", linewidth=1)
+    axes[0].set_xlabel("total_counts")
+    axes[0].set_ylabel("n_genes_by_counts")
+    axes[0].set_title("2.5/97.5 percentile guides")
+    fig.colorbar(scatter, ax=axes[0], label="pct_counts_mt")
+
+    axes[1].scatter(
+        adata.obs["total_counts"],
+        adata.obs["pct_counts_mt"],
+        s=8,
+        linewidths=0,
+        alpha=0.75,
+    )
+    axes[1].axvline(t["count_lo"], color="black", linestyle="--", linewidth=1)
+    axes[1].axvline(t["count_hi"], color="black", linestyle="--", linewidth=1)
+    axes[1].axhline(t["mt_hi"], color="black", linestyle="--", linewidth=1)
+    axes[1].set_xlabel("total_counts")
+    axes[1].set_ylabel("pct_counts_mt")
+    axes[1].set_title("MT upper guide")
+
+    fig.savefig(OUTDIR / "pbmc_percentile_thresholds.png", bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_flagged_cells(adata):
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4), constrained_layout=True)
+
+    colors = adata.obs["qc_flag"].map({False: "#1f77b4", True: "#ff7f0e"})
+    axes[0].scatter(
+        adata.obs["total_counts"],
+        adata.obs["n_genes_by_counts"],
+        c=colors,
+        s=8,
+        linewidths=0,
+        alpha=0.75,
+    )
+    axes[0].set_xlabel("total_counts")
+    axes[0].set_ylabel("n_genes_by_counts")
+    axes[0].set_title("Any QC flag")
+
+    colors = adata.obs["qc_high_mt"].map({False: "#1f77b4", True: "#ff7f0e"})
+    axes[1].scatter(
+        adata.obs["total_counts"],
+        adata.obs["pct_counts_mt"],
+        c=colors,
+        s=8,
+        linewidths=0,
+        alpha=0.75,
+    )
+    axes[1].set_xlabel("total_counts")
+    axes[1].set_ylabel("pct_counts_mt")
+    axes[1].set_title("High MT flag")
+
+    colors = adata.obs["qc_high_counts_low_genes"].map(
+        {False: "#1f77b4", True: "#ff7f0e"}
+    )
+    axes[2].scatter(
+        adata.obs["total_counts"],
+        adata.obs["n_genes_by_counts"],
+        c=colors,
+        s=8,
+        linewidths=0,
+        alpha=0.75,
+    )
+    axes[2].set_xlabel("total_counts")
+    axes[2].set_ylabel("n_genes_by_counts")
+    axes[2].set_title("High count, low gene flag")
+
+    fig.savefig(OUTDIR / "pbmc_flagged_cells.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 def run_representation(adata):
@@ -110,18 +205,12 @@ def main():
 
     adata.var["mt"] = adata.var_names.str.upper().str.startswith("MT-")
     adata.var["ribo"] = adata.var_names.str.upper().str.startswith(("RPS", "RPL"))
-    adata.var["hb"] = adata.var_names.str.upper().str.match(r"^HB[^(P)]")
     sc.pp.calculate_qc_metrics(
         adata,
-        qc_vars=["mt", "ribo", "hb"],
+        qc_vars=["mt", "ribo"],
         percent_top=None,
         log1p=False,
         inplace=True,
-    )
-    adata.obs["genes_per_1k_counts"] = (
-        1000
-        * adata.obs["n_genes_by_counts"]
-        / adata.obs["total_counts"].replace(0, np.nan)
     )
     add_qc_flags(adata)
 
@@ -130,8 +219,8 @@ def main():
         [
             "total_counts",
             "n_genes_by_counts",
-            "genes_per_1k_counts",
             "pct_counts_mt",
+            "doublet_score",
         ],
         multi_panel=True,
         jitter=0.4,
@@ -139,6 +228,8 @@ def main():
     )
     plt.savefig(OUTDIR / "pbmc_qc_distributions.png", bbox_inches="tight")
     plt.close("all")
+    plot_percentile_thresholds(adata)
+    plot_flagged_cells(adata)
 
     adata_work = adata.copy()
     min_cells = max(3, int(np.ceil(0.001 * adata_work.n_obs)))
@@ -158,7 +249,6 @@ def main():
             "qc_flag",
             "n_genes_by_counts",
             "pct_counts_mt",
-            "genes_per_1k_counts",
             "phase",
         ],
         ncols=3,
@@ -170,7 +260,7 @@ def main():
     adata.obs["remove_after_qc_review"] = (
         adata.obs["qc_low_genes"]
         | adata.obs["qc_low_counts"]
-        | adata.obs["qc_high_counts_low_complexity"]
+        | adata.obs["qc_high_counts_low_genes"]
     )
     adata_qc = adata[~adata.obs["remove_after_qc_review"]].copy()
     min_cells = max(3, int(np.ceil(0.001 * adata_qc.n_obs)))
