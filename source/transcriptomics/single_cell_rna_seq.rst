@@ -3,9 +3,9 @@ Single-cell RNA-seq analysis with Scanpy
 
 This tutorial introduces a dataset-specific single-cell RNA-seq analysis
 workflow using Scanpy. It starts from a 10x Genomics count matrix, computes QC
-and doublet flags, builds an initial embedding for QC review, removes cells only
-after inspection, and then reruns PCA, clustering, UMAP visualization, and
-marker-gene plots on the cleaned dataset.
+and doublet flags, scores cell cycle state, builds an initial embedding for QC
+review, removes cells only after inspection, and then reruns PCA, clustering,
+UMAP visualization, and marker-gene plots on the cleaned dataset.
 
 The goal is not only to run the code, but to understand why each step is used.
 Batch correction and data integration are important, but they should be handled
@@ -20,6 +20,7 @@ By the end of this tutorial, you should be able to:
 * Compute and visualize quality-control metrics.
 * Choose data-driven QC flags using percentiles and MAD-based summaries.
 * Detect and review putative doublets.
+* Score cell cycle state and inspect whether it explains clustering.
 * Use a first-pass UMAP and cluster-level QC summaries to decide what to remove.
 * Normalize and log-transform single-cell counts.
 * Select highly variable genes.
@@ -145,6 +146,7 @@ Common QC metrics include:
 * mitochondrial fraction
 * ribosomal fraction
 * hemoglobin fraction, especially in blood-like datasets
+* gene complexity ratio, such as detected genes per 1,000 counts
 * doublet score and predicted doublet status
 
 These metrics should be interpreted jointly rather than with one universal
@@ -171,10 +173,17 @@ Code
        inplace=True,
    )
 
+   adata.obs["genes_per_1k_counts"] = (
+       1000
+       * adata.obs["n_genes_by_counts"]
+       / adata.obs["total_counts"].replace(0, np.nan)
+   )
+
    adata.obs[
        [
            "total_counts",
            "n_genes_by_counts",
+           "genes_per_1k_counts",
            "pct_counts_mt",
            "pct_counts_ribo",
            "pct_counts_hb",
@@ -223,6 +232,7 @@ Code
    qc_vars = [
        "total_counts",
        "n_genes_by_counts",
+       "genes_per_1k_counts",
        "pct_counts_mt",
        "pct_counts_ribo",
        "pct_counts_hb",
@@ -247,6 +257,13 @@ Code
        adata,
        x="total_counts",
        y="pct_counts_mt",
+   )
+
+   sc.pl.scatter(
+       adata,
+       x="total_counts",
+       y="genes_per_1k_counts",
+       color="n_genes_by_counts",
    )
 
 
@@ -314,19 +331,36 @@ Global data-driven thresholds
        upper=True,
    )
 
+   complexity_lo_mad, _ = mad_bounds(
+       adata.obs["genes_per_1k_counts"],
+       nmads=3,
+       lower=True,
+       upper=False,
+   )
+
    gene_p1, gene_p99 = percentile_bounds(adata.obs["n_genes_by_counts"], 1, 99)
    count_p1, count_p99 = percentile_bounds(adata.obs["total_counts"], 1, 99)
    mt_p1, mt_p99 = percentile_bounds(adata.obs["pct_counts_mt"], 1, 99)
+   complexity_p1, complexity_p99 = percentile_bounds(
+       adata.obs["genes_per_1k_counts"],
+       1,
+       99,
+   )
 
    print("MAD-based thresholds")
    print(f"n_genes_by_counts: lower={gene_lo_mad:.1f}, upper={gene_hi_mad:.1f}")
    print(f"total_counts:      lower={count_lo_mad:.1f}, upper={count_hi_mad:.1f}")
    print(f"pct_counts_mt:     upper={mt_hi_mad:.1f}")
+   print(f"genes_per_1k_counts: lower={complexity_lo_mad:.1f}")
 
    print("Percentile thresholds")
    print(f"n_genes_by_counts: p1={gene_p1:.1f}, p99={gene_p99:.1f}")
    print(f"total_counts:      p1={count_p1:.1f}, p99={count_p99:.1f}")
    print(f"pct_counts_mt:     p99={mt_p99:.1f}")
+   print(
+       "genes_per_1k_counts: "
+       f"p1={complexity_p1:.1f}, p99={complexity_p99:.1f}"
+   )
 
 
 Flag QC outliers, but do not remove them yet
@@ -339,6 +373,10 @@ Flag QC outliers, but do not remove them yet
    adata.obs["qc_low_counts"] = adata.obs["total_counts"] < count_lo_mad
    adata.obs["qc_high_counts"] = adata.obs["total_counts"] > count_hi_mad
    adata.obs["qc_high_mt"] = adata.obs["pct_counts_mt"] > mt_hi_mad
+   adata.obs["qc_high_counts_low_complexity"] = (
+       adata.obs["qc_high_counts"]
+       & (adata.obs["genes_per_1k_counts"] < complexity_lo_mad)
+   )
    adata.obs["qc_predicted_doublet"] = adata.obs["predicted_doublet"].astype(bool)
 
    qc_flag_columns = [
@@ -347,6 +385,7 @@ Flag QC outliers, but do not remove them yet
        "qc_low_counts",
        "qc_high_counts",
        "qc_high_mt",
+       "qc_high_counts_low_complexity",
        "qc_predicted_doublet",
    ]
 
@@ -363,7 +402,13 @@ Inspect flagged cells
 
    sc.pl.violin(
        adata,
-       ["total_counts", "n_genes_by_counts", "pct_counts_mt", "doublet_score"],
+       [
+           "total_counts",
+           "n_genes_by_counts",
+           "genes_per_1k_counts",
+           "pct_counts_mt",
+           "doublet_score",
+       ],
        groupby="qc_flag",
        multi_panel=True,
        jitter=0.4,
@@ -383,14 +428,23 @@ Inspect flagged cells
        color="qc_high_mt",
    )
 
+   sc.pl.scatter(
+       adata,
+       x="total_counts",
+       y="genes_per_1k_counts",
+       color="qc_high_counts_low_complexity",
+   )
+
 Keep the original object for review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 At this point, the cells are only flagged. A high mitochondrial fraction could
 represent damaged cells, but it can also be plausible in some cell states. High
 gene and count content can indicate doublets, but it can also reflect larger or
-more transcriptionally active cells. The first embedding should show where these
-flags fall before cells are removed.
+more transcriptionally active cells. High counts with low gene complexity can
+reflect reads concentrated in a small set of genes, ambient or damaged-cell
+signal, or a real cell state with dominant transcripts. The first embedding
+should show where these flags fall before cells are removed.
 
 .. code-block:: python
 
@@ -471,6 +525,64 @@ Code
 
    sc.pp.log1p(adata_work)
    adata_work.layers["lognorm"] = adata_work.X.copy()
+
+
+Cell cycle score analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cell cycle can be a biological signal or a confounder, depending on the
+experiment. Score it before PCA so you can inspect whether clusters or UMAP
+structure are dominated by S phase or G2/M phase. Do not regress out or remove
+cell cycle effects by default; decide after inspecting the experiment.
+
+The example below uses human gene symbols. For mouse or Ensembl identifiers,
+convert the list to match ``adata.var_names`` first.
+
+.. code-block:: python
+
+   s_genes = [
+       "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4", "RRM1", "UNG",
+       "GINS2", "MCM6", "CDCA7", "DTL", "PRIM1", "UHRF1", "CENPU",
+       "HELLS", "RFC2", "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
+       "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2", "ATAD2", "RAD51",
+       "RRM2", "CDC45", "CDC6", "EXO1", "TIPIN", "DSCC1", "BLM",
+       "CASP8AP2", "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1", "E2F8",
+   ]
+
+   g2m_genes = [
+       "HMGB2", "CDK1", "NUSAP1", "UBE2C", "BIRC5", "TPX2", "TOP2A",
+       "NDC80", "CKS2", "NUF2", "CKS1B", "MKI67", "TMPO", "CENPF",
+       "TACC3", "FAM64A", "SMC4", "CCNB2", "CKAP2L", "CKAP2", "AURKB",
+       "BUB1", "KIF11", "ANP32E", "TUBB4B", "GTSE1", "KIF20B", "HJURP",
+       "CDCA3", "HN1", "CDC20", "TTK", "CDC25C", "KIF2C", "RANGAP1",
+       "NCAPD2", "DLGAP5", "CDCA2", "CDCA8", "ECT2", "KIF23", "HMMR",
+       "AURKA", "PSRC1", "ANLN", "LBR", "CKAP5", "CENPE", "CTCF",
+       "NEK2", "G2E3", "GAS2L3", "CBX5", "CENPA",
+   ]
+
+   s_genes_present = [gene for gene in s_genes if gene in adata_work.var_names]
+   g2m_genes_present = [gene for gene in g2m_genes if gene in adata_work.var_names]
+
+   if len(s_genes_present) == 0 or len(g2m_genes_present) == 0:
+       raise ValueError("No cell cycle genes found. Check gene identifiers.")
+
+   sc.tl.score_genes_cell_cycle(
+       adata_work,
+       s_genes=s_genes_present,
+       g2m_genes=g2m_genes_present,
+   )
+
+   adata.obs[["S_score", "G2M_score", "phase"]] = adata_work.obs[
+       ["S_score", "G2M_score", "phase"]
+   ]
+
+   sc.pl.violin(
+       adata_work,
+       ["S_score", "G2M_score"],
+       groupby="phase",
+       multi_panel=True,
+       jitter=0.4,
+   )
 
 
 8. Select highly variable genes
@@ -585,7 +697,14 @@ Code
 
    sc.pl.pca(
        adata_hvg,
-       color=["total_counts", "n_genes_by_counts", "pct_counts_mt"],
+       color=[
+           "total_counts",
+           "n_genes_by_counts",
+           "pct_counts_mt",
+           "S_score",
+           "G2M_score",
+           "phase",
+       ],
    )
 
 Choose number of PCs:
@@ -669,9 +788,10 @@ Motivation
 
 UMAP projects the neighbor graph into two dimensions. It is useful for inspection
 and communication, but distances and separations in UMAP should not be
-overinterpreted. In the first pass, include QC flags, doublet scores, and core
-QC metrics on the UMAP. A cluster enriched for QC flags is a reason to inspect
-the cells, not automatic proof that the cluster should be removed.
+overinterpreted. In the first pass, include QC flags, doublet scores, core QC
+metrics, and cell cycle scores on the UMAP. A cluster enriched for QC flags or
+cell cycle phase is a reason to inspect the cells, not automatic proof that the
+cluster should be removed.
 
 Code
 ~~~~
@@ -686,11 +806,16 @@ Code
            "leiden_0_5",
            "qc_flag",
            "qc_flag_count",
+           "qc_high_counts_low_complexity",
            "predicted_doublet",
            "doublet_score",
            "total_counts",
            "n_genes_by_counts",
+           "genes_per_1k_counts",
            "pct_counts_mt",
+           "S_score",
+           "G2M_score",
+           "phase",
        ],
    )
 
@@ -700,7 +825,7 @@ If sample metadata exist:
 
    metadata_colors = [
        col
-       for col in ["sample", "condition", "leiden_0_5", "qc_flag"]
+       for col in ["sample", "condition", "leiden_0_5", "qc_flag", "phase"]
        if col in adata_hvg.obs
    ]
 
@@ -711,12 +836,13 @@ If sample metadata exist:
        )
 
 
-Summarize QC flags by cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Summarize QC flags and cell cycle by cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cluster-level summaries help identify groups dominated by low-quality cells or
-putative doublets. Interpret these summaries alongside marker genes and the
-biology of the experiment.
+putative doublets. They also show whether clusters are dominated by cell cycle
+phase. Interpret these summaries alongside marker genes and the biology of the
+experiment.
 
 .. code-block:: python
 
@@ -724,16 +850,30 @@ biology of the experiment.
        adata_hvg.obs
        .assign(
            qc_flag_bool=adata_hvg.obs["qc_flag"].astype(bool),
+           high_counts_low_complexity_bool=adata_hvg.obs[
+               "qc_high_counts_low_complexity"
+           ].astype(bool),
            predicted_doublet_bool=adata_hvg.obs["predicted_doublet"].astype(bool),
+           s_phase_bool=adata_hvg.obs["phase"].astype(str).eq("S"),
+           g2m_phase_bool=adata_hvg.obs["phase"].astype(str).eq("G2M"),
        )
        .groupby("leiden_0_5", observed=True)
        .agg(
            n_cells=("qc_flag_bool", "size"),
            qc_flag_fraction=("qc_flag_bool", "mean"),
+           high_counts_low_complexity_fraction=(
+               "high_counts_low_complexity_bool",
+               "mean",
+           ),
            doublet_fraction=("predicted_doublet_bool", "mean"),
            median_genes=("n_genes_by_counts", "median"),
            median_counts=("total_counts", "median"),
+           median_genes_per_1k_counts=("genes_per_1k_counts", "median"),
            median_pct_counts_mt=("pct_counts_mt", "median"),
+           median_s_score=("S_score", "median"),
+           median_g2m_score=("G2M_score", "median"),
+           s_phase_fraction=("s_phase_bool", "mean"),
+           g2m_phase_fraction=("g2m_phase_bool", "mean"),
        )
        .sort_values("qc_flag_fraction", ascending=False)
    )
@@ -758,13 +898,17 @@ The first-pass embedding is a diagnostic view. It answers questions such as:
 * Do high-mitochondrial cells form a low-gene, low-count cluster consistent with
   damaged cells?
 * Do high-gene and high-count cells also have high doublet scores?
+* Do high-count cells with low gene complexity cluster together, and do their
+  marker genes suggest a technical artifact or expected biology?
+* Do clusters separate primarily by cell cycle phase, and is proliferation
+  expected for the sample?
 * Are flagged cells concentrated in one sample, one capture, or one cluster?
 * Could high mitochondrial or gene content be expected for this experiment?
 
 After this review, define a removal rule that matches the experiment. The
-example below removes low-complexity cells and predicted doublets. High
-mitochondrial cells are left as a commented decision because they require
-experiment-specific interpretation.
+example below removes low-complexity cells, high-count low-complexity cells,
+and predicted doublets. High mitochondrial cells are left as a commented
+decision because they require experiment-specific interpretation.
 
 Code
 ~~~~
@@ -774,6 +918,7 @@ Code
    adata.obs["remove_after_qc_review"] = (
        adata.obs["qc_low_genes"] |
        adata.obs["qc_low_counts"] |
+       adata.obs["qc_high_counts_low_complexity"] |
        adata.obs["qc_predicted_doublet"]
    )
 
@@ -794,6 +939,18 @@ Code
 
    sc.pp.log1p(adata_qc)
    adata_qc.layers["lognorm"] = adata_qc.X.copy()
+
+   s_genes_present = [gene for gene in s_genes if gene in adata_qc.var_names]
+   g2m_genes_present = [gene for gene in g2m_genes if gene in adata_qc.var_names]
+
+   if len(s_genes_present) == 0 or len(g2m_genes_present) == 0:
+       raise ValueError("No cell cycle genes found. Check gene identifiers.")
+
+   sc.tl.score_genes_cell_cycle(
+       adata_qc,
+       s_genes=s_genes_present,
+       g2m_genes=g2m_genes_present,
+   )
 
    sc.pp.highly_variable_genes(
        adata_qc,
@@ -821,7 +978,16 @@ Code
 
    sc.pl.umap(
        adata_hvg,
-       color=["leiden_0_5", "total_counts", "n_genes_by_counts", "pct_counts_mt"],
+       color=[
+           "leiden_0_5",
+           "total_counts",
+           "n_genes_by_counts",
+           "genes_per_1k_counts",
+           "pct_counts_mt",
+           "S_score",
+           "G2M_score",
+           "phase",
+       ],
    )
 
 
@@ -1008,10 +1174,13 @@ Recommended report items
 * QC metrics used.
 * Whether thresholds were global or per sample.
 * Percentile and MAD values used.
+* Cell cycle gene set used and whether gene identifiers were converted.
 * Number and fraction of cells flagged before removal.
 * Number and fraction of cells removed after QC review.
-* First-pass UMAP colored by QC flags, doublet score, and QC metrics.
+* First-pass UMAP colored by QC flags, doublet score, QC metrics, and cell cycle phase.
 * Proportion of QC-flagged cells per first-pass cluster.
+* Proportion of high-count, low-complexity cells per first-pass cluster.
+* Proportion of S-phase and G2/M-phase cells per first-pass cluster.
 * Final UMAP after reviewed filtering and rerunning PCA, clustering, and UMAP.
 * Marker-gene dot plot used for annotation.
 
@@ -1024,6 +1193,9 @@ Example summary table
        "metric": [
            "cells_before_qc",
            "cells_flagged_for_review",
+           "cells_high_counts_low_complexity",
+           "cells_s_phase",
+           "cells_g2m_phase",
            "cells_removed_after_review",
            "cells_after_qc",
            "genes_after_qc",
@@ -1031,6 +1203,9 @@ Example summary table
        "value": [
            adata.n_obs,
            int(adata.obs["qc_flag"].sum()),
+           int(adata.obs["qc_high_counts_low_complexity"].sum()),
+           int((adata.obs["phase"].astype(str) == "S").sum()),
+           int((adata.obs["phase"].astype(str) == "G2M").sum()),
            int(adata.obs["remove_after_qc_review"].sum()),
            adata_qc.n_obs,
            adata_qc.n_vars,
@@ -1064,9 +1239,15 @@ Workflow
       ↓
    data-driven QC flags selected
       ↓
-   first-pass normalization, PCA, clustering, and UMAP
+   first-pass gene filtering
       ↓
-   UMAP and cluster-level QC flag proportions reviewed
+   first-pass normalization and log1p transformation
+      ↓
+   cell cycle scored
+      ↓
+   first-pass HVG selection, PCA, clustering, and UMAP
+      ↓
+   UMAP and cluster-level QC and cell cycle proportions reviewed
       ↓
    cells removed after experiment-specific QC decision
       ↓
@@ -1098,6 +1279,8 @@ Key cautions
 * QC should be run on individual experiments or captures before integration.
 * Flag questionable cells before removing them.
 * High mitochondrial content or high gene content can be biological in some experiments.
+* High read or UMI depth with low gene complexity should be inspected before removal.
+* Cell cycle can be expected biology, a confounder, or both; inspect before regression or removal.
 * Batch correction and integration require separate analysis decisions.
 * UMAP is a visualization, not a statistical test.
 * Cluster marker genes are useful for annotation but are not the same as condition-level DGE.
