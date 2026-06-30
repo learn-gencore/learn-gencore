@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metagenomics &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+  <title>Pheniqs &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
@@ -23,8 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Series of Metagenomics Workshop" href="shotgun.html" />
-    <link rel="prev" title="De Novo Transcriptome Assembly &amp; Annotation" href="../denovo/transcriptome.html" /> 
+    <link rel="prev" title="Primary Analysis" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -53,12 +52,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Metagenomics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="shotgun.html">Series of Metagenomics Workshop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="amplicon.html">Amplicon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Primary Analysis</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pheniqs</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
 </ul>
 
         </div>
@@ -75,7 +73,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Metagenomics</li>
+          <li class="breadcrumb-item"><a href="index.html">Primary Analysis</a></li>
+      <li class="breadcrumb-item active">Pheniqs</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -84,22 +83,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="metagenomics">
-<h1>Metagenomics<a class="headerlink" href="#metagenomics" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="shotgun.html">Series of Metagenomics Workshop</a></li>
-<li class="toctree-l1"><a class="reference internal" href="amplicon.html">Amplicon</a></li>
-</ul>
-</div>
+  <section id="pheniqs">
+<h1>Pheniqs<a class="headerlink" href="#pheniqs" title="Link to this heading"></a></h1>
+<p>Pheniqs (pronounced “phoenix”) is a flexible, high-performance command-line tool for manipulating and classifying high-throughput sequencing reads. Written in multithreaded C++11 with direct HTSlib integration, it reads and writes FASTQ, SAM, BAM, and CRAM, converting between formats on the fly and handling interleaved or split segment layouts in any combination. Even without invoking any barcode processing, Pheniqs serves as a fast general-purpose utility for interleaving split read segments into a single compressed container, converting between file formats, restructuring read layouts, and piping reformatted data through POSIX streams to tools that require a specific input format. A Python-array-slicing-inspired tokenization syntax lets users extract, rearrange, and reverse-complement arbitrary subsequences from any read segment, assembling new output reads from the pieces. All of this is controlled by a JSON configuration file with inheritance, imports, and reusable definitions, or by simple command-line arguments for trivial operations.</p>
+<p>When barcode classification is needed, Pheniqs natively supports sample and cellular barcodes at arbitrary positions along the read, as well as user-defined barcode types (split-pool tags, antibody tags, spatial barcodes, etc.), all without pre- or post-processing. Its core decoder, the Phred-adjusted maximum likelihood decoder (PAMLD), computes the full Bayesian posterior probability of each barcode assignment by combining per-base quality scores with prior distributions over barcode frequencies and an explicit noise model. A noise filter rejects reads whose best-match likelihood is no better than random, and a tunable confidence threshold (defaulting to 0.95) flags low-confidence assignments as QC-fail while preserving the classification for downstream reconsideration. Priors can be user-supplied, left uniform, or estimated from the data in a two-pass approach. Decoded sequences, quality scores, and per-read error probabilities are written to standardized SAM auxiliary fields, and for combinatorial barcodes the overall confidence is the product of the individual posteriors. On semi-synthetic benchmarks, PAMLD consistently outperforms both minimum distance decoding and simpler maximum likelihood methods, with the largest gains for low-abundance barcodes and high error rates.</p>
+<p>A consumer/producer threading model with double-buffered I/O allows performance to scale nearly linearly with core count, processing billions of reads per hour on modern hardware while using minimal memory. Pheniqs is available via Bioconda or source compilation and is free for academic use under the NYU non-commercial research license.</p>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../denovo/transcriptome.html" class="btn btn-neutral float-left" title="De Novo Transcriptome Assembly &amp; Annotation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="shotgun.html" class="btn btn-neutral float-right" title="Series of Metagenomics Workshop" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Primary Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

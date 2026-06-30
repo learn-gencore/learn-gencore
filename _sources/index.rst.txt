@@ -18,3 +18,4 @@ Contents:
    programming/index
    denovo/index
    metagenomics/index
+   primary_analysis/index
