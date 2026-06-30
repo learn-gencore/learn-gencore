@@ -119,8 +119,8 @@ def add_qc_flags(adata):
         & adata.obs["qc_low_genes"]
     )
 
-    # Keep the example fast and deterministic. The tutorial text discusses
-    # Scrublet doublet detection; these public PBMC figures focus on QC context.
+    # PBMC example figures explicitly omit Scrublet doublet detection.
+    # Real analyses should run Scrublet and inspect these columns.
     adata.obs["doublet_score"] = 0.0
     adata.obs["predicted_doublet"] = False
     adata.obs["qc_predicted_doublet"] = False
@@ -474,7 +474,7 @@ def main():
             "total_counts",
             "n_genes_by_counts",
             "pct_counts_mt",
-            "doublet_score",
+            "pct_counts_ribo",
         ],
         multi_panel=True,
         jitter=0.4,
@@ -546,6 +546,7 @@ def main():
         show=False,
     )
     save_scanpy_plot("pbmc_final_umap_qc.png")
+    adata_qc.X = adata_qc.layers["lognorm"].copy()
 
     marker_genes = {
         "T cells": ["CD3D", "CD3E", "TRAC"],

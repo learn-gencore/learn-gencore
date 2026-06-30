@@ -122,6 +122,9 @@ PBMC 3k example distributed through Scanpy. Use this block instead of the
 
 The PBMC figures shown below were generated with
 ``source/transcriptomics/scripts/generate_pbmc_scrna_figures.py``.
+For speed and reproducibility, those example figures explicitly omit Scrublet
+doublet detection. Real datasets should still run the doublet-detection block
+above and review ``doublet_score`` and ``predicted_doublet``.
 
 
 2. Preserve raw counts
@@ -269,11 +272,12 @@ PBMC example output
 ~~~~~~~~~~~~~~~~~~~
 
 .. figure:: ../img/transcriptomics/scrna/pbmc_qc_distributions.png
-   :alt: PBMC 3k QC distributions for total counts, detected genes, mitochondrial fraction, and doublet score.
+   :alt: PBMC 3k QC distributions for total counts, detected genes, mitochondrial fraction, and ribosomal fraction.
 
    Example QC distributions from the Scanpy PBMC 3k dataset. These plots show
    why thresholds should be derived from the observed dataset rather than copied
-   from a fixed recipe.
+   from a fixed recipe. The PBMC example figure omits doublet scores; run
+   Scrublet on your own dataset before making doublet decisions.
 
 
 5. Define data-driven QC flags
@@ -363,6 +367,7 @@ Plot percentile thresholds
    ax.axvline(count_lo, color="black", linestyle="--", linewidth=1)
    ax.axvline(count_hi, color="black", linestyle="--", linewidth=1)
    ax.axhline(mt_hi, color="black", linestyle="--", linewidth=1)
+   plt.show()
 
 PBMC example output
 ~~~~~~~~~~~~~~~~~~~
@@ -1165,6 +1170,9 @@ Code
        ],
    )
 
+   # Restore the main matrix to log-normalized expression before saving.
+   adata_qc.X = adata_qc.layers["lognorm"].copy()
+
 PBMC example output
 ~~~~~~~~~~~~~~~~~~~
 
@@ -1534,13 +1542,15 @@ Conclusion
 Save the full cleaned object, not only the HVG feature subset. The saved object
 should retain all genes that passed gene filtering, raw counts, normalized/log
 layers, QC columns, cell cycle scores, PCA, clusters, UMAP coordinates, and
-annotations.
+annotations. Because scaling overwrites ``adata_qc.X`` during PCA preparation,
+restore ``adata_qc.X`` to log-normalized expression before writing the object.
 
 Code
 ~~~~
 
 .. code-block:: python
 
+   adata_qc.X = adata_qc.layers["lognorm"].copy()
    adata_qc.write("scanpy_tutorial_processed_full.h5ad")
 
 
