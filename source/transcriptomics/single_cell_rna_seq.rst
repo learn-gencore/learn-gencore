@@ -26,6 +26,7 @@ By the end of this tutorial, you should be able to:
 * Select highly variable genes.
 * Run PCA, neighbor graph construction, Leiden clustering, and UMAP.
 * Visualize marker genes across clusters using dot plots.
+* Understand when broad cell classes may need separate subclustering.
 * Understand which steps are used for representation and which support biological interpretation.
 
 
@@ -1308,6 +1309,121 @@ Code
    )
 
 
+Optional: iterative clustering for subtypes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A single global clustering is often enough to identify broad cell classes, such
+as T cells, B cells, monocytes, epithelial cells, stromal cells, or endothelial
+cells. It is often not enough to resolve subtypes within each class. For
+example, a global PBMC analysis may separate T cells from monocytes and B cells,
+but CD4 T-cell states, CD8 T-cell states, regulatory T cells, cycling T cells,
+or activation states may require a T-cell-only analysis.
+
+The usual strategy is iterative:
+
+* assign broad cell classes from the cleaned global object
+* subset one broad class
+* rerun HVG selection, PCA, neighbor graph construction, clustering, and UMAP
+  within that subset
+* inspect QC metrics, cell cycle, and marker genes again
+* map the subtype labels back to the full object
+
+This is not the same as increasing global Leiden resolution until more clusters
+appear. Subclustering changes the feature selection and representation so that
+variation within one cell class is no longer dominated by differences between
+major cell classes.
+
+Example code for one broad class:
+
+.. code-block:: python
+
+   broad_class = "T cells"
+
+   adata_sub = adata_qc[adata_qc.obs["cell_type"] == broad_class].copy()
+
+   # Restart from log-normalized expression, not the globally scaled matrix.
+   adata_sub.X = adata_sub.layers["lognorm"].copy()
+
+   sc.pp.highly_variable_genes(
+       adata_sub,
+       n_top_genes=1000,
+       flavor="seurat",
+   )
+
+   sc.pp.scale(adata_sub, max_value=10)
+
+   sc.tl.pca(
+       adata_sub,
+       svd_solver="arpack",
+       mask_var="highly_variable",
+   )
+
+   sc.pl.pca_variance_ratio(
+       adata_sub,
+       log=True,
+       n_pcs=50,
+   )
+
+   sub_n_pcs = 20
+
+   sc.pp.neighbors(
+       adata_sub,
+       n_neighbors=15,
+       n_pcs=sub_n_pcs,
+   )
+
+   sc.tl.leiden(
+       adata_sub,
+       resolution=0.5,
+       key_added="subcluster",
+   )
+
+   sc.tl.umap(adata_sub)
+
+   sc.pl.umap(
+       adata_sub,
+       color=[
+           "subcluster",
+           "primary_qc_flag",
+           "total_counts",
+           "pct_counts_mt",
+           "phase",
+       ],
+   )
+
+   sc.tl.rank_genes_groups(
+       adata_sub,
+       groupby="subcluster",
+       method="wilcoxon",
+       use_raw=True,
+   )
+
+   sc.pl.rank_genes_groups(
+       adata_sub,
+       n_genes=20,
+       sharey=False,
+   )
+
+Map subtype labels back to the full cleaned object:
+
+.. code-block:: python
+
+   adata_qc.obs["subcluster_label"] = pd.NA
+   adata_qc.obs.loc[adata_sub.obs_names, "subcluster_label"] = (
+       broad_class + "_" + adata_sub.obs["subcluster"].astype(str)
+   )
+
+   sc.pl.umap(
+       adata_qc,
+       color=["cell_type", "subcluster_label"],
+   )
+
+Only report subtypes when they have enough cells, coherent marker genes, and a
+reasonable relationship to the experiment. Very small subclusters, clusters
+dominated by QC flags, or clusters defined mostly by count depth, mitochondrial
+fraction, or cell cycle should be treated cautiously.
+
+
 19. Save the processed object
 -----------------------------
 
@@ -1357,6 +1473,8 @@ Recommended report items
 * Proportion of S-phase and G2/M-phase cells per first-pass cluster.
 * Final UMAP after reviewed filtering and rerunning PCA, clustering, and UMAP.
 * Marker-gene dot plot used for annotation.
+* Whether broad cell classes were subclustered, with subtype-specific PCs,
+  resolution, markers, and QC review.
 
 Example summary table
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1455,6 +1573,8 @@ Workflow
    UMAP visualization
       ↓
    marker-gene dot plot and cluster annotation
+      ↓
+   optional cell-class-specific subclustering for subtype annotation
 
 
 Key cautions
@@ -1468,6 +1588,8 @@ Key cautions
 * Cell cycle can be expected biology, a confounder, or both; inspect before regression or removal.
 * Ambient RNA correction can matter, but is outside the scope of this tutorial.
 * Batch correction and integration require separate analysis decisions.
+* Subtype discovery often requires cell-class-specific subclustering after
+  broad annotation.
 * UMAP is a visualization, not a statistical test.
 * Cluster marker genes are useful for annotation but are not the same as condition-level DGE.
 * Raw counts should be preserved for downstream count-based analyses.
