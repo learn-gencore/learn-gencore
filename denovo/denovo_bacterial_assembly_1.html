@@ -1,0 +1,685 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>De novo Bacterial Genome Assembly &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">De novo Bacterial Genome Assembly</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="de-novo-bacterial-genome-assembly">
+<span id="denovo-bacterial-assembly"></span><h1>De novo Bacterial Genome Assembly<a class="headerlink" href="#de-novo-bacterial-genome-assembly" title="Link to this heading"></a></h1>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id1">Overview</a></p></li>
+<li><p><a class="reference internal" href="#prerequisites" id="id2">Prerequisites</a></p></li>
+<li><p><a class="reference internal" href="#example-dataset" id="id3">Example Dataset</a></p>
+<ul>
+<li><p><a class="reference internal" href="#downloading-the-raw-data-yourself-alternative" id="id4">Downloading the raw data yourself (alternative)</a></p></li>
+<li><p><a class="reference internal" href="#reference-genome-for-quast-annotation-comparison-optional" id="id5">Reference genome (for QUAST/annotation comparison, optional)</a></p></li>
+<li><p><a class="reference internal" href="#working-with-your-own-data" id="id6">Working with your own data</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#step-1-quality-assessment-with-fastqc" id="id7">Step 1: Quality Assessment with FastQC</a></p></li>
+<li><p><a class="reference internal" href="#step-2-quality-and-adapter-trimming-with-fastp" id="id8">Step 2: Quality and Adapter Trimming with fastp</a></p></li>
+<li><p><a class="reference internal" href="#step-3-re-assessment-of-trimmed-reads" id="id9">Step 3: Re-Assessment of Trimmed Reads</a></p></li>
+<li><p><a class="reference internal" href="#step-4-de-novo-assembly-with-spades" id="id10">Step 4: De Novo Assembly with SPAdes</a></p></li>
+<li><p><a class="reference internal" href="#step-5-assembly-quality-assessment" id="id11">Step 5: Assembly Quality Assessment</a></p>
+<ul>
+<li><p><a class="reference internal" href="#quast" id="id12">QUAST</a></p></li>
+<li><p><a class="reference internal" href="#busco" id="id13">BUSCO</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#step-6-genome-annotation" id="id14">Step 6: Genome Annotation</a></p></li>
+<li><p><a class="reference internal" href="#step-7-additional-value-added-steps" id="id15">Step 7: Additional Value-Added Steps</a></p>
+<ul>
+<li><p><a class="reference internal" href="#a-species-contamination-check-with-kraken2" id="id16">7a. Species/Contamination Check with Kraken2</a></p></li>
+<li><p><a class="reference internal" href="#b-mlst-typing" id="id17">7b. MLST Typing</a></p></li>
+<li><p><a class="reference internal" href="#c-coverage-depth-assessment" id="id18">7c. Coverage / Depth Assessment</a></p></li>
+<li><p><a class="reference internal" href="#d-antimicrobial-resistance-amr-gene-screening" id="id19">7d. Antimicrobial Resistance (AMR) Gene Screening</a></p></li>
+<li><p><a class="reference internal" href="#e-consolidated-multiqc-report" id="id20">7e. Consolidated MultiQC Report</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#summary" id="id21">Summary</a></p></li>
+<li><p><a class="reference internal" href="#further-reading" id="id22">Further Reading</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>In this tutorial we will go from raw paired-end Illumina short reads to an
+annotated, quality-assessed bacterial genome assembly. We will cover:</p>
+<ol class="arabic simple">
+<li><p>Read quality assessment with <strong>FastQC</strong></p></li>
+<li><p>Quality and adapter trimming with <strong>fastp</strong></p></li>
+<li><p>Re-assessment of trimmed reads with <strong>FastQC</strong></p></li>
+<li><p><em>De novo</em> assembly with <strong>SPAdes</strong></p></li>
+<li><p>Assembly quality assessment with <strong>QUAST</strong> and <strong>BUSCO</strong></p></li>
+<li><p>Genome annotation with <strong>Prokka</strong></p></li>
+<li><p>Extra value-added steps: species/contamination check (Kraken2),
+MLST typing, coverage/depth assessment, and a MultiQC summary report</p></li>
+</ol>
+<p>This tutorial follows the same structure and spirit as the NYU GenCore
+<a class="reference external" href="https://learn.gencore.bio.nyu.edu/denovo/transcriptome.html">de novo transcriptome assembly tutorial</a>,
+adapted here for bacterial genome assembly.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Commands below are shown both for users of our HPC (via <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code>)
+and for users running locally (via <code class="docutils literal notranslate"><span class="pre">conda</span></code>/<code class="docutils literal notranslate"><span class="pre">mamba</span></code>, <code class="docutils literal notranslate"><span class="pre">Docker</span></code>, or
+pip/standalone binaries). Pick whichever column applies to you.</p>
+</div>
+</section>
+<section id="prerequisites">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Basic familiarity with the Linux command line</p></li>
+<li><p>An HPC account with Slurm/PBS access, <strong>or</strong> a local machine/laptop with
+conda/mamba and at least 8 GB RAM and ~10 GB free disk space</p></li>
+<li><p>The example dataset (see <a class="reference internal" href="#data-download"><span class="std std-ref">Example Dataset</span></a> below)</p></li>
+</ul>
+</section>
+<section id="example-dataset">
+<span id="data-download"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Example Dataset</a><a class="headerlink" href="#example-dataset" title="Link to this heading"></a></h2>
+<p>For this tutorial we use a real, publicly available paired-end Illumina
+MiSeq bacterial whole-genome sequencing dataset: a methicillin-resistant
+<em>Staphylococcus aureus</em> (MRSA) isolate from Hikichi <em>et al.</em> 2019,
+<em>“Complete Genome Sequences of Eight Methicillin-Resistant Staphylococcus
+aureus Strains Isolated from Patients in Japan”</em> (<a class="reference external" href="https://doi.org/10.1128/mra.01212-19">Microbiology Resource
+Announcements</a>).</p>
+<p>This dataset is small (genome ~2.9 Mb), well characterized, has a closed
+reference genome available for benchmarking, and is already used in a
+peer-reviewed <a class="reference external" href="https://training.galaxyproject.org/training-material/topics/assembly/tutorials/mrsa-illumina/tutorial.html">Galaxy Training Network tutorial</a>,
+so results in this tutorial can be cross-checked against a known-good
+analysis.</p>
+<div class="tip admonition">
+<p class="admonition-title">Shared drive download</p>
+<p>For convenience, these reads are mirrored on our group’s shared
+Google Drive folder so you don’t need to query SRA/ENA yourself:</p>
+<ul class="simple">
+<li><p>Folder: <a class="reference external" href="https://drive.google.com/drive/folders/1cSxLTe7R_YDWq2DCJnuiRFTi-jAHtzuJ?usp=sharing">https://drive.google.com/drive/folders/1cSxLTe7R_YDWq2DCJnuiRFTi-jAHtzuJ?usp=sharing</a></p></li>
+<li><p>Contains: <code class="docutils literal notranslate"><span class="pre">DRR187559_1.fastq.gz</span></code> (forward/R1) and
+<code class="docutils literal notranslate"><span class="pre">DRR187559_2.fastq.gz</span></code> (reverse/R2)</p></li>
+</ul>
+<p>Download the two files from the folder above (click each file -&gt;
+Download), or, if you’d rather use the command line, install
+<a class="reference external" href="https://github.com/wkentaro/gdown">gdown</a> and pull the whole folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/denovo_tutorial/raw_data<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>~/denovo_tutorial/raw_data
+
+pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>gdown
+gdown<span class="w"> </span>--folder<span class="w"> </span><span class="s2">&quot;https://drive.google.com/drive/folders/1cSxLTe7R_YDWq2DCJnuiRFTi-jAHtzuJ&quot;</span><span class="w"> </span>-O<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This should leave you with <code class="docutils literal notranslate"><span class="pre">DRR187559_1.fastq.gz</span></code> and
+<code class="docutils literal notranslate"><span class="pre">DRR187559_2.fastq.gz</span></code> in <code class="docutils literal notranslate"><span class="pre">~/denovo_tutorial/raw_data</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">gdown</span></code> may not be available/loadable as a module on every HPC.
+If it isn’t, just download the two files manually through the Drive
+web UI on your laptop and <code class="docutils literal notranslate"><span class="pre">scp</span></code>/<code class="docutils literal notranslate"><span class="pre">rsync</span></code> them to the cluster, e.g.:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync<span class="w"> </span>-avP<span class="w"> </span>DRR187559_1.fastq.gz<span class="w"> </span>DRR187559_2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>your_username@hpc.example.edu:~/denovo_tutorial/raw_data/
+</pre></div>
+</div>
+</div>
+</div>
+<section id="downloading-the-raw-data-yourself-alternative">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Downloading the raw data yourself (alternative)</a><a class="headerlink" href="#downloading-the-raw-data-yourself-alternative" title="Link to this heading"></a></h3>
+<p>If the shared-drive links above are unavailable, the same reads can be
+obtained directly from public archives.</p>
+<p><strong>Option A — SRA Toolkit (works for any HPC/local install):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># HPC</span>
+module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>sratoolkit
+prefetch<span class="w"> </span>DRR187559
+fasterq-dump<span class="w"> </span>--split-files<span class="w"> </span>DRR187559
+gzip<span class="w"> </span>DRR187559_1.fastq<span class="w"> </span>DRR187559_2.fastq
+
+<span class="c1"># Local (conda)</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>sra<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>sra-tools<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>sra
+prefetch<span class="w"> </span>DRR187559
+fasterq-dump<span class="w"> </span>--split-files<span class="w"> </span>DRR187559
+gzip<span class="w"> </span>DRR187559_*.fastq
+</pre></div>
+</div>
+<p><strong>Option B — Direct from ENA (no tool install needed):</strong></p>
+<p>Browse to <a class="reference external" href="https://www.ebi.ac.uk/ena/browser/view/DRR187559">https://www.ebi.ac.uk/ena/browser/view/DRR187559</a>, open the
+“Download” tab, and copy the FASTQ FTP links, e.g.:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>ftp://ftp.sra.ebi.ac.uk/vol1/fastq/DRR187/059/DRR187559/DRR187559_1.fastq.gz
+wget<span class="w"> </span>ftp://ftp.sra.ebi.ac.uk/vol1/fastq/DRR187/059/DRR187559/DRR187559_2.fastq.gz
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Double check the exact path on the ENA browser page before using the
+<code class="docutils literal notranslate"><span class="pre">wget</span></code> command above — ENA’s FTP directory numbering depends on the
+exact accession digits and can differ from the example shown here.</p>
+</div>
+</section>
+<section id="reference-genome-for-quast-annotation-comparison-optional">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Reference genome (for QUAST/annotation comparison, optional)</a><a class="headerlink" href="#reference-genome-for-quast-annotation-comparison-optional" title="Link to this heading"></a></h3>
+<p>Any closed, annotated <em>S. aureus</em> RefSeq assembly works well as a
+reference for QUAST comparison purposes (it does not need to be the exact
+same strain). For example, <em>S. aureus</em> NCTC 8325
+(<code class="docutils literal notranslate"><span class="pre">GCF_000013425.1</span></code>) can be fetched via NCBI datasets:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>datasets<span class="w"> </span>download<span class="w"> </span>genome<span class="w"> </span>accession<span class="w"> </span>GCF_000013425.1<span class="w"> </span>--include<span class="w"> </span>genome,gff3
+unzip<span class="w"> </span>ncbi_dataset.zip
+</pre></div>
+</div>
+</section>
+<section id="working-with-your-own-data">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Working with your own data</a><a class="headerlink" href="#working-with-your-own-data" title="Link to this heading"></a></h3>
+<p>Everything in this tutorial works directly on your own paired-end
+<code class="docutils literal notranslate"><span class="pre">*_R1.fastq.gz</span></code> / <code class="docutils literal notranslate"><span class="pre">*_R2.fastq.gz</span></code> (or <code class="docutils literal notranslate"><span class="pre">*_1.fastq.gz</span></code> / <code class="docutils literal notranslate"><span class="pre">*_2.fastq.gz</span></code>)
+files — simply substitute your filenames wherever <code class="docutils literal notranslate"><span class="pre">DRR187559_1/2</span></code> appears.</p>
+</section>
+</section>
+<section id="step-1-quality-assessment-with-fastqc">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Step 1: Quality Assessment with FastQC</a><a class="headerlink" href="#step-1-quality-assessment-with-fastqc" title="Link to this heading"></a></h2>
+<p>Before any processing, we inspect the raw reads to check base quality,
+adapter content, GC content, and duplication levels.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/denovo_tutorial/qc/fastqc_raw
+<span class="nb">cd</span><span class="w"> </span>~/denovo_tutorial
+</pre></div>
+</div>
+<p><strong>On the HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>fastqc
+fastqc<span class="w"> </span>-o<span class="w"> </span>qc/fastqc_raw<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span>raw_data/DRR187559_1.fastq.gz<span class="w"> </span>raw_data/DRR187559_2.fastq.gz
+</pre></div>
+</div>
+<p><strong>Locally (conda):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>qc<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>fastqc<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>qc
+fastqc<span class="w"> </span>-o<span class="w"> </span>qc/fastqc_raw<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span>raw_data/DRR187559_1.fastq.gz<span class="w"> </span>raw_data/DRR187559_2.fastq.gz
+</pre></div>
+</div>
+<p><strong>Locally (Docker, no install needed):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="nv">$PWD</span>:/data<span class="w"> </span>-w<span class="w"> </span>/data<span class="w"> </span>biocontainers/fastqc:v0.11.9_cv8<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>fastqc<span class="w"> </span>-o<span class="w"> </span>qc/fastqc_raw<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span>raw_data/DRR187559_1.fastq.gz<span class="w"> </span>raw_data/DRR187559_2.fastq.gz
+</pre></div>
+</div>
+<p>Open <code class="docutils literal notranslate"><span class="pre">qc/fastqc_raw/DRR187559_1_fastqc.html</span></code> in a browser and review:</p>
+<ul class="simple">
+<li><p><strong>Per base sequence quality</strong> — should be mostly green (Phred &gt; 28);
+Illumina runs commonly show some quality drop-off toward the 3’ end.</p></li>
+<li><p><strong>Adapter content</strong> — flags if adapters need trimming.</p></li>
+<li><p><strong>Sequence duplication levels</strong> and <strong>overrepresented sequences</strong> —
+high values can indicate PCR duplication or contamination.</p></li>
+</ul>
+</section>
+<section id="step-2-quality-and-adapter-trimming-with-fastp">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Step 2: Quality and Adapter Trimming with fastp</a><a class="headerlink" href="#step-2-quality-and-adapter-trimming-with-fastp" title="Link to this heading"></a></h2>
+<p>We use <code class="docutils literal notranslate"><span class="pre">fastp</span></code> to remove adapters, trim low-quality bases from read
+ends, and discard reads that become too short to be useful for assembly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/denovo_tutorial/trimmed
+<span class="nb">cd</span><span class="w"> </span>~/denovo_tutorial
+</pre></div>
+</div>
+<p><strong>On the HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>fastp
+fastp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>raw_data/DRR187559_1.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>raw_data/DRR187559_2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--detect_adapter_for_pe<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cut_front<span class="w"> </span>--cut_tail<span class="w"> </span>--cut_window_size<span class="w"> </span><span class="m">4</span><span class="w"> </span>--cut_mean_quality<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--length_required<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--thread<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--json<span class="w"> </span>trimmed/DRR187559.fastp.json<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--html<span class="w"> </span>trimmed/DRR187559.fastp.html
+</pre></div>
+</div>
+<p><strong>Locally (conda):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>trim<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>fastp<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>trim
+fastp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>raw_data/DRR187559_1.fastq.gz<span class="w"> </span>-I<span class="w"> </span>raw_data/DRR187559_2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span>-O<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--detect_adapter_for_pe<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cut_front<span class="w"> </span>--cut_tail<span class="w"> </span>--cut_window_size<span class="w"> </span><span class="m">4</span><span class="w"> </span>--cut_mean_quality<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--length_required<span class="w"> </span><span class="m">30</span><span class="w"> </span>--thread<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--json<span class="w"> </span>trimmed/DRR187559.fastp.json<span class="w"> </span>--html<span class="w"> </span>trimmed/DRR187559.fastp.html
+</pre></div>
+</div>
+<p>Parameter notes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--detect_adapter_for_pe</span></code> — auto-detects adapters by overlap analysis
+of read pairs (no adapter FASTA needed).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cut_front</span></code>/<code class="docutils literal notranslate"><span class="pre">--cut_tail</span></code> with a sliding window — trims low-quality
+ends (mirrors the approach commonly used with Trimmomatic).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--length_required</span> <span class="pre">30</span></code> — discards reads shorter than 30 bp post-trimming,
+since very short reads complicate assembly graphs.</p></li>
+</ul>
+</section>
+<section id="step-3-re-assessment-of-trimmed-reads">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Step 3: Re-Assessment of Trimmed Reads</a><a class="headerlink" href="#step-3-re-assessment-of-trimmed-reads" title="Link to this heading"></a></h2>
+<p>Re-run FastQC on the trimmed reads to confirm improvement, and inspect the
+fastp HTML report directly (it already contains before/after comparison
+panels).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>qc/fastqc_trimmed
+</pre></div>
+</div>
+<p><strong>HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>fastqc
+fastqc<span class="w"> </span>-o<span class="w"> </span>qc/fastqc_trimmed<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz
+</pre></div>
+</div>
+<p><strong>Locally:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>qc
+fastqc<span class="w"> </span>-o<span class="w"> </span>qc/fastqc_trimmed<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz
+</pre></div>
+</div>
+<p>Compare <code class="docutils literal notranslate"><span class="pre">qc/fastqc_raw</span></code> vs <code class="docutils literal notranslate"><span class="pre">qc/fastqc_trimmed</span></code> (or simply open
+<code class="docutils literal notranslate"><span class="pre">trimmed/DRR187559.fastp.html</span></code>) and confirm:</p>
+<ul class="simple">
+<li><p>Per-base quality scores improved or stayed high across the full read length</p></li>
+<li><p>Adapter content dropped to ~0%</p></li>
+<li><p>Read length distribution shifted down slightly (expected, due to trimming)</p></li>
+<li><p>GC content is unchanged (trimming should not bias GC%)</p></li>
+</ul>
+</section>
+<section id="step-4-de-novo-assembly-with-spades">
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Step 4: De Novo Assembly with SPAdes</a><a class="headerlink" href="#step-4-de-novo-assembly-with-spades" title="Link to this heading"></a></h2>
+<p>With clean reads in hand, we assemble the genome using <strong>SPAdes</strong>, a
+widely used assembler for bacterial/small genomes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/denovo_tutorial/assembly
+</pre></div>
+</div>
+<p><strong>On the HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>spades
+spades.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-1<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-2<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--isolate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>assembly/DRR187559_spades<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span><span class="m">8</span><span class="w"> </span>-m<span class="w"> </span><span class="m">32</span>
+</pre></div>
+</div>
+<p><strong>Locally (conda):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>spades<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>spades<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>spades
+spades.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-1<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-2<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--isolate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>assembly/DRR187559_spades<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span><span class="m">8</span><span class="w"> </span>-m<span class="w"> </span><span class="m">16</span>
+</pre></div>
+</div>
+<p>Notes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--isolate</span></code> mode is recommended by the SPAdes authors specifically
+for high-coverage isolate bacterial genomes (it disables some
+metagenome/low-coverage-oriented heuristics and tends to produce a
+cleaner assembly than the default mode).</p></li>
+<li><p>Adjust <code class="docutils literal notranslate"><span class="pre">-t</span></code> (threads) and <code class="docutils literal notranslate"><span class="pre">-m</span></code> (memory in GB) to match your
+allocation/machine.</p></li>
+<li><p>The key output is <code class="docutils literal notranslate"><span class="pre">assembly/DRR187559_spades/contigs.fasta</span></code>
+(and <code class="docutils literal notranslate"><span class="pre">scaffolds.fasta</span></code>).</p></li>
+</ul>
+<p>On an HPC with Slurm, submit as a batch job, e.g.:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --job-name=spades_assembly</span>
+<span class="c1">#SBATCH --cpus-per-task=8</span>
+<span class="c1">#SBATCH --mem=32G</span>
+<span class="c1">#SBATCH --time=04:00:00</span>
+<span class="c1">#SBATCH --output=spades_%j.log</span>
+
+module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>spades
+spades.py<span class="w"> </span>-1<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">          </span>-2<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">          </span>--isolate<span class="w"> </span>-o<span class="w"> </span>assembly/DRR187559_spades<span class="w"> </span>-t<span class="w"> </span><span class="m">8</span><span class="w"> </span>-m<span class="w"> </span><span class="m">32</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-assembly-quality-assessment">
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">Step 5: Assembly Quality Assessment</a><a class="headerlink" href="#step-5-assembly-quality-assessment" title="Link to this heading"></a></h2>
+<section id="quast">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">QUAST</a><a class="headerlink" href="#quast" title="Link to this heading"></a></h3>
+<p><strong>QUAST</strong> reports assembly statistics (N50, number of contigs, total
+length, GC content, misassemblies if a reference is given, etc.).</p>
+<p><strong>HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>quast
+quast.py<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>qc/quast_DRR187559<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-r<span class="w"> </span>reference/GCF_000013425.1_genomic.fna<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-g<span class="w"> </span>reference/GCF_000013425.1_genomic.gff
+</pre></div>
+</div>
+<p><strong>Locally:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>quast<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>quast<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>quast
+quast.py<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span>-o<span class="w"> </span>qc/quast_DRR187559<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-r</span></code>/<code class="docutils literal notranslate"><span class="pre">-g</span></code> reference arguments are optional but recommended when
+a reasonably close reference genome is available — they enable
+misassembly detection and genome-fraction metrics. Omit them to run
+QUAST reference-free.</p>
+</div>
+<p>Key metrics to check in <code class="docutils literal notranslate"><span class="pre">qc/quast_DRR187559/report.html</span></code>:</p>
+<ul class="simple">
+<li><p><strong>Number of contigs</strong> — fewer, larger contigs generally indicate a
+better assembly</p></li>
+<li><p><strong>N50</strong> — the contig length at which 50% of the assembly is contained
+in contigs of that size or larger; higher is better</p></li>
+<li><p><strong>Total length</strong> — should be close to the expected genome size
+(~2.9 Mb for this MRSA isolate)</p></li>
+<li><p><strong>GC content</strong> — should match the expected species GC% (~32-33% for
+<em>S. aureus</em>)</p></li>
+<li><p><strong>L50, largest contig, # misassemblies</strong> (if reference supplied)</p></li>
+</ul>
+</section>
+<section id="busco">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">BUSCO</a><a class="headerlink" href="#busco" title="Link to this heading"></a></h3>
+<p><strong>BUSCO</strong> assesses assembly completeness by searching for a curated set
+of near-universal single-copy orthologs expected in your lineage
+(e.g. <code class="docutils literal notranslate"><span class="pre">bacteria_odb10</span></code> or a more specific lineage such as
+<code class="docutils literal notranslate"><span class="pre">bacillales_odb10</span></code>).</p>
+<p><strong>HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>busco
+busco<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>busco_DRR187559<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--out_path<span class="w"> </span>qc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-l<span class="w"> </span>bacteria_odb10<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>genome<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p><strong>Locally (conda):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>busco<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>busco<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>busco
+busco<span class="w"> </span>-i<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>busco_DRR187559<span class="w"> </span>--out_path<span class="w"> </span>qc<span class="w"> </span>-l<span class="w"> </span>bacteria_odb10<span class="w"> </span>-m<span class="w"> </span>genome<span class="w"> </span>-c<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p>Check <code class="docutils literal notranslate"><span class="pre">qc/busco_DRR187559/short_summary*.txt</span></code> for the proportion of
+<strong>Complete (Single + Duplicated)</strong>, <strong>Fragmented</strong>, and <strong>Missing</strong> BUSCOs.
+A good bacterial assembly typically shows &gt;95% complete BUSCOs.</p>
+</section>
+</section>
+<section id="step-6-genome-annotation">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Step 6: Genome Annotation</a><a class="headerlink" href="#step-6-genome-annotation" title="Link to this heading"></a></h2>
+<p>We annotate the assembled contigs with <strong>Prokka</strong>, a fast, widely used
+bacterial annotation pipeline (predicts CDS, rRNA, tRNA, and more, and
+outputs GFF3/GenBank/FASTA protein files).</p>
+<p><strong>HPC:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>prokka
+prokka<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--outdir<span class="w"> </span>annotation/DRR187559_prokka<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prefix<span class="w"> </span>DRR187559<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--genus<span class="w"> </span>Staphylococcus<span class="w"> </span>--species<span class="w"> </span>aureus<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cpus<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>assembly/DRR187559_spades/contigs.fasta
+</pre></div>
+</div>
+<p><strong>Locally (conda):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>prokka<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>prokka<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>prokka
+prokka<span class="w"> </span>--outdir<span class="w"> </span>annotation/DRR187559_prokka<span class="w"> </span>--prefix<span class="w"> </span>DRR187559<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--genus<span class="w"> </span>Staphylococcus<span class="w"> </span>--species<span class="w"> </span>aureus<span class="w"> </span>--cpus<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>assembly/DRR187559_spades/contigs.fasta
+</pre></div>
+</div>
+<p>Key outputs in <code class="docutils literal notranslate"><span class="pre">annotation/DRR187559_prokka/</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DRR187559.gff</span></code> — annotation in GFF3 format (genes, CDS, RNA features)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DRR187559.faa</span></code> — predicted protein sequences</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DRR187559.ffn</span></code> — nucleotide sequences of predicted genes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DRR187559.txt</span></code> — summary statistics (number of CDS, rRNAs, tRNAs, etc.)</p></li>
+</ul>
+</section>
+<section id="step-7-additional-value-added-steps">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Step 7: Additional Value-Added Steps</a><a class="headerlink" href="#step-7-additional-value-added-steps" title="Link to this heading"></a></h2>
+<p>The following steps are optional but commonly add real value to a
+bacterial assembly workflow:</p>
+<section id="a-species-contamination-check-with-kraken2">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">7a. Species/Contamination Check with Kraken2</a><a class="headerlink" href="#a-species-contamination-check-with-kraken2" title="Link to this heading"></a></h3>
+<p>Confirms the reads/assembly actually belong to the expected species and
+flags contamination (common in bacterial WGS from clinical/environmental
+samples).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>kraken2<span class="w">   </span><span class="c1"># HPC</span>
+<span class="c1"># or: conda create -n kraken2 -c bioconda -c conda-forge kraken2 -y</span>
+
+kraken2<span class="w"> </span>--db<span class="w"> </span>/path/to/kraken2_standard_db<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--paired<span class="w"> </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--report<span class="w"> </span>qc/kraken2_DRR187559.report<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>qc/kraken2_DRR187559.out<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--threads<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+</section>
+<section id="b-mlst-typing">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">7b. MLST Typing</a><a class="headerlink" href="#b-mlst-typing" title="Link to this heading"></a></h3>
+<p>Multi-locus sequence typing assigns a sequence type (ST), useful for
+strain tracking and outbreak investigations.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>mlst<span class="w">   </span><span class="c1"># HPC</span>
+<span class="c1"># or: conda create -n mlst -c bioconda -c conda-forge mlst -y</span>
+
+mlst<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span>&gt;<span class="w"> </span>qc/DRR187559.mlst.tsv
+</pre></div>
+</div>
+</section>
+<section id="c-coverage-depth-assessment">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">7c. Coverage / Depth Assessment</a><a class="headerlink" href="#c-coverage-depth-assessment" title="Link to this heading"></a></h3>
+<p>Map trimmed reads back to the assembly to confirm even coverage across
+contigs (low/uneven coverage in regions can flag misassemblies).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>bwa<span class="w"> </span>samtools<span class="w">   </span><span class="c1"># HPC</span>
+
+bwa<span class="w"> </span>index<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta
+bwa<span class="w"> </span>mem<span class="w"> </span>-t<span class="w"> </span><span class="m">8</span><span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>trimmed/DRR187559_1.trimmed.fastq.gz<span class="w"> </span>trimmed/DRR187559_2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="p">|</span><span class="w"> </span>samtools<span class="w"> </span>sort<span class="w"> </span>-@<span class="w"> </span><span class="m">4</span><span class="w"> </span>-o<span class="w"> </span>qc/DRR187559.sorted.bam
+samtools<span class="w"> </span>index<span class="w"> </span>qc/DRR187559.sorted.bam
+samtools<span class="w"> </span>depth<span class="w"> </span>-a<span class="w"> </span>qc/DRR187559.sorted.bam<span class="w"> </span>&gt;<span class="w"> </span>qc/DRR187559.depth.txt
+</pre></div>
+</div>
+</section>
+<section id="d-antimicrobial-resistance-amr-gene-screening">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">7d. Antimicrobial Resistance (AMR) Gene Screening</a><a class="headerlink" href="#d-antimicrobial-resistance-amr-gene-screening" title="Link to this heading"></a></h3>
+<p>Since this is an MRSA isolate, screening for resistance genes adds
+biological context (this also nicely follows on from the GTN tutorial
+referenced above).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>abricate<span class="w">   </span><span class="c1"># HPC</span>
+<span class="c1"># or: conda create -n abricate -c bioconda -c conda-forge abricate -y</span>
+
+abricate<span class="w"> </span>--db<span class="w"> </span>resfinder<span class="w"> </span>assembly/DRR187559_spades/contigs.fasta<span class="w"> </span>&gt;<span class="w"> </span>qc/DRR187559.amr.tsv
+</pre></div>
+</div>
+</section>
+<section id="e-consolidated-multiqc-report">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">7e. Consolidated MultiQC Report</a><a class="headerlink" href="#e-consolidated-multiqc-report" title="Link to this heading"></a></h3>
+<p>Aggregate FastQC, fastp, QUAST, and BUSCO outputs into a single summary
+HTML report.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all<span class="w"> </span>gencore/3<span class="w"> </span>multiqc<span class="w">   </span><span class="c1"># HPC</span>
+<span class="c1"># or: conda create -n multiqc -c bioconda -c conda-forge multiqc -y</span>
+
+multiqc<span class="w"> </span>qc/<span class="w"> </span>trimmed/<span class="w"> </span>-o<span class="w"> </span>qc/multiqc_report
+</pre></div>
+</div>
+</section>
+</section>
+<section id="summary">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">Summary</a><a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 35.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Step</p></th>
+<th class="head"><p>Tool</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><ol class="arabic simple">
+<li><p>Raw QC</p></li>
+</ol>
+</td>
+<td><p>FastQC</p></td>
+<td><p>Assess raw read quality, adapter content, duplication</p></td>
+</tr>
+<tr class="row-odd"><td><ol class="arabic simple" start="2">
+<li><p>Trimming</p></li>
+</ol>
+</td>
+<td><p>fastp</p></td>
+<td><p>Remove adapters, trim low-quality bases, filter short reads</p></td>
+</tr>
+<tr class="row-even"><td><ol class="arabic simple" start="3">
+<li><p>Trimmed QC</p></li>
+</ol>
+</td>
+<td><p>FastQC / fastp report</p></td>
+<td><p>Confirm trimming improved read quality</p></td>
+</tr>
+<tr class="row-odd"><td><ol class="arabic simple" start="4">
+<li><p>Assembly</p></li>
+</ol>
+</td>
+<td><p>SPAdes</p></td>
+<td><p>Reconstruct the genome from short reads</p></td>
+</tr>
+<tr class="row-even"><td><ol class="arabic simple" start="5">
+<li><p>Assembly QC</p></li>
+</ol>
+</td>
+<td><p>QUAST, BUSCO</p></td>
+<td><p>Assess contiguity (N50, # contigs) and completeness (% BUSCOs)</p></td>
+</tr>
+<tr class="row-odd"><td><ol class="arabic simple" start="6">
+<li><p>Annotation</p></li>
+</ol>
+</td>
+<td><p>Prokka</p></td>
+<td><p>Predict genes, CDS, rRNA, tRNA</p></td>
+</tr>
+<tr class="row-even"><td><ol class="arabic simple" start="7">
+<li><p>Extras</p></li>
+</ol>
+</td>
+<td><p>Kraken2, MLST, BWA/samtools, ABRicate, MultiQC</p></td>
+<td><p>Contamination check, strain typing, coverage, AMR genes, summary report</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="further-reading">
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">Further Reading</a><a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>SPAdes manual: <a class="reference external" href="https://github.com/ablab/spades">https://github.com/ablab/spades</a></p></li>
+<li><p>QUAST manual: <a class="reference external" href="http://quast.sourceforge.net/">http://quast.sourceforge.net/</a></p></li>
+<li><p>BUSCO user guide: <a class="reference external" href="https://busco.ezlab.org/">https://busco.ezlab.org/</a></p></li>
+<li><p>Prokka: <a class="reference external" href="https://github.com/tseemann/prokka">https://github.com/tseemann/prokka</a></p></li>
+<li><p>fastp: <a class="reference external" href="https://github.com/OpenGene/fastp">https://github.com/OpenGene/fastp</a></p></li>
+<li><p>Galaxy Training — MRSA assembly tutorial (data source for this tutorial):
+<a class="reference external" href="https://training.galaxyproject.org/training-material/topics/assembly/tutorials/mrsa-illumina/tutorial.html">https://training.galaxyproject.org/training-material/topics/assembly/tutorials/mrsa-illumina/tutorial.html</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
