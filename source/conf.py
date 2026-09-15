@@ -29,6 +29,10 @@ html_show_sphinx = False
 html_css_files = ["custom.css"]
 html_favicon = "img/favicon.ico"
 
+html_theme_options = {
+    "analytics_id": "G-WS7W6KPMXY",
+}
+
 html_context = {
     "display_github": True,
     "github_user": "learn-gencore",
