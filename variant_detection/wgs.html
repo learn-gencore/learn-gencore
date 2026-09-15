@@ -122,6 +122,7 @@
           <li class="breadcrumb-item"><a href="index.html">Variant Detection &amp; Annotation</a></li>
       <li class="breadcrumb-item active">WGS</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/variant_detection/wgs.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -231,7 +232,7 @@ gatk<span class="w"> </span>CreateSequenceDictionary<span class="w"> </span>-R<s
 to run without it. <code class="docutils literal notranslate"><span class="pre">-M</span></code> marks shorter split hits as secondary, which
 GATK expects.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bwa<span class="w"> </span>mem<span class="w"> </span>-M<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-R<span class="w"> </span><span class="s1">&#39;@RG\tID:sample_1\tLB:sample_1\tPL:ILLUMINA\tSM:sample_1&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-R<span class="w"> </span><span class="s1">'@RG\tID:sample_1\tLB:sample_1\tPL:ILLUMINA\tSM:sample_1'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>sample_1_R1.fastq.gz<span class="w"> </span>sample_1_R2.fastq.gz<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>&gt;<span class="w"> </span>aligned_reads.sam
@@ -328,7 +329,7 @@ a flag number into the form and the page shows you which bits are set.</p></li>
 </pre></div>
 </div>
 <p>To see how many records carry each flag value in a BAM:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>view<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>samtools<span class="w"> </span>view<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $2}'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">dedup_metrics.txt</span></code> file written by the command above summarizes
@@ -444,21 +445,21 @@ keeps them in the VCF; we drop them in the next command.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-V<span class="w"> </span>bootstrap_snps.vcf<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 60.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS60&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQ &lt; 40.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQ40&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQRankSum &lt; -12.5&quot;</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQRankSum-12.5&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -8.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-8&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 3.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"QD &lt; 2.0"</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">"QD2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"FS &gt; 60.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"FS60"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"MQ &lt; 40.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"MQ40"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"MQRankSum &lt; -12.5"</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">"MQRankSum-12.5"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"ReadPosRankSum &lt; -8.0"</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">"ReadPosRankSum-8"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"SOR &gt; 3.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"SOR3"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>bootstrap_snps.filtered.vcf
 
 gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-V<span class="w"> </span>bootstrap_indels.vcf<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 200.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS200&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -20.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-20&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 10.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR10&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"QD &lt; 2.0"</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">"QD2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"FS &gt; 200.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"FS200"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"ReadPosRankSum &lt; -20.0"</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">"ReadPosRankSum-20"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"SOR &gt; 10.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"SOR10"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>bootstrap_indels.filtered.vcf
 </pre></div>
 </div>
@@ -566,12 +567,12 @@ gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class=
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-V<span class="w"> </span>raw_snps.vcf<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 60.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS60&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQ &lt; 40.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQ40&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;MQRankSum &lt; -12.5&quot;</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">&quot;MQRankSum-12.5&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -8.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-8&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 3.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"QD &lt; 2.0"</span><span class="w">              </span>--filter-name<span class="w"> </span><span class="s2">"QD2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"FS &gt; 60.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"FS60"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"MQ &lt; 40.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"MQ40"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"MQRankSum &lt; -12.5"</span><span class="w">     </span>--filter-name<span class="w"> </span><span class="s2">"MQRankSum-12.5"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"ReadPosRankSum &lt; -8.0"</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">"ReadPosRankSum-8"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"SOR &gt; 3.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"SOR3"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>filtered_snps.vcf
 </pre></div>
 </div>
@@ -579,10 +580,10 @@ gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class=
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>VariantFiltration<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-V<span class="w"> </span>raw_indels.vcf<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;QD &lt; 2.0&quot;</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">&quot;QD2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;FS &gt; 200.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;FS200&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;ReadPosRankSum &lt; -20.0&quot;</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">&quot;ReadPosRankSum-20&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">&quot;SOR &gt; 10.0&quot;</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">&quot;SOR10&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"QD &lt; 2.0"</span><span class="w">               </span>--filter-name<span class="w"> </span><span class="s2">"QD2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"FS &gt; 200.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"FS200"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"ReadPosRankSum &lt; -20.0"</span><span class="w"> </span>--filter-name<span class="w"> </span><span class="s2">"ReadPosRankSum-20"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filter-expression<span class="w"> </span><span class="s2">"SOR &gt; 10.0"</span><span class="w">             </span>--filter-name<span class="w"> </span><span class="s2">"SOR10"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>filtered_indels.vcf
 </pre></div>
 </div>
@@ -670,7 +671,7 @@ VCF do not match those in the snpEff database. A typical mismatch is
 RefSeq-style <code class="docutils literal notranslate"><span class="pre">NC_000020.11</span></code> in your VCF vs. plain <code class="docutils literal notranslate"><span class="pre">20</span></code> in the
 database. Rename chromosomes before annotation:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build a two-column rename map: &lt;source_name&gt; &lt;target_name&gt;</span>
-<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;NC_000020.11\t20&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>chrom_rename.txt
+<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"NC_000020.11\t20"</span><span class="w"> </span>&gt;<span class="w"> </span>chrom_rename.txt
 
 bcftools<span class="w"> </span>annotate<span class="w"> </span>--rename-chrs<span class="w"> </span>chrom_rename.txt<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>z<span class="w"> </span>-o<span class="w"> </span>filtered_snps.renamed.vcf.gz<span class="w"> </span>filtered_snps.norm.vcf.gz

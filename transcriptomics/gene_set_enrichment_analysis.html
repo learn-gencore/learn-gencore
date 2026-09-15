@@ -107,6 +107,7 @@
           <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
       <li class="breadcrumb-item active">Gene set enrichment analysis</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/transcriptomics/gene_set_enrichment_analysis.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -157,9 +158,9 @@ netplot, ridgeplot, GSEA plot, PubMed trend).</p></li>
 <code class="docutils literal notranslate"><span class="pre">enrichplot</span></code> once, then load them at the start of each session. We
 also use <code class="docutils literal notranslate"><span class="pre">ggplot2</span></code> to add x-axis labels on some plots (e.g.
 <code class="docutils literal notranslate"><span class="pre">ridgeplot</span></code>).</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;clusterProfiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;3.8&quot;</span><span class="p">)</span>
-<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;pathview&quot;</span><span class="p">)</span>
-<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;enrichplot&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"clusterProfiler"</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"3.8"</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"pathview"</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"enrichplot"</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">clusterProfiler</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">enrichplot</span><span class="p">)</span>
 <span class="c1"># we use ggplot2 to add x axis labels (ex: ridgeplot)</span>
@@ -184,7 +185,7 @@ CSV. The examples here use <em>D. melanogaster</em> and <code class="docutils li
 full list at <a class="reference external" href="http://bioconductor.org/packages/release/BiocViews.html#___OrgDb">Bioconductor OrgDb packages</a>
 (there are 19 presently available).</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># SET THE DESIRED ORGANISM HERE</span>
-<span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Dm.eg.db&quot;</span>
+<span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"org.Dm.eg.db"</span>
 <span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
 </pre></div>
@@ -197,7 +198,7 @@ full list at <a class="reference external" href="http://bioconductor.org/package
 fold-changes. <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code> requires the list to be sorted in
 decreasing order.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># reading in data from deseq2</span>
-<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&quot;drosphila_example_de.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">"drosphila_example_de.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
 <span class="c1"># we want the log2 fold change</span>
 <span class="n">original_gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="o">$</span><span class="n">log2FoldChange</span>
@@ -245,15 +246,15 @@ this many genes in your dataset will be ignored.</p>
 <section id="create-the-gsego-object">
 <h3>Create the gseGO object<a class="headerlink" href="#create-the-gsego-object" title="Link to this heading"></a></h3>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">gse</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">gseGO</span><span class="p">(</span><span class="n">geneList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span>
-<span class="w">             </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ALL&quot;</span><span class="p">,</span>
-<span class="w">             </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">,</span>
+<span class="w">             </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ALL"</span><span class="p">,</span>
+<span class="w">             </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ENSEMBL"</span><span class="p">,</span>
 <span class="w">             </span><span class="n">nPerm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10000</span><span class="p">,</span>
 <span class="w">             </span><span class="n">minGSSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">,</span>
 <span class="w">             </span><span class="n">maxGSSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">800</span><span class="p">,</span>
 <span class="w">             </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
 <span class="w">             </span><span class="n">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
 <span class="w">             </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">organism</span><span class="p">,</span>
-<span class="w">             </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span>
+<span class="w">             </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"none"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -262,7 +263,7 @@ this many genes in your dataset will be ignored.</p>
 <section id="dotplot">
 <h4>Dotplot<a class="headerlink" href="#dotplot" title="Link to this heading"></a></h4>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">require</span><span class="p">(</span><span class="n">DOSE</span><span class="p">)</span>
-<span class="nf">dotplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">split</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;.sign&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">facet_grid</span><span class="p">(</span><span class="n">.</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.sign</span><span class="p">)</span>
+<span class="nf">dotplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">split</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">".sign"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">facet_grid</span><span class="p">(</span><span class="n">.</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.sign</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id11">
@@ -297,8 +298,8 @@ terms that share genes.</span><a class="headerlink" href="#id12" title="Link to 
 (e.g. GO terms or KEGG pathways) as a network. It is helpful for
 seeing which genes are involved in enriched pathways and which genes
 belong to multiple annotation categories.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
-<span class="nf">cnetplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either 'pvalue' or 'geneNum'</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"pvalue"</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id13">
@@ -315,7 +316,7 @@ fold-change overlaid as colour.</span><a class="headerlink" href="#id13" title="
 <p>Grouped by gene set, density plots are generated by using the
 frequency of fold-change values per gene within each set. Helpful to
 interpret up- and down-regulated pathways.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ridgeplot</span><span class="p">(</span><span class="n">gse</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;enrichment distribution&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ridgeplot</span><span class="p">(</span><span class="n">gse</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"enrichment distribution"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id14">
@@ -341,7 +342,7 @@ metric measures a gene’s correlation with a phenotype.</p>
 The first gene set is 1, second gene set is 2, etc.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the `Gene Set` param for the index in the title, and as the</span>
 <span class="c1"># value for geneSetId</span>
-<span class="nf">gseaplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;all&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gse</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="w"> </span><span class="n">geneSetID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="nf">gseaplot</span><span class="p">(</span><span class="n">gse</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gse</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="w"> </span><span class="n">geneSetID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id15">
@@ -395,12 +396,12 @@ four types are available directly, but <code class="docutils literal notranslate
 <h3>Prepare input<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert gene IDs for gseKEGG function</span>
 <span class="c1"># We will lose some genes here because not all IDs will be converted</span>
-<span class="n">ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">),</span><span class="w"> </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">organism</span><span class="p">)</span>
+<span class="n">ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">),</span><span class="w"> </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ENSEMBL"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ENTREZID"</span><span class="p">,</span><span class="w"> </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">organism</span><span class="p">)</span>
 
-<span class="c1"># remove duplicate IDS (here I use &quot;ENSEMBL&quot;, but it should be</span>
+<span class="c1"># remove duplicate IDS (here I use "ENSEMBL", but it should be</span>
 <span class="c1"># whatever was selected as keyType)</span>
-<span class="n">dedup_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ids</span><span class="p">[</span><span class="o">!</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">)]),]</span>
+<span class="n">dedup_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ids</span><span class="p">[</span><span class="o">!</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="s">"ENSEMBL"</span><span class="p">)]),]</span>
 
 <span class="c1"># Create a new dataframe df2 which has only the genes which were</span>
 <span class="c1"># successfully mapped using the bitr function above</span>
@@ -443,15 +444,15 @@ or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span>
 </section>
 <section id="create-the-gsekegg-object">
 <h3>Create the gseKEGG object<a class="headerlink" href="#create-the-gsekegg-object" title="Link to this heading"></a></h3>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">kegg_organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme&quot;</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">kegg_organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme"</span>
 <span class="n">kk2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">gseKEGG</span><span class="p">(</span><span class="n">geneList</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_gene_list</span><span class="p">,</span>
 <span class="w">               </span><span class="n">organism</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
 <span class="w">               </span><span class="n">nPerm</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="m">10000</span><span class="p">,</span>
 <span class="w">               </span><span class="n">minGSSize</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">,</span>
 <span class="w">               </span><span class="n">maxGSSize</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="m">800</span><span class="p">,</span>
 <span class="w">               </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
-<span class="w">               </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">,</span>
-<span class="w">               </span><span class="n">keyType</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ncbi-geneid&quot;</span><span class="p">)</span>
+<span class="w">               </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"none"</span><span class="p">,</span>
+<span class="w">               </span><span class="n">keyType</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">"ncbi-geneid"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -459,8 +460,8 @@ or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span>
 <h3>Visualizations<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <section id="id5">
 <h4>Dotplot<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dotplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enriched Pathways&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="n">split</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;.sign&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">facet_grid</span><span class="p">(</span><span class="n">.</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.sign</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dotplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Enriched Pathways"</span><span class="p">,</span>
+<span class="w">        </span><span class="n">split</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">".sign"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">facet_grid</span><span class="p">(</span><span class="n">.</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.sign</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id17">
@@ -492,8 +493,8 @@ to cluster together, making it easy to identify functional modules.</p>
 <h4>Category netplot<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">cnetplot</span></code> depicts the linkages of genes and biological concepts
 (here KEGG pathways) as a network.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
-<span class="nf">cnetplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either 'pvalue' or 'geneNum'</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"pvalue"</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id19">
@@ -508,7 +509,7 @@ overlaid as colour.</span><a class="headerlink" href="#id19" title="Link to this
 <section id="id8">
 <h4>Ridgeplot<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
 <p>Helpful to interpret up- and down-regulated pathways.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ridgeplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;enrichment distribution&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ridgeplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"enrichment distribution"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id20">
@@ -527,7 +528,7 @@ each KEGG set.</span><a class="headerlink" href="#id20" title="Link to this imag
 The first gene set is 1, second gene set is 2, etc. Default: 1.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the `Gene Set` param for the index in the title, and as the</span>
 <span class="c1"># value for geneSetId</span>
-<span class="nf">gseaplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;all&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kk2</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="w"> </span><span class="n">geneSetID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="nf">gseaplot</span><span class="p">(</span><span class="n">kk2</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kk2</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="w"> </span><span class="n">geneSetID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id21">
@@ -554,15 +555,15 @@ defined as <code class="docutils literal notranslate"><span class="pre">kegg_org
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">pathview</span><span class="p">)</span>
 
 <span class="c1"># Produce the native KEGG plot (PNG)</span>
-<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04130&quot;</span><span class="p">,</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme04130"</span><span class="p">,</span>
 <span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">)</span>
 
 <span class="c1"># Produce a different plot (PDF) (not displayed here)</span>
-<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04130&quot;</span><span class="p">,</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme04130"</span><span class="p">,</span>
 <span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span><span class="w"> </span><span class="n">kegg.native</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">knitr</span><span class="o">::</span><span class="nf">include_graphics</span><span class="p">(</span><span class="s">&quot;dme04130.pathview.png&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">knitr</span><span class="o">::</span><span class="nf">include_graphics</span><span class="p">(</span><span class="s">"dme04130.pathview.png"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id22">

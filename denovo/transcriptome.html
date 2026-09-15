@@ -120,6 +120,7 @@
           <li class="breadcrumb-item"><a href="index.html">De Novo</a></li>
       <li class="breadcrumb-item active">De Novo Transcriptome Assembly &amp; Annotation</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/denovo/transcriptome.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -460,7 +461,7 @@ better assembly. It says nothing about correctness, so never use it alone.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>################################
 ## Counts of transcripts, etc.
 ################################
-Total trinity &#39;genes&#39;:       3040
+Total trinity 'genes':       3040
 Total trinity transcripts:   3794
 Percent GC: 34.52
 
@@ -479,7 +480,7 @@ Stats based on ALL transcript contigs:
      Total assembled bases: 4259519
 
 #####################################################
-## Stats based on ONLY LONGEST ISOFORM per &#39;GENE&#39;:
+## Stats based on ONLY LONGEST ISOFORM per 'GENE':
 #####################################################
 
      Contig N10: 14232
@@ -512,8 +513,8 @@ length-based checks above, BUSCO evaluates assembly <em>content</em>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
 module<span class="w"> </span>load<span class="w"> </span>all
 module<span class="w"> </span>load<span class="w"> </span>gencore/2
-<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/scratch/gencore/.eb/2.0/software/augustus/3.4.0/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">AUGUSTUS_CONFIG_PATH</span><span class="o">=</span><span class="s2">&quot;/scratch/gencore/.eb/2.0/software/augustus/3.4.0/config/&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"/scratch/gencore/.eb/2.0/software/augustus/3.4.0/bin:</span><span class="nv">$PATH</span><span class="s2">"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AUGUSTUS_CONFIG_PATH</span><span class="o">=</span><span class="s2">"/scratch/gencore/.eb/2.0/software/augustus/3.4.0/config/"</span>
 module<span class="w"> </span>load<span class="w"> </span>busco/5.2.0
 </pre></div>
 </div>
@@ -548,7 +549,7 @@ cat<span class="w"> </span>*_2.fastq<span class="w"> </span>&gt;<span class="w">
 module<span class="w"> </span>load<span class="w"> </span>gencore
 module<span class="w"> </span>load<span class="w"> </span>Miniconda3/4.7.10
 <span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>/scratch/gencore/conda3/envs/quast_env
-<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/scratch/gencore/software/genemarks_t:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"/scratch/gencore/software/genemarks_t:</span><span class="nv">$PATH</span><span class="s2">"</span>
 </pre></div>
 </div>
 <p>Run QUAST:</p>
@@ -601,7 +602,7 @@ it directly. The annotation steps are in <code class="docutils literal notransla
 module<span class="w"> </span>load<span class="w"> </span>gencore
 module<span class="w"> </span>load<span class="w"> </span>Miniconda3/4.7.10
 <span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>/scratch/gencore/conda3/envs/Trinotate/
-<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/scratch/gencore/software/Trinotate-Trinotate-v4.0.2:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"/scratch/gencore/software/Trinotate-Trinotate-v4.0.2:</span><span class="nv">$PATH</span><span class="s2">"</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">TRINOTATE_DATA_DIR</span><span class="o">=</span>/scratch/gencore/trinotate_addons/databases/4.0.2
 
 cp<span class="w"> </span>trinity_assembly.Trinity.fasta<span class="w"> </span>transcripts.fasta
@@ -668,7 +669,7 @@ projects.</p>
 <span class="w">    </span>--transcript_fasta<span class="w"> </span>transcripts.fasta<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--transdecoder_pep<span class="w"> </span>transcripts.fasta.transdecoder.pep<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--trinotate_data_dir<span class="w"> </span>/scratch/gencore/trinotate_addons/databases/4.0.2/<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--run<span class="w"> </span><span class="s2">&quot;swissprot_blastp swissprot_blastx pfam tmhmmv2 EggnogMapper&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--run<span class="w"> </span><span class="s2">"swissprot_blastp swissprot_blastx pfam tmhmmv2 EggnogMapper"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--use_diamond
 </pre></div>
 </div>

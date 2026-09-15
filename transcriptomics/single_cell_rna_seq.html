@@ -240,6 +240,7 @@
           <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
       <li class="breadcrumb-item active">Single-cell RNA-seq analysis with Scanpy</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/transcriptomics/single_cell_rna_seq.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -290,7 +291,7 @@ in a separate tutorial after sample-level QC has been completed.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">sc</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">set_figure_params</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">set_figure_params</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">"white"</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -310,11 +311,11 @@ as columns.</p>
 </section>
 <section id="read-a-10x-matrix-directory">
 <h3>Read a 10x matrix directory<a class="headerlink" href="#read-a-10x-matrix-directory" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;path/to/filtered_feature_bc_matrix&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">"path/to/filtered_feature_bc_matrix"</span>
 
 <span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span>
     <span class="n">data_dir</span><span class="p">,</span>
-    <span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;gene_symbols&quot;</span><span class="p">,</span>
+    <span class="n">var_names</span><span class="o">=</span><span class="s2">"gene_symbols"</span><span class="p">,</span>
     <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -326,7 +327,7 @@ as columns.</p>
 <section id="read-a-10x-hdf5-file">
 <h3>Read a 10x HDF5 file<a class="headerlink" href="#read-a-10x-hdf5-file" title="Link to this heading"></a></h3>
 <p>Use this instead if Cell Ranger output is stored as <code class="docutils literal notranslate"><span class="pre">filtered_feature_bc_matrix.h5</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">h5_file</span> <span class="o">=</span> <span class="s2">&quot;path/to/filtered_feature_bc_matrix.h5&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">h5_file</span> <span class="o">=</span> <span class="s2">"path/to/filtered_feature_bc_matrix.h5"</span>
 
 <span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_h5</span><span class="p">(</span><span class="n">h5_file</span><span class="p">)</span>
 <span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
@@ -371,7 +372,7 @@ layer before modifying <code class="docutils literal notranslate"><span class="p
 </section>
 <section id="code">
 <h3>Code<a class="headerlink" href="#code" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"counts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -400,13 +401,13 @@ run and interpreted for each experiment or capture before integration.</p>
 <section id="id5">
 <h3>Code<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Human gene naming convention.</span>
-<span class="c1"># For mouse, mitochondrial genes usually start with &quot;mt-&quot;.</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MT-&quot;</span><span class="p">)</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;ribo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;RPS&quot;</span><span class="p">,</span> <span class="s2">&quot;RPL&quot;</span><span class="p">))</span>
+<span class="c1"># For mouse, mitochondrial genes usually start with "mt-".</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">"mt"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MT-"</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">"ribo"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"RPS"</span><span class="p">,</span> <span class="s2">"RPL"</span><span class="p">))</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">qc_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">,</span> <span class="s2">&quot;ribo&quot;</span><span class="p">],</span>
+    <span class="n">qc_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">"mt"</span><span class="p">,</span> <span class="s2">"ribo"</span><span class="p">],</span>
     <span class="n">percent_top</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">log1p</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -414,10 +415,10 @@ run and interpreted for each experiment or capture before integration.</p>
 
 <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
     <span class="p">[</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_ribo&quot;</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_ribo"</span><span class="p">,</span>
     <span class="p">]</span>
 <span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
@@ -429,13 +430,13 @@ run and interpreted for each experiment or capture before integration.</p>
 rate depends on the loading concentration, cell type mixture, and capture. If
 your object contains multiple independent samples or 10x lanes, run doublet
 detection per sample before combining the decisions.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scrub</span> <span class="o">=</span> <span class="n">scr</span><span class="o">.</span><span class="n">Scrublet</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scrub</span> <span class="o">=</span> <span class="n">scr</span><span class="o">.</span><span class="n">Scrublet</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"counts"</span><span class="p">])</span>
 <span class="n">doublet_scores</span><span class="p">,</span> <span class="n">predicted_doublets</span> <span class="o">=</span> <span class="n">scrub</span><span class="o">.</span><span class="n">scrub_doublets</span><span class="p">()</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;doublet_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doublet_scores</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_doublets</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"doublet_score"</span><span class="p">]</span> <span class="o">=</span> <span class="n">doublet_scores</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"predicted_doublet"</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_doublets</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">"doublet_score"</span><span class="p">,</span> <span class="s2">"predicted_doublet"</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -454,11 +455,11 @@ filtering, inspect distributions and relationships among QC metrics.</p>
 <section id="id8">
 <h3>Code<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_vars</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;pct_counts_ribo&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
+    <span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+    <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+    <span class="s2">"pct_counts_ribo"</span><span class="p">,</span>
+    <span class="s2">"doublet_score"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
@@ -470,15 +471,15 @@ filtering, inspect distributions and relationships among QC metrics.</p>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -524,24 +525,24 @@ multi-sample objects is covered in a separate tutorial.</p>
 <span class="n">upper_q</span> <span class="o">=</span> <span class="mf">97.5</span>
 
 <span class="n">gene_lo</span><span class="p">,</span> <span class="n">gene_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">],</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"n_genes_by_counts"</span><span class="p">],</span>
     <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
 <span class="p">)</span>
 
 <span class="n">count_lo</span><span class="p">,</span> <span class="n">count_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">],</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"total_counts"</span><span class="p">],</span>
     <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
 <span class="p">)</span>
 
 <span class="n">_</span><span class="p">,</span> <span class="n">mt_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">],</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"pct_counts_mt"</span><span class="p">],</span>
     <span class="p">[</span><span class="n">lower_q</span><span class="p">,</span> <span class="n">upper_q</span><span class="p">],</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Percentile starting thresholds&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_genes_by_counts: lower=</span><span class="si">{</span><span class="n">gene_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">gene_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;total_counts:      lower=</span><span class="si">{</span><span class="n">count_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">count_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pct_counts_mt:     upper=</span><span class="si">{</span><span class="n">mt_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Percentile starting thresholds"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_genes_by_counts: lower=</span><span class="si">{</span><span class="n">gene_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">gene_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"total_counts:      lower=</span><span class="si">{</span><span class="n">count_lo</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, upper=</span><span class="si">{</span><span class="n">count_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pct_counts_mt:     upper=</span><span class="si">{</span><span class="n">mt_hi</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -549,29 +550,29 @@ multi-sample objects is covered in a separate tutorial.</p>
 <h3>Plot percentile thresholds<a class="headerlink" href="#plot-percentile-thresholds" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span>
     <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">gene_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span>
     <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mt_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_lo</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">count_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mt_hi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -589,67 +590,67 @@ different thresholds after visual inspection.</span><a class="headerlink" href="
 </section>
 <section id="flag-qc-outliers-but-do-not-remove-them-yet">
 <h3>Flag QC outliers, but do not remove them yet<a class="headerlink" href="#flag-qc-outliers-but-do-not-remove-them-yet" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">gene_lo</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">gene_hi</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">count_lo</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">count_hi</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mt_hi</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]</span>
-    <span class="o">&amp;</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_low_genes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"n_genes_by_counts"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">gene_lo</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_genes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"n_genes_by_counts"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">gene_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_low_counts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"total_counts"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">count_lo</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_counts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"total_counts"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">count_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_mt"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"pct_counts_mt"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mt_hi</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_counts_low_genes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_counts"</span><span class="p">]</span>
+    <span class="o">&amp;</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_low_genes"</span><span class="p">]</span>
 <span class="p">)</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_predicted_doublet"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"predicted_doublet"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
 <span class="n">qc_flag_columns</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;qc_low_genes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_high_genes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_low_counts&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_high_counts&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_high_mt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">,</span>
+    <span class="s2">"qc_low_genes"</span><span class="p">,</span>
+    <span class="s2">"qc_high_genes"</span><span class="p">,</span>
+    <span class="s2">"qc_low_counts"</span><span class="p">,</span>
+    <span class="s2">"qc_high_counts"</span><span class="p">,</span>
+    <span class="s2">"qc_high_mt"</span><span class="p">,</span>
+    <span class="s2">"qc_high_counts_low_genes"</span><span class="p">,</span>
+    <span class="s2">"qc_predicted_doublet"</span><span class="p">,</span>
 <span class="p">]</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flag"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flag_count"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">encode_qc_flags</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a readable, multi-label QC flag string for one cell.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return a readable, multi-label QC flag string for one cell."""</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]:</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_counts_low_genes&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_high_counts_low_genes"</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"high_counts_low_genes"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]:</span>
-            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;low_genes&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_counts&quot;</span><span class="p">]:</span>
-            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_counts&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_low_genes"</span><span class="p">]:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"low_genes"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_high_counts"</span><span class="p">]:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"high_counts"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_genes&quot;</span><span class="p">]:</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_genes&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]:</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;low_counts&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">]:</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;high_mt&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]:</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_high_genes"</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"high_genes"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_low_counts"</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"low_counts"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_high_mt"</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"high_mt"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">"qc_predicted_doublet"</span><span class="p">]:</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"predicted_doublet"</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;pass&quot;</span>
+    <span class="k">return</span> <span class="s2">";"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">"pass"</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flags"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
     <span class="n">encode_qc_flags</span><span class="p">,</span>
     <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span>
-    <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"primary_qc_flag"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flags"</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"category"</span><span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flags&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">qc_flag_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"qc_flag"</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flags"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"primary_qc_flag"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The boolean columns support filtering logic. <code class="docutils literal notranslate"><span class="pre">qc_flags</span></code> records the named
@@ -662,35 +663,35 @@ plot-friendly category per cell.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
     <span class="p">[</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"doublet_score"</span><span class="p">,</span>
     <span class="p">],</span>
-    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"primary_qc_flag"</span><span class="p">,</span>
     <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"primary_qc_flag"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;qc_high_mt&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"qc_high_mt"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"total_counts"</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"qc_high_counts_low_genes"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -716,10 +717,10 @@ content can reflect signal concentrated in a small set of genes, ambient or
 damaged-cell signal, or a real cell state with dominant transcripts. The first
 embedding should show where these flags fall before cells are removed. Keep the
 encoded <code class="docutils literal notranslate"><span class="pre">qc_flags</span></code> column so each cell carries the reason it was flagged.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;keep_for_first_pass&quot;</span>
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">],</span> <span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;flagged_for_review&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_review_status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"keep_for_first_pass"</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flag"</span><span class="p">],</span> <span class="s2">"qc_review_status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"flagged_for_review"</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_review_status&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_review_status"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -734,7 +735,7 @@ seen on PCA, clusters, and UMAP.</p>
 <span class="n">min_cells_fraction</span> <span class="o">=</span> <span class="mf">0.001</span>
 <span class="n">min_cells</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">min_cells_fraction</span> <span class="o">*</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">n_obs</span><span class="p">)))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells"</span><span class="p">)</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">adata_work</span><span class="p">,</span> <span class="n">min_cells</span><span class="o">=</span><span class="n">min_cells</span><span class="p">)</span>
 
 <span class="n">adata_work</span>
@@ -756,14 +757,14 @@ molecules were sampled.</p>
 </section>
 <section id="id15">
 <h3>Code<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"counts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"norm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -782,7 +783,7 @@ large values while remaining defined at zero.</p>
 <section id="id18">
 <h3>Code<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata_work</span><span class="p">)</span>
-<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_work</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"lognorm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -805,30 +806,30 @@ convert the list to match <code class="docutils literal notranslate"><span class
 <section id="id21">
 <h3>Code<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s_genes</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;MCM5&quot;</span><span class="p">,</span> <span class="s2">&quot;PCNA&quot;</span><span class="p">,</span> <span class="s2">&quot;TYMS&quot;</span><span class="p">,</span> <span class="s2">&quot;FEN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM2&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM4&quot;</span><span class="p">,</span> <span class="s2">&quot;RRM1&quot;</span><span class="p">,</span> <span class="s2">&quot;UNG&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;GINS2&quot;</span><span class="p">,</span> <span class="s2">&quot;MCM6&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA7&quot;</span><span class="p">,</span> <span class="s2">&quot;DTL&quot;</span><span class="p">,</span> <span class="s2">&quot;PRIM1&quot;</span><span class="p">,</span> <span class="s2">&quot;UHRF1&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPU&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;HELLS&quot;</span><span class="p">,</span> <span class="s2">&quot;RFC2&quot;</span><span class="p">,</span> <span class="s2">&quot;RPA2&quot;</span><span class="p">,</span> <span class="s2">&quot;NASP&quot;</span><span class="p">,</span> <span class="s2">&quot;RAD51AP1&quot;</span><span class="p">,</span> <span class="s2">&quot;GMNN&quot;</span><span class="p">,</span> <span class="s2">&quot;WDR76&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SLBP&quot;</span><span class="p">,</span> <span class="s2">&quot;CCNE2&quot;</span><span class="p">,</span> <span class="s2">&quot;UBR7&quot;</span><span class="p">,</span> <span class="s2">&quot;POLD3&quot;</span><span class="p">,</span> <span class="s2">&quot;MSH2&quot;</span><span class="p">,</span> <span class="s2">&quot;ATAD2&quot;</span><span class="p">,</span> <span class="s2">&quot;RAD51&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;RRM2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC45&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC6&quot;</span><span class="p">,</span> <span class="s2">&quot;EXO1&quot;</span><span class="p">,</span> <span class="s2">&quot;TIPIN&quot;</span><span class="p">,</span> <span class="s2">&quot;DSCC1&quot;</span><span class="p">,</span> <span class="s2">&quot;BLM&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;CASP8AP2&quot;</span><span class="p">,</span> <span class="s2">&quot;USP1&quot;</span><span class="p">,</span> <span class="s2">&quot;CLSPN&quot;</span><span class="p">,</span> <span class="s2">&quot;POLA1&quot;</span><span class="p">,</span> <span class="s2">&quot;CHAF1B&quot;</span><span class="p">,</span> <span class="s2">&quot;BRIP1&quot;</span><span class="p">,</span> <span class="s2">&quot;E2F8&quot;</span><span class="p">,</span>
+    <span class="s2">"MCM5"</span><span class="p">,</span> <span class="s2">"PCNA"</span><span class="p">,</span> <span class="s2">"TYMS"</span><span class="p">,</span> <span class="s2">"FEN1"</span><span class="p">,</span> <span class="s2">"MCM2"</span><span class="p">,</span> <span class="s2">"MCM4"</span><span class="p">,</span> <span class="s2">"RRM1"</span><span class="p">,</span> <span class="s2">"UNG"</span><span class="p">,</span>
+    <span class="s2">"GINS2"</span><span class="p">,</span> <span class="s2">"MCM6"</span><span class="p">,</span> <span class="s2">"CDCA7"</span><span class="p">,</span> <span class="s2">"DTL"</span><span class="p">,</span> <span class="s2">"PRIM1"</span><span class="p">,</span> <span class="s2">"UHRF1"</span><span class="p">,</span> <span class="s2">"CENPU"</span><span class="p">,</span>
+    <span class="s2">"HELLS"</span><span class="p">,</span> <span class="s2">"RFC2"</span><span class="p">,</span> <span class="s2">"RPA2"</span><span class="p">,</span> <span class="s2">"NASP"</span><span class="p">,</span> <span class="s2">"RAD51AP1"</span><span class="p">,</span> <span class="s2">"GMNN"</span><span class="p">,</span> <span class="s2">"WDR76"</span><span class="p">,</span>
+    <span class="s2">"SLBP"</span><span class="p">,</span> <span class="s2">"CCNE2"</span><span class="p">,</span> <span class="s2">"UBR7"</span><span class="p">,</span> <span class="s2">"POLD3"</span><span class="p">,</span> <span class="s2">"MSH2"</span><span class="p">,</span> <span class="s2">"ATAD2"</span><span class="p">,</span> <span class="s2">"RAD51"</span><span class="p">,</span>
+    <span class="s2">"RRM2"</span><span class="p">,</span> <span class="s2">"CDC45"</span><span class="p">,</span> <span class="s2">"CDC6"</span><span class="p">,</span> <span class="s2">"EXO1"</span><span class="p">,</span> <span class="s2">"TIPIN"</span><span class="p">,</span> <span class="s2">"DSCC1"</span><span class="p">,</span> <span class="s2">"BLM"</span><span class="p">,</span>
+    <span class="s2">"CASP8AP2"</span><span class="p">,</span> <span class="s2">"USP1"</span><span class="p">,</span> <span class="s2">"CLSPN"</span><span class="p">,</span> <span class="s2">"POLA1"</span><span class="p">,</span> <span class="s2">"CHAF1B"</span><span class="p">,</span> <span class="s2">"BRIP1"</span><span class="p">,</span> <span class="s2">"E2F8"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">g2m_genes</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;HMGB2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDK1&quot;</span><span class="p">,</span> <span class="s2">&quot;NUSAP1&quot;</span><span class="p">,</span> <span class="s2">&quot;UBE2C&quot;</span><span class="p">,</span> <span class="s2">&quot;BIRC5&quot;</span><span class="p">,</span> <span class="s2">&quot;TPX2&quot;</span><span class="p">,</span> <span class="s2">&quot;TOP2A&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;NDC80&quot;</span><span class="p">,</span> <span class="s2">&quot;CKS2&quot;</span><span class="p">,</span> <span class="s2">&quot;NUF2&quot;</span><span class="p">,</span> <span class="s2">&quot;CKS1B&quot;</span><span class="p">,</span> <span class="s2">&quot;MKI67&quot;</span><span class="p">,</span> <span class="s2">&quot;TMPO&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPF&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TACC3&quot;</span><span class="p">,</span> <span class="s2">&quot;FAM64A&quot;</span><span class="p">,</span> <span class="s2">&quot;SMC4&quot;</span><span class="p">,</span> <span class="s2">&quot;CCNB2&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP2L&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP2&quot;</span><span class="p">,</span> <span class="s2">&quot;AURKB&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;BUB1&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF11&quot;</span><span class="p">,</span> <span class="s2">&quot;ANP32E&quot;</span><span class="p">,</span> <span class="s2">&quot;TUBB4B&quot;</span><span class="p">,</span> <span class="s2">&quot;GTSE1&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF20B&quot;</span><span class="p">,</span> <span class="s2">&quot;HJURP&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;CDCA3&quot;</span><span class="p">,</span> <span class="s2">&quot;HN1&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC20&quot;</span><span class="p">,</span> <span class="s2">&quot;TTK&quot;</span><span class="p">,</span> <span class="s2">&quot;CDC25C&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF2C&quot;</span><span class="p">,</span> <span class="s2">&quot;RANGAP1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;NCAPD2&quot;</span><span class="p">,</span> <span class="s2">&quot;DLGAP5&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA2&quot;</span><span class="p">,</span> <span class="s2">&quot;CDCA8&quot;</span><span class="p">,</span> <span class="s2">&quot;ECT2&quot;</span><span class="p">,</span> <span class="s2">&quot;KIF23&quot;</span><span class="p">,</span> <span class="s2">&quot;HMMR&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AURKA&quot;</span><span class="p">,</span> <span class="s2">&quot;PSRC1&quot;</span><span class="p">,</span> <span class="s2">&quot;ANLN&quot;</span><span class="p">,</span> <span class="s2">&quot;LBR&quot;</span><span class="p">,</span> <span class="s2">&quot;CKAP5&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPE&quot;</span><span class="p">,</span> <span class="s2">&quot;CTCF&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;NEK2&quot;</span><span class="p">,</span> <span class="s2">&quot;G2E3&quot;</span><span class="p">,</span> <span class="s2">&quot;GAS2L3&quot;</span><span class="p">,</span> <span class="s2">&quot;CBX5&quot;</span><span class="p">,</span> <span class="s2">&quot;CENPA&quot;</span><span class="p">,</span>
+    <span class="s2">"HMGB2"</span><span class="p">,</span> <span class="s2">"CDK1"</span><span class="p">,</span> <span class="s2">"NUSAP1"</span><span class="p">,</span> <span class="s2">"UBE2C"</span><span class="p">,</span> <span class="s2">"BIRC5"</span><span class="p">,</span> <span class="s2">"TPX2"</span><span class="p">,</span> <span class="s2">"TOP2A"</span><span class="p">,</span>
+    <span class="s2">"NDC80"</span><span class="p">,</span> <span class="s2">"CKS2"</span><span class="p">,</span> <span class="s2">"NUF2"</span><span class="p">,</span> <span class="s2">"CKS1B"</span><span class="p">,</span> <span class="s2">"MKI67"</span><span class="p">,</span> <span class="s2">"TMPO"</span><span class="p">,</span> <span class="s2">"CENPF"</span><span class="p">,</span>
+    <span class="s2">"TACC3"</span><span class="p">,</span> <span class="s2">"FAM64A"</span><span class="p">,</span> <span class="s2">"SMC4"</span><span class="p">,</span> <span class="s2">"CCNB2"</span><span class="p">,</span> <span class="s2">"CKAP2L"</span><span class="p">,</span> <span class="s2">"CKAP2"</span><span class="p">,</span> <span class="s2">"AURKB"</span><span class="p">,</span>
+    <span class="s2">"BUB1"</span><span class="p">,</span> <span class="s2">"KIF11"</span><span class="p">,</span> <span class="s2">"ANP32E"</span><span class="p">,</span> <span class="s2">"TUBB4B"</span><span class="p">,</span> <span class="s2">"GTSE1"</span><span class="p">,</span> <span class="s2">"KIF20B"</span><span class="p">,</span> <span class="s2">"HJURP"</span><span class="p">,</span>
+    <span class="s2">"CDCA3"</span><span class="p">,</span> <span class="s2">"HN1"</span><span class="p">,</span> <span class="s2">"CDC20"</span><span class="p">,</span> <span class="s2">"TTK"</span><span class="p">,</span> <span class="s2">"CDC25C"</span><span class="p">,</span> <span class="s2">"KIF2C"</span><span class="p">,</span> <span class="s2">"RANGAP1"</span><span class="p">,</span>
+    <span class="s2">"NCAPD2"</span><span class="p">,</span> <span class="s2">"DLGAP5"</span><span class="p">,</span> <span class="s2">"CDCA2"</span><span class="p">,</span> <span class="s2">"CDCA8"</span><span class="p">,</span> <span class="s2">"ECT2"</span><span class="p">,</span> <span class="s2">"KIF23"</span><span class="p">,</span> <span class="s2">"HMMR"</span><span class="p">,</span>
+    <span class="s2">"AURKA"</span><span class="p">,</span> <span class="s2">"PSRC1"</span><span class="p">,</span> <span class="s2">"ANLN"</span><span class="p">,</span> <span class="s2">"LBR"</span><span class="p">,</span> <span class="s2">"CKAP5"</span><span class="p">,</span> <span class="s2">"CENPE"</span><span class="p">,</span> <span class="s2">"CTCF"</span><span class="p">,</span>
+    <span class="s2">"NEK2"</span><span class="p">,</span> <span class="s2">"G2E3"</span><span class="p">,</span> <span class="s2">"GAS2L3"</span><span class="p">,</span> <span class="s2">"CBX5"</span><span class="p">,</span> <span class="s2">"CENPA"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">s_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">s_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
 <span class="n">g2m_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">g2m_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
 
 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">g2m_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No cell cycle genes found. Check gene identifiers.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No cell cycle genes found. Check gene identifiers."</span><span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">score_genes_cell_cycle</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
@@ -836,14 +837,14 @@ convert the list to match <code class="docutils literal notranslate"><span class
     <span class="n">g2m_genes</span><span class="o">=</span><span class="n">g2m_genes_present</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
-    <span class="p">[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">]</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">"S_score"</span><span class="p">,</span> <span class="s2">"G2M_score"</span><span class="p">,</span> <span class="s2">"phase"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
+    <span class="p">[</span><span class="s2">"S_score"</span><span class="p">,</span> <span class="s2">"G2M_score"</span><span class="p">,</span> <span class="s2">"phase"</span><span class="p">]</span>
 <span class="p">]</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;G2M_score&quot;</span><span class="p">],</span>
-    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"S_score"</span><span class="p">,</span> <span class="s2">"G2M_score"</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"phase"</span><span class="p">,</span>
     <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
 <span class="p">)</span>
@@ -881,12 +882,12 @@ AnnData object for marker inspection, annotation, and saving.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">"seurat"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span><span class="n">adata_work</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">adata_work</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">adata_work</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">"highly_variable"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>
@@ -938,8 +939,8 @@ content, or other technical structure.</p>
 <h3>Code<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
-    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
-    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">"arpack"</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">"highly_variable"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca_variance_ratio</span><span class="p">(</span>
@@ -951,12 +952,12 @@ content, or other technical structure.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"S_score"</span><span class="p">,</span>
+        <span class="s2">"G2M_score"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
@@ -1044,16 +1045,16 @@ parameter controls granularity. There is no universally correct resolution.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">"leiden_0_5"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">resolution</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_1_0&quot;</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">"leiden_1_0"</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="s2">&quot;leiden_1_0&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s2">"leiden_0_5"</span><span class="p">,</span> <span class="s2">"leiden_1_0"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -1081,18 +1082,18 @@ cluster should be removed.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_work</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qc_flag_count&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;predicted_doublet&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;doublet_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+        <span class="s2">"leiden_0_5"</span><span class="p">,</span>
+        <span class="s2">"primary_qc_flag"</span><span class="p">,</span>
+        <span class="s2">"qc_flag_count"</span><span class="p">,</span>
+        <span class="s2">"qc_high_counts_low_genes"</span><span class="p">,</span>
+        <span class="s2">"predicted_doublet"</span><span class="p">,</span>
+        <span class="s2">"doublet_score"</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"S_score"</span><span class="p">,</span>
+        <span class="s2">"G2M_score"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
@@ -1101,11 +1102,11 @@ cluster should be removed.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">metadata_colors</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">col</span>
     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;condition&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+        <span class="s2">"sample"</span><span class="p">,</span>
+        <span class="s2">"condition"</span><span class="p">,</span>
+        <span class="s2">"leiden_0_5"</span><span class="p">,</span>
+        <span class="s2">"primary_qc_flag"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span>
 <span class="p">]</span>
@@ -1138,57 +1139,57 @@ experiment.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_by_cluster</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span>
     <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-        <span class="n">qc_flag_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">qc_flag_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flag"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
         <span class="n">high_counts_low_genes_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
-            <span class="s2">&quot;qc_high_counts_low_genes&quot;</span>
+            <span class="s2">"qc_high_counts_low_genes"</span>
         <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">predicted_doublet_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;predicted_doublet&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">s_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">),</span>
-        <span class="n">g2m_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;G2M&quot;</span><span class="p">),</span>
+        <span class="n">predicted_doublet_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"predicted_doublet"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">s_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">"S"</span><span class="p">),</span>
+        <span class="n">g2m_phase_bool</span><span class="o">=</span><span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">"G2M"</span><span class="p">),</span>
     <span class="p">)</span>
-    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"leiden_0_5"</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-        <span class="n">n_cells</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;qc_flag_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">),</span>
-        <span class="n">qc_flag_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;qc_flag_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+        <span class="n">n_cells</span><span class="o">=</span><span class="p">(</span><span class="s2">"qc_flag_bool"</span><span class="p">,</span> <span class="s2">"size"</span><span class="p">),</span>
+        <span class="n">qc_flag_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">"qc_flag_bool"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
         <span class="n">high_counts_low_genes_fraction</span><span class="o">=</span><span class="p">(</span>
-            <span class="s2">&quot;high_counts_low_genes_bool&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+            <span class="s2">"high_counts_low_genes_bool"</span><span class="p">,</span>
+            <span class="s2">"mean"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="n">doublet_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;predicted_doublet_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
-        <span class="n">median_genes</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
-        <span class="n">median_counts</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;total_counts&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
-        <span class="n">median_pct_counts_mt</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
-        <span class="n">median_s_score</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;S_score&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
-        <span class="n">median_g2m_score</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">),</span>
-        <span class="n">s_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;s_phase_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
-        <span class="n">g2m_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;g2m_phase_bool&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+        <span class="n">doublet_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">"predicted_doublet_bool"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
+        <span class="n">median_genes</span><span class="o">=</span><span class="p">(</span><span class="s2">"n_genes_by_counts"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">),</span>
+        <span class="n">median_counts</span><span class="o">=</span><span class="p">(</span><span class="s2">"total_counts"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">),</span>
+        <span class="n">median_pct_counts_mt</span><span class="o">=</span><span class="p">(</span><span class="s2">"pct_counts_mt"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">),</span>
+        <span class="n">median_s_score</span><span class="o">=</span><span class="p">(</span><span class="s2">"S_score"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">),</span>
+        <span class="n">median_g2m_score</span><span class="o">=</span><span class="p">(</span><span class="s2">"G2M_score"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">),</span>
+        <span class="n">s_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">"s_phase_bool"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
+        <span class="n">g2m_phase_fraction</span><span class="o">=</span><span class="p">(</span><span class="s2">"g2m_phase_bool"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
     <span class="p">)</span>
-    <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;qc_flag_fraction&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"qc_flag_fraction"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="n">qc_by_cluster</span>
 
 <span class="n">qc_primary_by_cluster</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
-    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">],</span>
-    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">],</span>
-    <span class="n">normalize</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">,</span>
+    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"leiden_0_5"</span><span class="p">],</span>
+    <span class="n">adata_work</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"primary_qc_flag"</span><span class="p">],</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="s2">"index"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">qc_primary_by_cluster</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">qc_primary_by_cluster</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">"bar"</span><span class="p">,</span>
     <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
     <span class="n">width</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Leiden cluster&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Fraction of cells&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Primary QC flag composition by cluster&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Leiden cluster"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Fraction of cells"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Primary QC flag composition by cluster"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Primary QC flag&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">"Primary QC flag"</span><span class="p">,</span>
     <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span>
+    <span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span>
     <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1240,40 +1241,40 @@ decision because they require experiment-specific interpretation.</p>
 </section>
 <section id="id47">
 <h3>Code<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_genes&quot;</span><span class="p">]</span> <span class="o">|</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_low_counts&quot;</span><span class="p">]</span> <span class="o">|</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span> <span class="o">|</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_predicted_doublet&quot;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"remove_after_qc_review"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_low_genes"</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_low_counts"</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_counts_low_genes"</span><span class="p">]</span> <span class="o">|</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_predicted_doublet"</span><span class="p">]</span>
 <span class="p">)</span>
 
 <span class="c1"># Add high-mitochondrial cells only if inspection supports removal.</span>
-<span class="c1"># adata.obs[&quot;remove_after_qc_review&quot;] |= adata.obs[&quot;qc_high_mt&quot;]</span>
+<span class="c1"># adata.obs["remove_after_qc_review"] |= adata.obs["qc_high_mt"]</span>
 
-<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"remove_after_qc_review"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 
-<span class="n">adata_qc</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="o">~</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="o">~</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"remove_after_qc_review"</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">min_cells_fraction</span> <span class="o">=</span> <span class="mf">0.001</span>
 <span class="n">min_cells</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">min_cells_fraction</span> <span class="o">*</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_obs</span><span class="p">)))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filtering genes detected in fewer than </span><span class="si">{</span><span class="n">min_cells</span><span class="si">}</span><span class="s2"> cells"</span><span class="p">)</span>
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">min_cells</span><span class="o">=</span><span class="n">min_cells</span><span class="p">)</span>
 
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"counts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">)</span>
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"norm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">)</span>
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"lognorm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">adata_qc</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">adata_qc</span>
 
 <span class="n">s_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">s_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
 <span class="n">g2m_genes_present</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene</span> <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">g2m_genes</span> <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
 
 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">g2m_genes_present</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No cell cycle genes found. Check gene identifiers.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No cell cycle genes found. Check gene identifiers."</span><span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">score_genes_cell_cycle</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
@@ -1284,15 +1285,15 @@ decision because they require experiment-specific interpretation.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
     <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">"seurat"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
-    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
-    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">"arpack"</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">"highly_variable"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
@@ -1304,7 +1305,7 @@ decision because they require experiment-specific interpretation.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
     <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">"leiden_0_5"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">)</span>
@@ -1312,18 +1313,18 @@ decision because they require experiment-specific interpretation.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_genes_by_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G2M_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+        <span class="s2">"leiden_0_5"</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"n_genes_by_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"S_score"</span><span class="p">,</span>
+        <span class="s2">"G2M_score"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
 
 <span class="c1"># Restore the main matrix to log-normalized expression before saving.</span>
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"lognorm"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -1366,14 +1367,14 @@ types or states.</p>
 <h3>Example marker list<a class="headerlink" href="#example-marker-list" title="Link to this heading"></a></h3>
 <p>Modify this list for your tissue.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">marker_genes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;CD3E&quot;</span><span class="p">,</span> <span class="s2">&quot;TRAC&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;CD4 T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD4&quot;</span><span class="p">,</span> <span class="s2">&quot;IL7R&quot;</span><span class="p">,</span> <span class="s2">&quot;CCR7&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;CD8 T cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD8A&quot;</span><span class="p">,</span> <span class="s2">&quot;CD8B&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;B cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;CD79A&quot;</span><span class="p">,</span> <span class="s2">&quot;CD74&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;NK cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GNLY&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span> <span class="s2">&quot;KLRD1&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;Monocytes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;LYZ&quot;</span><span class="p">,</span> <span class="s2">&quot;S100A8&quot;</span><span class="p">,</span> <span class="s2">&quot;S100A9&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;Dendritic cells&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FCER1A&quot;</span><span class="p">,</span> <span class="s2">&quot;CST3&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;Platelets&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PPBP&quot;</span><span class="p">,</span> <span class="s2">&quot;PF4&quot;</span><span class="p">],</span>
+    <span class="s2">"T cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"CD3D"</span><span class="p">,</span> <span class="s2">"CD3E"</span><span class="p">,</span> <span class="s2">"TRAC"</span><span class="p">],</span>
+    <span class="s2">"CD4 T cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"CD4"</span><span class="p">,</span> <span class="s2">"IL7R"</span><span class="p">,</span> <span class="s2">"CCR7"</span><span class="p">],</span>
+    <span class="s2">"CD8 T cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"CD8A"</span><span class="p">,</span> <span class="s2">"CD8B"</span><span class="p">,</span> <span class="s2">"NKG7"</span><span class="p">],</span>
+    <span class="s2">"B cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"MS4A1"</span><span class="p">,</span> <span class="s2">"CD79A"</span><span class="p">,</span> <span class="s2">"CD74"</span><span class="p">],</span>
+    <span class="s2">"NK cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"GNLY"</span><span class="p">,</span> <span class="s2">"NKG7"</span><span class="p">,</span> <span class="s2">"KLRD1"</span><span class="p">],</span>
+    <span class="s2">"Monocytes"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"LYZ"</span><span class="p">,</span> <span class="s2">"S100A8"</span><span class="p">,</span> <span class="s2">"S100A9"</span><span class="p">],</span>
+    <span class="s2">"Dendritic cells"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"FCER1A"</span><span class="p">,</span> <span class="s2">"CST3"</span><span class="p">],</span>
+    <span class="s2">"Platelets"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"PPBP"</span><span class="p">,</span> <span class="s2">"PF4"</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="n">marker_genes_present</span> <span class="o">=</span> <span class="p">{</span>
@@ -1394,8 +1395,8 @@ types or states.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">dotplot</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
     <span class="n">marker_genes_present</span><span class="p">,</span>
-    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
-    <span class="n">standard_scale</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"leiden_0_5"</span><span class="p">,</span>
+    <span class="n">standard_scale</span><span class="o">=</span><span class="s2">"var"</span><span class="p">,</span>
     <span class="n">dendrogram</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1414,13 +1415,13 @@ representation. Marker inspection uses the full cleaned object, not only HVGs.</
 </section>
 <section id="umap-marker-overlays">
 <h3>UMAP marker overlays<a class="headerlink" href="#umap-marker-overlays" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">genes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;LYZ&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span> <span class="s2">&quot;PPBP&quot;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">genes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CD3D"</span><span class="p">,</span> <span class="s2">"MS4A1"</span><span class="p">,</span> <span class="s2">"LYZ"</span><span class="p">,</span> <span class="s2">"NKG7"</span><span class="p">,</span> <span class="s2">"PPBP"</span><span class="p">]</span>
 <span class="n">genes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">genes_to_plot</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="n">genes_to_plot</span><span class="p">,</span>
-    <span class="n">vmax</span><span class="o">=</span><span class="s2">&quot;p99&quot;</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="s2">"p99"</span><span class="p">,</span>
     <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -1453,8 +1454,8 @@ control across biological replicates.</p>
 <h3>Code<a class="headerlink" href="#id55" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
-    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"leiden_0_5"</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">"wilcoxon"</span><span class="p">,</span>
     <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -1467,7 +1468,7 @@ control across biological replicates.</p>
 <span class="n">marker_table</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">rank_genes_groups_df</span><span class="p">(</span><span class="n">adata_qc</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">marker_table</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 
-<span class="n">marker_table</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;cluster_markers_wilcoxon.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">marker_table</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"cluster_markers_wilcoxon.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1497,21 +1498,21 @@ ambiguous until additional evidence is available.</p>
 <section id="id59">
 <h3>Code<a class="headerlink" href="#id59" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cluster_to_celltype</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;T cells&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;Monocytes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;B cells&quot;</span><span class="p">,</span>
+    <span class="s2">"0"</span><span class="p">:</span> <span class="s2">"T cells"</span><span class="p">,</span>
+    <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"Monocytes"</span><span class="p">,</span>
+    <span class="s2">"2"</span><span class="p">:</span> <span class="s2">"B cells"</span><span class="p">,</span>
     <span class="c1"># Edit after inspecting marker expression.</span>
 <span class="p">}</span>
 
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">]</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"cell_type"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"leiden_0_5"</span><span class="p">]</span>
     <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cluster_to_celltype</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"category"</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;leiden_0_5&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_type&quot;</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">"leiden_0_5"</span><span class="p">,</span> <span class="s2">"cell_type"</span><span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1548,25 +1549,25 @@ appear. Subclustering changes the feature selection and representation so that
 variation within one cell class is no longer dominated by differences between
 major cell classes.</p>
 <p>Example code for one broad class:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">broad_class</span> <span class="o">=</span> <span class="s2">&quot;T cells&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">broad_class</span> <span class="o">=</span> <span class="s2">"T cells"</span>
 
-<span class="n">adata_sub</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="p">[</span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">broad_class</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_sub</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="p">[</span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"cell_type"</span><span class="p">]</span> <span class="o">==</span> <span class="n">broad_class</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="c1"># Restart from log-normalized expression, not the globally scaled matrix.</span>
-<span class="n">adata_sub</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_sub</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"lognorm"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span>
     <span class="n">adata_sub</span><span class="p">,</span>
     <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span>
+    <span class="n">flavor</span><span class="o">=</span><span class="s2">"seurat"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata_sub</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span>
     <span class="n">adata_sub</span><span class="p">,</span>
-    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">&quot;arpack&quot;</span><span class="p">,</span>
-    <span class="n">mask_var</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+    <span class="n">svd_solver</span><span class="o">=</span><span class="s2">"arpack"</span><span class="p">,</span>
+    <span class="n">mask_var</span><span class="o">=</span><span class="s2">"highly_variable"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">pca_variance_ratio</span><span class="p">(</span>
@@ -1586,7 +1587,7 @@ major cell classes.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
     <span class="n">adata_sub</span><span class="p">,</span>
     <span class="n">resolution</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-    <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">"subcluster"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">adata_sub</span><span class="p">)</span>
@@ -1594,18 +1595,18 @@ major cell classes.</p>
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_sub</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;total_counts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+        <span class="s2">"subcluster"</span><span class="p">,</span>
+        <span class="s2">"primary_qc_flag"</span><span class="p">,</span>
+        <span class="s2">"total_counts"</span><span class="p">,</span>
+        <span class="s2">"pct_counts_mt"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
     <span class="n">adata_sub</span><span class="p">,</span>
-    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;subcluster&quot;</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"subcluster"</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">"wilcoxon"</span><span class="p">,</span>
     <span class="n">use_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -1641,14 +1642,14 @@ assigned only after reviewing these markers and the experiment context.</span><a
 </figcaption>
 </figure>
 <p>Map subtype labels back to the full cleaned object:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;subcluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata_sub</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="s2">&quot;subcluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">broad_class</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;subcluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"subcluster_label"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata_sub</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="s2">"subcluster_label"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">broad_class</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">adata_sub</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"subcluster"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
     <span class="n">adata_qc</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;subcluster_label&quot;</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">"cell_type"</span><span class="p">,</span> <span class="s2">"subcluster_label"</span><span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1680,8 +1681,8 @@ restore <code class="docutils literal notranslate"><span class="pre">adata_qc.X<
 </section>
 <section id="id64">
 <h3>Code<a class="headerlink" href="#id64" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;lognorm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">adata_qc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;scanpy_tutorial_processed_full.h5ad&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata_qc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_qc</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">"lognorm"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_qc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"scanpy_tutorial_processed_full.h5ad"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1721,40 +1722,40 @@ resolution, markers, and QC review.</p></li>
 <section id="example-summary-table">
 <h3>Example summary table<a class="headerlink" href="#example-summary-table" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qc_report</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;cells_before_qc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_flagged_for_review&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_high_counts_low_genes&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_s_phase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_g2m_phase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_removed_after_review&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cells_after_qc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;genes_after_qc&quot;</span><span class="p">,</span>
+    <span class="s2">"metric"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"cells_before_qc"</span><span class="p">,</span>
+        <span class="s2">"cells_flagged_for_review"</span><span class="p">,</span>
+        <span class="s2">"cells_high_counts_low_genes"</span><span class="p">,</span>
+        <span class="s2">"cells_s_phase"</span><span class="p">,</span>
+        <span class="s2">"cells_g2m_phase"</span><span class="p">,</span>
+        <span class="s2">"cells_removed_after_review"</span><span class="p">,</span>
+        <span class="s2">"cells_after_qc"</span><span class="p">,</span>
+        <span class="s2">"genes_after_qc"</span><span class="p">,</span>
     <span class="p">],</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="p">[</span>
         <span class="n">adata</span><span class="o">.</span><span class="n">n_obs</span><span class="p">,</span>
-        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;qc_high_counts_low_genes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;G2M&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;remove_after_qc_review&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_flag"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"qc_high_counts_low_genes"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"S"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"G2M"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"remove_after_qc_review"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
         <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_obs</span><span class="p">,</span>
         <span class="n">adata_qc</span><span class="o">.</span><span class="n">n_vars</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">})</span>
 
-<span class="n">qc_report</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;qc_report_summary.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">qc_report</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"qc_report_summary.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">qc_report</span>
 
-<span class="n">qc_reason_counts</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
-<span class="n">qc_reason_fractions</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;primary_qc_flag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">qc_reason_counts</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"primary_qc_flag"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">qc_reason_fractions</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">"primary_qc_flag"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">qc_reason_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;n_cells&quot;</span><span class="p">:</span> <span class="n">qc_reason_counts</span><span class="p">,</span>
-    <span class="s2">&quot;fraction&quot;</span><span class="p">:</span> <span class="n">qc_reason_fractions</span><span class="p">,</span>
+    <span class="s2">"n_cells"</span><span class="p">:</span> <span class="n">qc_reason_counts</span><span class="p">,</span>
+    <span class="s2">"fraction"</span><span class="p">:</span> <span class="n">qc_reason_fractions</span><span class="p">,</span>
 <span class="p">})</span>
 
-<span class="n">qc_reason_summary</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;qc_flag_reason_summary.csv&quot;</span><span class="p">)</span>
+<span class="n">qc_reason_summary</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"qc_flag_reason_summary.csv"</span><span class="p">)</span>
 <span class="n">qc_reason_summary</span>
 </pre></div>
 </div>

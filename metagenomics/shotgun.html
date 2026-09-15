@@ -103,6 +103,7 @@
           <li class="breadcrumb-item"><a href="index.html">Metagenomics</a></li>
       <li class="breadcrumb-item active">Series of Metagenomics Workshop</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/metagenomics/shotgun.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -210,7 +211,7 @@ module<span class="w"> </span>load<span class="w"> </span>kneaddata/0.12.4
 <span class="w">  </span>-i2<span class="w"> </span>raw_fastqs/AF1_2.fastq<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--reference-db<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kneaddata_hg39/<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--reference-db<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/kneaddata_phix/<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--trimmomatic-options<span class="o">=</span><span class="s2">&quot;SLIDINGWINDOW:4:20&quot;</span><span class="w"> </span>--trimmomatic-options<span class="o">=</span><span class="s2">&quot;MINLEN:50&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--trimmomatic-options<span class="o">=</span><span class="s2">"SLIDINGWINDOW:4:20"</span><span class="w"> </span>--trimmomatic-options<span class="o">=</span><span class="s2">"MINLEN:50"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--run-trim-repetitive<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>analysis/kneaddata/<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-prefix<span class="w"> </span>AF1<span class="w"> </span><span class="se">\</span>
@@ -307,89 +308,89 @@ cp<span class="w"> </span>analysis/bracken/*_Sh.txt<span class="w"> </span>.
 python<span class="w"> </span>/scratch/Reference_Genomes/Public/Metagenomic/KrakenTools/DiversityTools/beta_diversity.py<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-i<span class="w"> </span>*_profile.txt<span class="w"> </span>--type<span class="w"> </span>kreport2<span class="w"> </span>-l<span class="w"> </span>S<span class="w"> </span>&gt;<span class="w"> </span>merged_beta_div.txt
 
-<span class="o">(</span><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;Sample\tDiversity&quot;</span><span class="p">;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>awk<span class="w"> </span><span class="s1">&#39;FNR==1{f=FILENAME; sub(/^.*\//,&quot;&quot;,f); sub(&quot;_Sh.txt&quot;,&quot;&quot;,f)} \</span>
-<span class="s1">       /Shannon/{print f&quot;\t&quot;$NF}&#39;</span><span class="w"> </span>*_Sh.txt<span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>merged_alpha_div.txt
+<span class="o">(</span><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"Sample\tDiversity"</span><span class="p">;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>awk<span class="w"> </span><span class="s1">'FNR==1{f=FILENAME; sub(/^.*\//,"",f); sub("_Sh.txt","",f)} \</span>
+<span class="s1">       /Shannon/{print f"\t"$NF}'</span><span class="w"> </span>*_Sh.txt<span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>merged_alpha_div.txt
 
 rm<span class="w"> </span>*_profile.txt
 rm<span class="w"> </span>*_Sh.txt
 </pre></div>
 </div>
 <p>Add group annotations to the alpha diversity table:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
-<span class="s1">  df &lt;- read.table(&quot;merged_alpha_div.txt&quot;, header=TRUE, stringsAsFactors=FALSE)</span>
-<span class="s1">  df$Group &lt;- ifelse(grepl(&quot;^AF&quot;, df$Sample), &quot;Filter&quot;,</span>
-<span class="s1">                ifelse(grepl(&quot;^C&quot;, df$Sample), &quot;Control&quot;, &quot;Other&quot;))</span>
-<span class="s1">  write.table(df, &quot;merged_alpha_div_with_group.txt&quot;, sep=&quot;\t&quot;, quote=FALSE, row.names=FALSE)</span>
-<span class="s1">&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">'</span>
+<span class="s1">  df &lt;- read.table("merged_alpha_div.txt", header=TRUE, stringsAsFactors=FALSE)</span>
+<span class="s1">  df$Group &lt;- ifelse(grepl("^AF", df$Sample), "Filter",</span>
+<span class="s1">                ifelse(grepl("^C", df$Sample), "Control", "Other"))</span>
+<span class="s1">  write.table(df, "merged_alpha_div_with_group.txt", sep="\t", quote=FALSE, row.names=FALSE)</span>
+<span class="s1">'</span>
 </pre></div>
 </div>
 <p>Generate a Shannon diversity boxplot with Wilcoxon test:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
-<span class="s1">  df &lt;- read.table(&quot;merged_alpha_div_with_group.txt&quot;, header=TRUE, stringsAsFactors=FALSE)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">'</span>
+<span class="s1">  df &lt;- read.table("merged_alpha_div_with_group.txt", header=TRUE, stringsAsFactors=FALSE)</span>
 <span class="s1">  ymax &lt;- max(df$Diversity) * 1.15</span>
-<span class="s1">  png(&quot;diversity_boxplot_stats.png&quot;, width=800, height=600, res=120)</span>
-<span class="s1">  boxplot(Diversity ~ Group, data=df, col=c(&quot;steelblue&quot;,&quot;orange&quot;),</span>
-<span class="s1">          ylab=&quot;Shannon Diversity&quot;, main=&quot;Shannon Diversity by Group&quot;,</span>
+<span class="s1">  png("diversity_boxplot_stats.png", width=800, height=600, res=120)</span>
+<span class="s1">  boxplot(Diversity ~ Group, data=df, col=c("steelblue","orange"),</span>
+<span class="s1">          ylab="Shannon Diversity", main="Shannon Diversity by Group",</span>
 <span class="s1">          ylim=c(min(df$Diversity), ymax))</span>
-<span class="s1">  stripchart(Diversity ~ Group, data=df, vertical=TRUE, method=&quot;jitter&quot;,</span>
-<span class="s1">             pch=16, col=&quot;black&quot;, add=TRUE)</span>
+<span class="s1">  stripchart(Diversity ~ Group, data=df, vertical=TRUE, method="jitter",</span>
+<span class="s1">             pch=16, col="black", add=TRUE)</span>
 <span class="s1">  w &lt;- wilcox.test(Diversity ~ Group, data=df)</span>
-<span class="s1">  p_txt &lt;- paste0(&quot;Wilcoxon p = &quot;, signif(w$p.value, 3))</span>
+<span class="s1">  p_txt &lt;- paste0("Wilcoxon p = ", signif(w$p.value, 3))</span>
 <span class="s1">  text(x=1.5, y=ymax, labels=p_txt)</span>
 <span class="s1">  dev.off()</span>
-<span class="s1">&#39;</span>
+<span class="s1">'</span>
 </pre></div>
 </div>
 <p>Clean the beta diversity matrix:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">'</span>
 <span class="s1">  args &lt;- commandArgs(trailingOnly=TRUE)</span>
 <span class="s1">  infile &lt;- args[1]; outfile &lt;- args[2]</span>
 <span class="s1">  lines &lt;- readLines(infile)</span>
-<span class="s1">  samp_lines &lt;- grep(&quot;^#&quot;, lines, value=TRUE)</span>
-<span class="s1">  samps &lt;- sub(&quot;^#\\d+\\s+&quot;,&quot;&quot;, samp_lines)</span>
-<span class="s1">  samps &lt;- sub(&quot;_profile.txt.*&quot;,&quot;&quot;, samps)</span>
-<span class="s1">  start &lt;- grep(&quot;^x\\s&quot;, lines)</span>
+<span class="s1">  samp_lines &lt;- grep("^#", lines, value=TRUE)</span>
+<span class="s1">  samps &lt;- sub("^#\\d+\\s+","", samp_lines)</span>
+<span class="s1">  samps &lt;- sub("_profile.txt.*","", samps)</span>
+<span class="s1">  start &lt;- grep("^x\\s", lines)</span>
 <span class="s1">  mat &lt;- read.table(text=lines[start:length(lines)], header=TRUE,</span>
 <span class="s1">                    stringsAsFactors=FALSE, check.names=FALSE)</span>
 <span class="s1">  mat &lt;- mat[, -1]</span>
-<span class="s1">  mat[mat==&quot;x.xxx&quot;] &lt;- NA</span>
+<span class="s1">  mat[mat=="x.xxx"] &lt;- NA</span>
 <span class="s1">  mat &lt;- as.matrix(sapply(mat, as.numeric))</span>
 <span class="s1">  rownames(mat) &lt;- samps; colnames(mat) &lt;- samps</span>
 <span class="s1">  mat[lower.tri(mat)] &lt;- t(mat)[lower.tri(mat)]</span>
 <span class="s1">  diag(mat) &lt;- 0</span>
-<span class="s1">  write.table(mat, file=outfile, sep=&quot;\t&quot;, quote=FALSE, col.names=NA)</span>
-<span class="s1">&#39;</span><span class="w"> </span>merged_beta_div.txt<span class="w"> </span>cleaned_beta_matrix.txt
+<span class="s1">  write.table(mat, file=outfile, sep="\t", quote=FALSE, col.names=NA)</span>
+<span class="s1">'</span><span class="w"> </span>merged_beta_div.txt<span class="w"> </span>cleaned_beta_matrix.txt
 </pre></div>
 </div>
 <p>Generate a PCoA plot of beta diversity:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Rscript<span class="w"> </span>-e<span class="w"> </span><span class="s1">'</span>
 <span class="s1">  library(vegan)</span>
-<span class="s1">  mat &lt;- as.matrix(read.table(&quot;cleaned_beta_matrix.txt&quot;, header=TRUE,</span>
+<span class="s1">  mat &lt;- as.matrix(read.table("cleaned_beta_matrix.txt", header=TRUE,</span>
 <span class="s1">                               check.names=FALSE, row.names=1))</span>
 <span class="s1">  d &lt;- as.dist(mat)</span>
 <span class="s1">  p &lt;- cmdscale(d, k=2, eig=TRUE)</span>
 <span class="s1">  scores &lt;- as.data.frame(p$points)</span>
 <span class="s1">  scores$Sample &lt;- rownames(scores)</span>
-<span class="s1">  scores$Group &lt;- ifelse(grepl(&quot;^AF&quot;, scores$Sample), &quot;AirFilter&quot;,</span>
-<span class="s1">                   ifelse(grepl(&quot;^C&quot;, scores$Sample), &quot;Control&quot;, &quot;Other&quot;))</span>
+<span class="s1">  scores$Group &lt;- ifelse(grepl("^AF", scores$Sample), "AirFilter",</span>
+<span class="s1">                   ifelse(grepl("^C", scores$Sample), "Control", "Other"))</span>
 <span class="s1">  ad &lt;- adonis2(d ~ Group, data=scores)</span>
-<span class="s1">  pval &lt;- ad$&quot;Pr(&gt;F)&quot;[1]</span>
+<span class="s1">  pval &lt;- ad$"Pr(&gt;F)"[1]</span>
 <span class="s1">  var_expl &lt;- round(p$eig / sum(p$eig) * 100, 1)</span>
-<span class="s1">  png(&quot;beta_pcoa.png&quot;, width=800, height=600, res=120)</span>
+<span class="s1">  png("beta_pcoa.png", width=800, height=600, res=120)</span>
 <span class="s1">  par(mar=c(5,5,4,2))</span>
-<span class="s1">  cols &lt;- c(AirFilter=&quot;steelblue&quot;, Control=&quot;orange&quot;, Other=&quot;gray&quot;)</span>
+<span class="s1">  cols &lt;- c(AirFilter="steelblue", Control="orange", Other="gray")</span>
 <span class="s1">  plot(scores$V1, scores$V2,</span>
-<span class="s1">       xlab=paste0(&quot;PCoA1 (&quot;, var_expl[1], &quot;%)&quot;),</span>
-<span class="s1">       ylab=paste0(&quot;PCoA2 (&quot;, var_expl[2], &quot;%)&quot;),</span>
+<span class="s1">       xlab=paste0("PCoA1 (", var_expl[1], "%)"),</span>
+<span class="s1">       ylab=paste0("PCoA2 (", var_expl[2], "%)"),</span>
 <span class="s1">       pch=16, col=cols[scores$Group],</span>
-<span class="s1">       main=&quot;PCoA of beta diversity&quot;)</span>
-<span class="s1">  legend(&quot;topright&quot;, legend=unique(scores$Group),</span>
-<span class="s1">         col=cols[unique(scores$Group)], pch=16, bty=&quot;n&quot;)</span>
+<span class="s1">       main="PCoA of beta diversity")</span>
+<span class="s1">  legend("topright", legend=unique(scores$Group),</span>
+<span class="s1">         col=cols[unique(scores$Group)], pch=16, bty="n")</span>
 <span class="s1">  text(x=min(scores$V1), y=max(scores$V2),</span>
-<span class="s1">       labels=paste0(&quot;PERMANOVA p = &quot;, signif(pval, 3)), adj=c(0,1))</span>
+<span class="s1">       labels=paste0("PERMANOVA p = ", signif(pval, 3)), adj=c(0,1))</span>
 <span class="s1">  dev.off()</span>
-<span class="s1">&#39;</span>
+<span class="s1">'</span>
 </pre></div>
 </div>
 </section>

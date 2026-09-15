@@ -109,6 +109,7 @@
           <li class="breadcrumb-item"><a href="index.html">Epigenomics</a></li>
       <li class="breadcrumb-item active">ATAC-seq</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/epigenomics/atac_seq.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -190,8 +191,8 @@ where needed.</p>
 </div>
 <p>The differential-accessibility step (Step 6) is run locally in R / RStudio.
 Required packages:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">&quot;ggplot2&quot;</span><span class="p">,</span> <span class="s2">&quot;ggrepel&quot;</span><span class="p">,</span> <span class="s2">&quot;dplyr&quot;</span><span class="p">))</span>
-<span class="n">BiocManager</span><span class="p">::</span><span class="n">install</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">&quot;DiffBind&quot;</span><span class="p">,</span> <span class="s2">&quot;DESeq2&quot;</span><span class="p">,</span> <span class="s2">&quot;GenomicRanges&quot;</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">"ggplot2"</span><span class="p">,</span> <span class="s2">"ggrepel"</span><span class="p">,</span> <span class="s2">"dplyr"</span><span class="p">))</span>
+<span class="n">BiocManager</span><span class="p">::</span><span class="n">install</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s2">"DiffBind"</span><span class="p">,</span> <span class="s2">"DESeq2"</span><span class="p">,</span> <span class="s2">"GenomicRanges"</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -319,13 +320,13 @@ wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_45/gencod
 
 # Extract unique TSS positions, primary chromosomes only
 zcat gencode.v45.annotation.gtf.gz \
-  | awk &#39;$3 == &quot;transcript&quot;&#39; \
-  | awk &#39;BEGIN{OFS=&quot;\t&quot;} {
-      if ($7 == &quot;+&quot;) print $1, $4-1, $4, &quot;.&quot;, &quot;.&quot;, $7;
-      else print $1, $5-1, $5, &quot;.&quot;, &quot;.&quot;, $7
-    }&#39; \
-  | grep -v &quot;^#&quot; \
-  | grep -E &quot;^chr([0-9]+|X|Y)\s&quot; \
+  | awk '$3 == "transcript"' \
+  | awk 'BEGIN{OFS="\t"} {
+      if ($7 == "+") print $1, $4-1, $4, ".", ".", $7;
+      else print $1, $5-1, $5, ".", ".", $7
+    }' \
+  | grep -v "^#" \
+  | grep -E "^chr([0-9]+|X|Y)\s" \
   | sort -k1,1 -k2,2n \
   | uniq \
   &gt; hg38_TSS_primary.bed
@@ -385,12 +386,12 @@ human ATAC-seq, and above 10 is good.</p>
   <span class="o">-</span><span class="n">m</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_matrix</span><span class="o">.</span><span class="n">gz</span> \
   <span class="o">-</span><span class="n">o</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_enrichment_profile</span><span class="o">.</span><span class="n">png</span> \
   <span class="o">--</span><span class="n">perGroup</span> \
-  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">&quot;TSS Enrichment - All Samples&quot;</span>
+  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">"TSS Enrichment - All Samples"</span>
 
 <span class="n">plotHeatmap</span> \
   <span class="o">-</span><span class="n">m</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_matrix</span><span class="o">.</span><span class="n">gz</span> \
   <span class="o">-</span><span class="n">o</span> <span class="n">QC</span><span class="o">/</span><span class="n">TSS_enrichment_heatmap</span><span class="o">.</span><span class="n">png</span> \
-  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">&quot;TSS Enrichment Heatmap&quot;</span> \
+  <span class="o">--</span><span class="n">plotTitle</span> <span class="s2">"TSS Enrichment Heatmap"</span> \
   <span class="o">--</span><span class="n">colorMap</span> <span class="n">RdYlBu_r</span>
 </pre></div>
 </div>
@@ -567,7 +568,7 @@ siblings should be investigated (see <a class="reference internal" href="#handli
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>for dir in peaks/individual/*/; do
   sample=$(basename $dir)
   count=$(wc -l &lt; ${dir}/${sample}_peaks.narrowPeak)
-  echo &quot;${sample}: ${count} peaks&quot;
+  echo "${sample}: ${count} peaks"
 done
 </pre></div>
 </div>
@@ -589,7 +590,7 @@ as the feature space for quantification and differential testing.</p>
     <span class="n">peaks</span><span class="o">/</span><span class="n">pooled</span><span class="o">/</span><span class="n">N3</span><span class="o">/</span><span class="n">N3_pooled_peaks</span><span class="o">.</span><span class="n">narrowPeak</span> \
   <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">k1</span><span class="p">,</span><span class="mi">1</span> <span class="o">-</span><span class="n">k2</span><span class="p">,</span><span class="mi">2</span><span class="n">n</span> \
   <span class="o">|</span> <span class="n">bedtools</span> <span class="n">merge</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> \
-  <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">E</span> <span class="s2">&quot;^chr([0-9]+|X|Y)\s&quot;</span> \
+  <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">E</span> <span class="s2">"^chr([0-9]+|X|Y)\s"</span> \
   <span class="o">&gt;</span> <span class="n">peaks</span><span class="o">/</span><span class="n">consensus</span><span class="o">/</span><span class="n">consensus_peaks_raw</span><span class="o">.</span><span class="n">bed</span>
 
 <span class="c1"># Remove blacklisted regions entirely</span>
@@ -618,8 +619,8 @@ produces the peaks × samples count matrix that feeds differential testing.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>module purge &amp;&amp; module load all gencore/3 subread
 
 # Convert consensus BED to SAF
-awk &#39;BEGIN{OFS=&quot;\t&quot;; print &quot;GeneID\tChr\tStart\tEnd\tStrand&quot;}
-     {print &quot;peak_&quot;NR&quot;\t&quot;$1&quot;\t&quot;$2&quot;\t&quot;$3&quot;\t.&quot;}&#39; \
+awk 'BEGIN{OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}
+     {print "peak_"NR"\t"$1"\t"$2"\t"$3"\t."}' \
   peaks/consensus/consensus_peaks_final.bed \
   &gt; peaks/consensus/consensus_peaks_final.saf
 
@@ -681,35 +682,35 @@ background bins.</p>
 <span class="nf">library</span><span class="p">(</span><span class="n">GenomicRanges</span><span class="p">)</span>
 
 <span class="n">sample_sheet</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">data.frame</span><span class="p">(</span>
-<span class="w">  </span><span class="n">SampleID</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
-<span class="w">  </span><span class="n">Condition</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span><span class="s">&quot;WT&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N1&quot;</span><span class="p">,</span><span class="s">&quot;N1&quot;</span><span class="p">,</span><span class="s">&quot;N1&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span><span class="s">&quot;N2&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">,</span><span class="s">&quot;N3&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">SampleID</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">"WT-1"</span><span class="p">,</span><span class="s">"WT-4"</span><span class="p">,</span><span class="s">"WT-5"</span><span class="p">,</span><span class="s">"WT-6"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N1-3"</span><span class="p">,</span><span class="s">"N1-4"</span><span class="p">,</span><span class="s">"N1-5"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N2-1"</span><span class="p">,</span><span class="s">"N2-2"</span><span class="p">,</span><span class="s">"N2-3"</span><span class="p">,</span><span class="s">"N2-4"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N3-1"</span><span class="p">,</span><span class="s">"N3-3"</span><span class="p">,</span><span class="s">"N3-4"</span><span class="p">,</span><span class="s">"N3-5"</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Condition</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">"WT"</span><span class="p">,</span><span class="s">"WT"</span><span class="p">,</span><span class="s">"WT"</span><span class="p">,</span><span class="s">"WT"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N1"</span><span class="p">,</span><span class="s">"N1"</span><span class="p">,</span><span class="s">"N1"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N2"</span><span class="p">,</span><span class="s">"N2"</span><span class="p">,</span><span class="s">"N2"</span><span class="p">,</span><span class="s">"N2"</span><span class="p">,</span>
+<span class="w">                 </span><span class="s">"N3"</span><span class="p">,</span><span class="s">"N3"</span><span class="p">,</span><span class="s">"N3"</span><span class="p">,</span><span class="s">"N3"</span><span class="p">),</span>
 <span class="w">  </span><span class="n">Replicate</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">),</span>
-<span class="w">  </span><span class="n">bamReads</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;bams/&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
-<span class="w">                 </span><span class="s">&quot;_filtered_csorted.bam&quot;</span><span class="p">),</span>
-<span class="w">  </span><span class="n">Peaks</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;np/&quot;</span><span class="p">,</span>
-<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;WT-1&quot;</span><span class="p">,</span><span class="s">&quot;WT-4&quot;</span><span class="p">,</span><span class="s">&quot;WT-5&quot;</span><span class="p">,</span><span class="s">&quot;WT-6&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N1-3&quot;</span><span class="p">,</span><span class="s">&quot;N1-4&quot;</span><span class="p">,</span><span class="s">&quot;N1-5&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N2-1&quot;</span><span class="p">,</span><span class="s">&quot;N2-2&quot;</span><span class="p">,</span><span class="s">&quot;N2-3&quot;</span><span class="p">,</span><span class="s">&quot;N2-4&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s">&quot;N3-1&quot;</span><span class="p">,</span><span class="s">&quot;N3-3&quot;</span><span class="p">,</span><span class="s">&quot;N3-4&quot;</span><span class="p">,</span><span class="s">&quot;N3-5&quot;</span><span class="p">),</span>
-<span class="w">                 </span><span class="s">&quot;_peaks.narrowPeak&quot;</span><span class="p">),</span>
-<span class="w">  </span><span class="n">PeakCaller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;narrow&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">bamReads</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">"bams/"</span><span class="p">,</span>
+<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">"WT-1"</span><span class="p">,</span><span class="s">"WT-4"</span><span class="p">,</span><span class="s">"WT-5"</span><span class="p">,</span><span class="s">"WT-6"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N1-3"</span><span class="p">,</span><span class="s">"N1-4"</span><span class="p">,</span><span class="s">"N1-5"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N2-1"</span><span class="p">,</span><span class="s">"N2-2"</span><span class="p">,</span><span class="s">"N2-3"</span><span class="p">,</span><span class="s">"N2-4"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N3-1"</span><span class="p">,</span><span class="s">"N3-3"</span><span class="p">,</span><span class="s">"N3-4"</span><span class="p">,</span><span class="s">"N3-5"</span><span class="p">),</span>
+<span class="w">                 </span><span class="s">"_filtered_csorted.bam"</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Peaks</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">"np/"</span><span class="p">,</span>
+<span class="w">                 </span><span class="nf">c</span><span class="p">(</span><span class="s">"WT-1"</span><span class="p">,</span><span class="s">"WT-4"</span><span class="p">,</span><span class="s">"WT-5"</span><span class="p">,</span><span class="s">"WT-6"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N1-3"</span><span class="p">,</span><span class="s">"N1-4"</span><span class="p">,</span><span class="s">"N1-5"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N2-1"</span><span class="p">,</span><span class="s">"N2-2"</span><span class="p">,</span><span class="s">"N2-3"</span><span class="p">,</span><span class="s">"N2-4"</span><span class="p">,</span>
+<span class="w">                   </span><span class="s">"N3-1"</span><span class="p">,</span><span class="s">"N3-3"</span><span class="p">,</span><span class="s">"N3-4"</span><span class="p">,</span><span class="s">"N3-5"</span><span class="p">),</span>
+<span class="w">                 </span><span class="s">"_peaks.narrowPeak"</span><span class="p">),</span>
+<span class="w">  </span><span class="n">PeakCaller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"narrow"</span><span class="p">,</span>
 <span class="w">  </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span>
 <span class="p">)</span>
 
 <span class="c1"># Load the consensus peaks as the counting interval set</span>
-<span class="n">consensus_bed</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;consensus_peaks_final.bed&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;\t&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;Chr&quot;</span><span class="p">,</span><span class="s">&quot;Start&quot;</span><span class="p">,</span><span class="s">&quot;End&quot;</span><span class="p">))</span>
+<span class="n">consensus_bed</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">"consensus_peaks_final.bed"</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"\t"</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">"Chr"</span><span class="p">,</span><span class="s">"Start"</span><span class="p">,</span><span class="s">"End"</span><span class="p">))</span>
 <span class="n">consensus_gr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">GRanges</span><span class="p">(</span><span class="n">seqnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">Chr</span><span class="p">,</span>
 <span class="w">                        </span><span class="n">ranges</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="nf">IRanges</span><span class="p">(</span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">Start</span><span class="p">,</span>
 <span class="w">                                           </span><span class="n">consensus_bed</span><span class="o">$</span><span class="n">End</span><span class="p">))</span>
@@ -733,7 +734,7 @@ background bins.</p>
 
 <span class="c1"># WT as the reference level for all contrasts</span>
 <span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.contrast</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
-<span class="w">                        </span><span class="n">reorderMeta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">Condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;WT&quot;</span><span class="p">))</span>
+<span class="w">                        </span><span class="n">reorderMeta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">Condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"WT"</span><span class="p">))</span>
 
 <span class="n">dba_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">dba.analyze</span><span class="p">(</span><span class="n">dba_obj</span><span class="p">,</span>
 <span class="w">                       </span><span class="n">method</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">DBA_DESEQ2</span><span class="p">,</span>
@@ -749,9 +750,9 @@ WT), then apply significance thresholds. It is good practice to save both a
 <strong>standard</strong> set (FDR &lt; 0.05, <a href="#id2"><span class="problematic" id="id3">|log2FC|</span></a> &gt; 1) and a <strong>strict</strong> set that adds a
 minimum-concentration filter to suppress low-count peaks.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">comparisons</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span>
-<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N1_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
-<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N2_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">),</span>
-<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;N3_vs_WT&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"N1_vs_WT"</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">),</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"N2_vs_WT"</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">),</span>
+<span class="w">  </span><span class="nf">list</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"N3_vs_WT"</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="kr">for</span><span class="w"> </span><span class="p">(</span><span class="n">comp</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">comparisons</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -766,13 +767,13 @@ minimum-concentration filter to suppress low-count peaks.</p>
 
 <span class="w">  </span><span class="c1"># Standard significance</span>
 <span class="w">  </span><span class="n">sig</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="n">FDR</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nf">abs</span><span class="p">(</span><span class="n">Fold</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
-<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;results/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;_DA_significant.csv&quot;</span><span class="p">),</span>
+<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">"results/"</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">"_DA_significant.csv"</span><span class="p">),</span>
 <span class="w">            </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
 
 <span class="w">  </span><span class="c1"># Strict: additionally require Conc &gt;= log2(20)</span>
 <span class="w">  </span><span class="n">sig_strict</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="n">Conc</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nf">log2</span><span class="p">(</span><span class="m">20</span><span class="p">))</span>
-<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig_strict</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;results/strict/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span>
-<span class="w">            </span><span class="s">&quot;_DA_significant.csv&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="w">  </span><span class="nf">write.csv</span><span class="p">(</span><span class="n">sig_strict</span><span class="p">,</span><span class="w"> </span><span class="nf">paste0</span><span class="p">(</span><span class="s">"results/strict/"</span><span class="p">,</span><span class="w"> </span><span class="n">comp</span><span class="o">$</span><span class="n">name</span><span class="p">,</span>
+<span class="w">            </span><span class="s">"_DA_significant.csv"</span><span class="p">),</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
 </div>

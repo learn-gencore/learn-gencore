@@ -107,6 +107,7 @@
           <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
       <li class="breadcrumb-item active">Over-representation analysis</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/transcriptomics/over_representation_analysis.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -157,9 +158,9 @@ over-representation.</p></li>
 <h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
 <p>This is an R workflow. Install <code class="docutils literal notranslate"><span class="pre">clusterProfiler</span></code>, <code class="docutils literal notranslate"><span class="pre">pathview</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">wordcloud</span></code> once, then load them at the start of each session.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;clusterProfiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;3.8&quot;</span><span class="p">)</span>
-<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;pathview&quot;</span><span class="p">)</span>
-<span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;wordcloud&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"clusterProfiler"</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"3.8"</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"pathview"</span><span class="p">)</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="s">"wordcloud"</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">clusterProfiler</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
 </pre></div>
@@ -181,7 +182,7 @@ CSV. The examples here use <em>D. melanogaster</em> and <code class="docutils li
 <p>Install and load the annotation package for your organism. See the
 full list at <a class="reference external" href="http://bioconductor.org/packages/release/BiocViews.html#___OrgDb">Bioconductor OrgDb packages</a>
 (there are 19 presently available).</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Dm.eg.db&quot;</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"org.Dm.eg.db"</span>
 <span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">organism</span><span class="p">,</span><span class="w"> </span><span class="n">character.only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
 </pre></div>
@@ -194,7 +195,7 @@ full list at <a class="reference external" href="http://bioconductor.org/package
 (named, sorted log2 fold-changes) and the filtered set of significant
 DE genes (gene names only).</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># reading in input from deseq2</span>
-<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&quot;drosphila_example_de.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">"drosphila_example_de.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
 <span class="c1"># we want the log2 fold change</span>
 <span class="n">original_gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="o">$</span><span class="n">log2FoldChange</span>
@@ -252,9 +253,9 @@ example <code class="docutils literal notranslate"><span class="pre">keytypes(or
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">go_enrich</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichGO</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span>
 <span class="w">                      </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">gene_list</span><span class="p">),</span>
 <span class="w">                      </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">organism</span><span class="p">,</span>
-<span class="w">                      </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;ENSEMBL&#39;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'ENSEMBL'</span><span class="p">,</span>
 <span class="w">                      </span><span class="n">readable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">T</span><span class="p">,</span>
-<span class="w">                      </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BP&quot;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"BP"</span><span class="p">,</span>
 <span class="w">                      </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
 <span class="w">                      </span><span class="n">qvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.10</span><span class="p">)</span>
 </pre></div>
@@ -265,7 +266,7 @@ example <code class="docutils literal notranslate"><span class="pre">keytypes(or
 <section id="upset-plot">
 <h4>Upset plot<a class="headerlink" href="#upset-plot" title="Link to this heading"></a></h4>
 <p>Emphasizes the genes overlapping among different gene sets.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;enrichplot&quot;</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">"enrichplot"</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">enrichplot</span><span class="p">)</span>
 <span class="nf">upsetplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">)</span>
 </pre></div>
@@ -281,10 +282,10 @@ overlap between enriched sets.</span><a class="headerlink" href="#id7" title="Li
 </section>
 <section id="wordcloud">
 <h4>Wordcloud<a class="headerlink" href="#wordcloud" title="Link to this heading"></a></h4>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">wcdf</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">go_enrich</span><span class="o">$</span><span class="n">GeneRatio</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">wcdf</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">go_enrich</span><span class="o">$</span><span class="n">GeneRatio</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"/"</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span>
 <span class="n">wcdf</span><span class="o">$</span><span class="n">term</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">go_enrich</span><span class="p">[,</span><span class="m">2</span><span class="p">]</span>
 <span class="nf">wordcloud</span><span class="p">(</span><span class="n">words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcdf</span><span class="o">$</span><span class="n">term</span><span class="p">,</span><span class="w"> </span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcdf</span><span class="o">$</span><span class="n">V1</span><span class="p">,</span><span class="w"> </span><span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="n">.</span><span class="m">1</span><span class="p">)),</span>
-<span class="w">          </span><span class="n">colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">brewer.pal</span><span class="p">(</span><span class="m">8</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Dark2&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">max.words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">25</span><span class="p">)</span>
+<span class="w">          </span><span class="n">colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">brewer.pal</span><span class="p">(</span><span class="m">8</span><span class="p">,</span><span class="w"> </span><span class="s">"Dark2"</span><span class="p">),</span><span class="w"> </span><span class="n">max.words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">25</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id8">
@@ -301,7 +302,7 @@ of each term’s gene ratio.</span><a class="headerlink" href="#id8" title="Link
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">barplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span>
 <span class="w">        </span><span class="n">drop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
 <span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
-<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;GO Biological Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"GO Biological Pathways"</span><span class="p">,</span>
 <span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -364,8 +365,8 @@ parents in the ontology hierarchy.</span><a class="headerlink" href="#id12" titl
 (e.g. GO terms or KEGG pathways) as a network. It is helpful for
 seeing which genes are involved in enriched pathways and which genes
 belong to multiple annotation categories.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
-<span class="nf">cnetplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either 'pvalue' or 'geneNum'</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">go_enrich</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"pvalue"</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id13">
@@ -402,12 +403,12 @@ four types are available directly, but <code class="docutils literal notranslate
 <h3>Prepare data<a class="headerlink" href="#prepare-data" title="Link to this heading"></a></h3>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert gene IDs for enrichKEGG function</span>
 <span class="c1"># We will lose some genes here because not all IDs will be converted</span>
-<span class="n">ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">),</span><span class="w"> </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org.Dm.eg.db&quot;</span><span class="p">)</span>
+<span class="n">ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">original_gene_list</span><span class="p">),</span><span class="w"> </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ENSEMBL"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ENTREZID"</span><span class="p">,</span><span class="w"> </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"org.Dm.eg.db"</span><span class="p">)</span>
 
-<span class="c1"># remove duplicate IDS (here I use &quot;ENSEMBL&quot;, but it should be</span>
+<span class="c1"># remove duplicate IDS (here I use "ENSEMBL", but it should be</span>
 <span class="c1"># whatever was selected as keyType)</span>
-<span class="n">dedup_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ids</span><span class="p">[</span><span class="o">!</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;ENSEMBL&quot;</span><span class="p">)]),]</span>
+<span class="n">dedup_ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ids</span><span class="p">[</span><span class="o">!</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="s">"ENSEMBL"</span><span class="p">)]),]</span>
 
 <span class="c1"># Create a new dataframe df2 which has only the genes which were</span>
 <span class="c1"># successfully mapped using the bitr function above</span>
@@ -456,12 +457,12 @@ or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span>
 </section>
 <section id="create-the-enrichkegg-object">
 <h3>Create the enrichKEGG object<a class="headerlink" href="#create-the-enrichkegg-object" title="Link to this heading"></a></h3>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">kegg_organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme&quot;</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">kegg_organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme"</span>
 <span class="n">kk</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichKEGG</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_genes</span><span class="p">,</span>
 <span class="w">                 </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">kegg_gene_list</span><span class="p">),</span>
 <span class="w">                 </span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
 <span class="w">                 </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
-<span class="w">                 </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ncbi-geneid&quot;</span><span class="p">)</span>
+<span class="w">                 </span><span class="n">keyType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ncbi-geneid"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -471,7 +472,7 @@ or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span>
 <h4>Barplot<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">barplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span>
 <span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
-<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enriched Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Enriched Pathways"</span><span class="p">,</span>
 <span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -487,7 +488,7 @@ or <code class="docutils literal notranslate"><span class="pre">'uniprot'</span>
 <h4>Dotplot<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">dotplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span>
 <span class="w">        </span><span class="n">showCategory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
-<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enriched Pathways&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Enriched Pathways"</span><span class="p">,</span>
 <span class="w">        </span><span class="n">font.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -504,8 +505,8 @@ per pathway; colour is the adjusted p-value.</span><a class="headerlink" href="#
 <h4>Category netplot<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">cnetplot</span></code> depicts the linkages of genes and biological concepts
 (here KEGG pathways) as a network.</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either &#39;pvalue&#39; or &#39;geneNum&#39;</span>
-<span class="nf">cnetplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># categorySize can be either 'pvalue' or 'geneNum'</span>
+<span class="nf">cnetplot</span><span class="p">(</span><span class="n">kk</span><span class="p">,</span><span class="w"> </span><span class="n">categorySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"pvalue"</span><span class="p">,</span><span class="w"> </span><span class="n">foldChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id16">
@@ -535,17 +536,17 @@ your keytype from this list: <code class="docutils literal notranslate"><span cl
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">pathview</span><span class="p">)</span>
 
 <span class="c1"># Produce the native KEGG plot (PNG)</span>
-<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04080&quot;</span><span class="p">,</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme04080"</span><span class="p">,</span>
 <span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
 <span class="w">                </span><span class="n">gene.idtype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene.idtype.list</span><span class="p">[</span><span class="m">3</span><span class="p">])</span>
 
 <span class="c1"># Produce a different plot (PDF) (not displayed here)</span>
-<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;dme04080&quot;</span><span class="p">,</span>
+<span class="n">dme</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pathview</span><span class="p">(</span><span class="n">gene.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">pathway.id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dme04080"</span><span class="p">,</span>
 <span class="w">                </span><span class="n">species</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kegg_organism</span><span class="p">,</span>
 <span class="w">                </span><span class="n">gene.idtype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene.idtype.list</span><span class="p">[</span><span class="m">3</span><span class="p">],</span>
 <span class="w">                </span><span class="n">kegg.native</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)</span>
 
-<span class="n">knitr</span><span class="o">::</span><span class="nf">include_graphics</span><span class="p">(</span><span class="s">&quot;dme04080.pathview.png&quot;</span><span class="p">)</span>
+<span class="n">knitr</span><span class="o">::</span><span class="nf">include_graphics</span><span class="p">(</span><span class="s">"dme04080.pathview.png"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id17">
