@@ -28,3 +28,11 @@ html_show_sphinx = False
 # custom.css is inside one of the html_static_path folders (e.g. _static)
 html_css_files = ["custom.css"]
 html_favicon = "img/favicon.ico"
+
+html_context = {
+    "display_github": True,
+    "github_user": "learn-gencore",
+    "github_repo": "learn-gencore",
+    "github_version": "main",
+    "conf_py_path": "/source/",
+}
