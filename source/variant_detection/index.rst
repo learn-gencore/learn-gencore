@@ -5,4 +5,3 @@ Variant Detection & Annotation
    :maxdepth: 1
 
    wgs
-   wes

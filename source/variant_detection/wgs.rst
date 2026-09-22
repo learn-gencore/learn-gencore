@@ -1,5 +1,5 @@
-WGS
-===
+Whole Genome Sequencing
+=======================
 
 Germline short-variant calling (SNPs and small indels) from whole-genome
 sequencing of **non-model organisms**, run on locally installed HPC modules.
