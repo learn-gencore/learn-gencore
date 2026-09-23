@@ -13,19 +13,3 @@
     margin-top: 1em;
     margin-bottom: 1.5em;
 }
-
-.page-author {
-    margin-left: 12px;
-    font-size: 0.85em;
-    color: #666;
-}
-
-.page-author a {
-    color: #666;
-    text-decoration: none;
-}
-
-.page-author a:hover {
-    color: #2980B9;
-    text-decoration: underline;
-}
