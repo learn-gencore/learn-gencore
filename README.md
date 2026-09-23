@@ -4,7 +4,7 @@ Resources for mastering NGS analysis, maintained by the Bioinformatics team at t
 
 Each module provides a step-by-step guide to using standard analysis pipelines with state-of-the-art bioinformatics tools. Modules include sample datasets and scripts that can be accessed on NYU's HPC facility.
 
-**Published site:** https://learn-gencore.abudhabi.nyu.edu/
+**Published site:** https://learn.gencore.bio.nyu.edu/
 
 ## Topics covered
 
