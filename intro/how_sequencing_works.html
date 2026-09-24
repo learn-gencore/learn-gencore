@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How sequencing works &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FastA format" href="fasta_format.html" />
+    <link rel="prev" title="Intro to Bioinformatics" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Intro to Bioinformatics</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How sequencing works</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sample-collection-and-preparation">Sample collection and preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-end-vs-paired-end-sequencing">Single-end vs paired-end sequencing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#single-read-sequencing">Single-read sequencing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#paired-end-sequencing">Paired-end sequencing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#sequencing">Sequencing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#amplification">Amplification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#basecalling">Basecalling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fasta_format.html">FastA format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fastq_format.html">FastQ format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quality_scores.html">Quality scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sam_bam_cram_format.html">SAM, BAM and CRAM formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bed_format.html">BED format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcf_format.html">VCF format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gff3_format.html">GFF3 and GTF formats</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Intro to Bioinformatics</a></li>
+      <li class="breadcrumb-item active">How sequencing works</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/intro/how_sequencing_works.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-sequencing-works">
+<h1>How sequencing works<a class="headerlink" href="#how-sequencing-works" title="Link to this heading"></a></h1>
+<p>Many different companies have their own sequencing technologies, some
+better suited for certain applications than others, but they boil down
+to the same concept: identify each nucleotide in a particular molecule.</p>
+<p>The Genomics Core at NYU New York and in Abu Dhabi has a range of
+sequencers to choose from (see the <a class="reference external" href="https://gencore.bio.nyu.edu/sequencing/">GenCore sequencing page</a>):</p>
+<ul class="simple">
+<li><p><strong>New York</strong></p>
+<ul>
+<li><p>Illumina NextSeq</p></li>
+<li><p>Illumina MiSeq</p></li>
+<li><p>Illumina NovaSeq 6000</p></li>
+<li><p>Element Biosciences AVITI</p></li>
+<li><p>Oxford Nanopore GridION</p></li>
+</ul>
+</li>
+<li><p><strong>Abu Dhabi</strong></p>
+<ul>
+<li><p>Illumina NovaSeq 6000</p></li>
+<li><p>Illumina NextSeq 550</p></li>
+<li><p>Illumina MiSeq</p></li>
+<li><p>Oxford Nanopore MinION</p></li>
+<li><p>Oxford Nanopore PromethION P2i</p></li>
+<li><p>PacBio Vega</p></li>
+</ul>
+</li>
+</ul>
+<p>There are three main steps in NGS:</p>
+<ol class="arabic simple">
+<li><p>Sample collection / preparation</p></li>
+<li><p>Amplification</p></li>
+<li><p>Basecalling</p></li>
+</ol>
+<section id="sample-collection-and-preparation">
+<h2>Sample collection and preparation<a class="headerlink" href="#sample-collection-and-preparation" title="Link to this heading"></a></h2>
+<p>This step involves gathering the nucleic acids from your organism of
+interest. The collection method differs based on what the sample is, but
+the preparation usually involves isolating and purifying the nucleic
+acids, shearing them to a certain size, amplification of your product,
+and ligation of sequencing adaptors (small fragments of DNA used to
+anchor the molecule of interest onto the flowcell).</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/ngs-workflow.png"><img alt="Overview of the main steps in a next-generation sequencing workflow" src="../_images/ngs-workflow.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The main steps in a next-generation sequencing workflow, from
+extraction of genomic DNA through to bioinformatics analysis. Source:
+<a class="reference external" href="https://www.researchgate.net/figure/282061980_Overview-of-the-main-steps-in-Next-Generation-Sequencing-workflow">ResearchGate</a>.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="single-end-vs-paired-end-sequencing">
+<h2>Single-end vs paired-end sequencing<a class="headerlink" href="#single-end-vs-paired-end-sequencing" title="Link to this heading"></a></h2>
+<p>Once you have your nucleic acids ready to go you can then choose whether
+you want single-end or paired-end data.</p>
+<section id="single-read-sequencing">
+<h3>Single-read sequencing<a class="headerlink" href="#single-read-sequencing" title="Link to this heading"></a></h3>
+<p>Single-read sequencing involves sequencing DNA from only one end, and is
+the simplest way to use Illumina sequencing. By leveraging proprietary
+reversible terminator chemistry and a novel polymerase, this approach
+delivers large volumes of high-quality data, rapidly and economically.</p>
+<p>Highlights:</p>
+<ul class="simple">
+<li><p><strong>Simple library preparation:</strong> follows standard molecular biology
+methods; compatible with robotics.</p></li>
+<li><p><strong>Low input DNA requirements:</strong> as little as 100 ng genomic DNA or
+cDNA.</p></li>
+<li><p><strong>Economical:</strong> 1/100th the cost of traditional Sanger sequencing.</p></li>
+<li><p><strong>Simplified data analysis:</strong> high-quality sequence assemblies with
+short-insert libraries.</p></li>
+</ul>
+</section>
+<section id="paired-end-sequencing">
+<h3>Paired-end sequencing<a class="headerlink" href="#paired-end-sequencing" title="Link to this heading"></a></h3>
+<p>Highlights:</p>
+<ul class="simple">
+<li><p><strong>Simple paired-end libraries:</strong> a simple workflow allows generation
+of unique ranges of insert sizes.</p></li>
+<li><p><strong>Efficient sample use:</strong> requires the same amount of DNA as
+single-read gDNA or cDNA sequencing.</p></li>
+<li><p><strong>Broad range of applications:</strong> does not require methylation of DNA
+or restriction digestion; can be used for bisulfite sequencing.</p></li>
+<li><p><strong>Simplified data analysis:</strong> higher-quality sequence assemblies with
+short-insert libraries. A simple modification to the standard
+single-read library preparation process facilitates reading both the
+forward and reverse template strands of each cluster during one
+paired-end read. Both reads contain long-range positional information,
+allowing for highly precise alignment of reads.</p></li>
+</ul>
+<p>To summarize, the illustration below shows each step of the library prep
+once nucleic acids are isolated and amplified.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/library-prep-steps.png"><img alt="Steps of Illumina library preparation once nucleic acids are isolated and amplified" src="../_images/library-prep-steps.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">Each step of library preparation, from isolated and amplified nucleic
+acids through to a sequencing-ready library.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="sequencing">
+<h2>Sequencing<a class="headerlink" href="#sequencing" title="Link to this heading"></a></h2>
+<p>To better understand how sequencing is done on the machine, look over
+the diagram below. It shows the physical layout of the flowcell onto
+which the DNA is loaded.</p>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/flowcell-layout.png"><img alt="Physical layout of a sequencing flowcell" src="../_images/flowcell-layout.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The physical layout of a flowcell onto which the library is loaded.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="amplification">
+<h3>Amplification<a class="headerlink" href="#amplification" title="Link to this heading"></a></h3>
+<p>On many platforms each library fragment is first clonally amplified, so
+that many identical copies sit together and produce a signal strong
+enough to detect. Illumina does this with bridge amplification to form
+dense clusters on the flowcell, and Element Biosciences’ AVITI uses
+rolling-circle amplification to build “polonies”. Single-molecule
+platforms such as Oxford Nanopore and PacBio skip this step entirely:
+they read one native molecule at a time, so no clonal amplification is
+required (though library preparation may still include an optional PCR
+step).</p>
+</section>
+<section id="basecalling">
+<h3>Basecalling<a class="headerlink" href="#basecalling" title="Link to this heading"></a></h3>
+<p>Basecalling is the step that turns the sequencer’s raw measurements into
+an actual sequence of bases. What is measured differs by platform:
+Illumina, AVITI and PacBio detect light (fluorescence), while Oxford
+Nanopore measures changes in ionic current as a strand passes through a
+nanopore. In every case, basecalling software
+translates that signal into a sequence of bases and assigns each base a
+quality score (see <a class="reference internal" href="quality_scores.html"><span class="doc">Quality scores</span></a>).</p>
+<p>Amplification (where it applies) and basecalling are essential steps
+across sequencing platforms. The following Illumina video shows both in
+action for sequencing by synthesis: <a class="reference external" href="https://www.youtube.com/watch?v=EDVKxSNdSic">Overview of Illumina Sequencing by
+Synthesis</a> (the visuals
+help).</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Intro to Bioinformatics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fasta_format.html" class="btn btn-neutral float-right" title="FastA format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WS7W6KPMXY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WS7W6KPMXY', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAM, BAM and CRAM formats &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="BED format" href="bed_format.html" />
+    <link rel="prev" title="Quality scores" href="quality_scores.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Intro to Bioinformatics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_sequencing_works.html">How sequencing works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fasta_format.html">FastA format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fastq_format.html">FastQ format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quality_scores.html">Quality scores</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SAM, BAM and CRAM formats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sam">SAM</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#header">Header</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alignment-records">Alignment records</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-flag-field">The FLAG field</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mapq">MapQ</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cigar">CIGAR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bam">BAM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cram">CRAM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bed_format.html">BED format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcf_format.html">VCF format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gff3_format.html">GFF3 and GTF formats</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Intro to Bioinformatics</a></li>
+      <li class="breadcrumb-item active">SAM, BAM and CRAM formats</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/intro/sam_bam_cram_format.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sam-bam-and-cram-formats">
+<h1>SAM, BAM and CRAM formats<a class="headerlink" href="#sam-bam-and-cram-formats" title="Link to this heading"></a></h1>
+<p>For the full specification, see the <a class="reference external" href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM/BAM format specification</a>.</p>
+<p>Once reads have been aligned to a reference, the alignments are stored in
+one of three closely related formats. <strong>SAM</strong> (Sequence Alignment/Map)
+is the human-readable, tab-delimited text form. <strong>BAM</strong> is its
+compressed binary equivalent, and <strong>CRAM</strong> is a more heavily compressed
+format that stores alignments relative to a reference to save even more
+space.</p>
+<section id="sam">
+<h2>SAM<a class="headerlink" href="#sam" title="Link to this heading"></a></h2>
+<p>A SAM file has two parts: an optional header, and the alignment records
+themselves.</p>
+<section id="header">
+<h3>Header<a class="headerlink" href="#header" title="Link to this heading"></a></h3>
+<p>Header lines begin with <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> and describe the file: the reference
+sequences, the programs that were run, read groups, and so on. Each
+header line uses two-letter record type codes and two-letter tags.</p>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/sam-header-tags-1.png"><img alt="SAM header record types and tags, part 1" src="../_images/sam-header-tags-1.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">SAM header record types and their tags (part 1). Source: <a class="reference external" href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM/BAM
+specification</a>.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/sam-header-tags-2.png"><img alt="SAM header record types and tags, part 2" src="../_images/sam-header-tags-2.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">SAM header record types and their tags (part 2). Source: <a class="reference external" href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM/BAM
+specification</a>.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="alignment-records">
+<h3>Alignment records<a class="headerlink" href="#alignment-records" title="Link to this heading"></a></h3>
+<p>Each alignment record has 11 mandatory, tab-separated fields, optionally
+followed by any number of extra tagged fields.</p>
+<figure class="align-center" id="id6">
+<a class="reference internal image-reference" href="../_images/sam-mandatory-fields.png"><img alt="The 11 mandatory fields of a SAM alignment record" src="../_images/sam-mandatory-fields.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The 11 mandatory fields of a SAM alignment record. Source: <a class="reference external" href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM/BAM
+specification</a>.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="the-flag-field">
+<h3>The FLAG field<a class="headerlink" href="#the-flag-field" title="Link to this heading"></a></h3>
+<p>The second field, FLAG, is a bitwise flag that packs several yes/no
+properties of the alignment (paired, mapped, reverse strand, and so on)
+into a single integer.</p>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/sam-bitwise-flags.png"><img alt="The meaning of each bit in the SAM FLAG field" src="../_images/sam-bitwise-flags.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The meaning of each bit in the SAM FLAG field. Source: <a class="reference external" href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM/BAM
+specification</a>.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Decoding a FLAG value by hand is tedious, so use the Broad Institute’s
+<a class="reference external" href="https://broadinstitute.github.io/picard/explain-flags.html">Explain SAM Flags</a>
+tool, which converts a flag integer to and from its individual bits.</p>
+</section>
+<section id="mapq">
+<h3>MapQ<a class="headerlink" href="#mapq" title="Link to this heading"></a></h3>
+<p>The fifth field, MAPQ, is the mapping quality. Like a Phred base quality,
+it is <code class="docutils literal notranslate"><span class="pre">-10</span> <span class="pre">log10</span></code> of the probability that the read is mapped to the
+wrong position, rounded to the nearest integer. A value of 255 means the
+mapping quality is not available.</p>
+</section>
+<section id="cigar">
+<h3>CIGAR<a class="headerlink" href="#cigar" title="Link to this heading"></a></h3>
+<p>The sixth field, CIGAR, is a compact string that describes how the read
+aligns to the reference: which bases match or mismatch, which are
+inserted or deleted, and which are clipped.</p>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/cigar-operators.png"><img alt="The CIGAR operations and their meanings" src="../_images/cigar-operators.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">The CIGAR operations and their meanings. Source: <a class="reference external" href="https://www.drive5.com/usearch/manual/cigar.html">usearch CIGAR
+documentation</a>.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id9">
+<a class="reference internal image-reference" href="../_images/cigar-example.png"><img alt="A worked example of a CIGAR string describing an alignment" src="../_images/cigar-example.png" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-text">A worked example of a CIGAR string. Source: <a class="reference external" href="https://genome.sph.umich.edu/wiki/SAM#What_is_a_CIGAR.3F">University of Michigan
+SAM wiki</a>.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<p>A small SAM file with a two-line header and a few alignment records
+looks like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>@HD  VN:1.5  SO:coordinate
+@SQ  SN:ref  LN:45
+HWI-ST865:416        0       ref     7       30      8M2I4M1D3M      *       0       0       TTAGATAAAGGATACTG       *
+HWI-ST865:417        0       ref     9       30      3S6M1P1I4M      *       0       0       AAAAGATAAGGATA  *
+HWI-ST865:418        0       ref     16      30      6M14N5M *       0       0       ATAGCTTCAGC     *
+</pre></div>
+</div>
+</section>
+</section>
+<section id="bam">
+<h2>BAM<a class="headerlink" href="#bam" title="Link to this heading"></a></h2>
+<p>BAM is the compressed binary version of SAM. It contains exactly the
+same information, but because it is binary it is much smaller and can be
+indexed for fast random access to any region of the genome. Almost all
+tools that work with alignments read and write BAM. Common examples are
+<a class="reference external" href="http://samtools.github.io/">Samtools</a>, <a class="reference external" href="https://broadinstitute.github.io/picard/">Picard</a>, and the <a class="reference external" href="https://software.broadinstitute.org/software/igv/">Integrative
+Genomics Viewer (IGV)</a>.</p>
+</section>
+<section id="cram">
+<h2>CRAM<a class="headerlink" href="#cram" title="Link to this heading"></a></h2>
+<p>CRAM compresses alignments even further by storing them relative to the
+reference sequence, keeping only the differences from the reference
+rather than the full read sequence. This can dramatically reduce file
+size, at the cost of needing the reference available to decode the file.
+For details, see the <a class="reference external" href="https://samtools.github.io/hts-specs/CRAMv3.pdf">CRAM format specification</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quality_scores.html" class="btn btn-neutral float-left" title="Quality scores" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bed_format.html" class="btn btn-neutral float-right" title="BED format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WS7W6KPMXY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WS7W6KPMXY', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

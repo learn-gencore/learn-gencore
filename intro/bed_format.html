@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BED format &mdash; Core BioInformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38bc1537" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VCF format" href="vcf_format.html" />
+    <link rel="prev" title="SAM, BAM and CRAM formats" href="sam_bam_cram_format.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core BioInformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Intro to Bioinformatics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_sequencing_works.html">How sequencing works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fasta_format.html">FastA format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fastq_format.html">FastQ format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quality_scores.html">Quality scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sam_bam_cram_format.html">SAM, BAM and CRAM formats</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">BED format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#required-fields">Required fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-fields">Optional fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#track-lines">Track lines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bedgraph">BedGraph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#software-that-use-bed-format">Software that use BED format</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcf_format.html">VCF format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gff3_format.html">GFF3 and GTF formats</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../denovo/index.html">De Novo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core BioInformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Intro to Bioinformatics</a></li>
+      <li class="breadcrumb-item active">BED format</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/intro/bed_format.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bed-format">
+<h1>BED format<a class="headerlink" href="#bed-format" title="Link to this heading"></a></h1>
+<p>For more information on the BED format, see the <a class="reference external" href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC Genome Browser FAQ</a>.</p>
+<p>BED (Browser Extensible Data) is a simple, flexible, tab-delimited format
+for describing genomic regions. Each line defines a feature by its
+location on a chromosome, and optionally carries extra information such
+as a name, a score, and display instructions.</p>
+<section id="required-fields">
+<h2>Required fields<a class="headerlink" href="#required-fields" title="Link to this heading"></a></h2>
+<p>Every BED line must have at least the first three fields:</p>
+<ul class="simple">
+<li><p><strong>chrom</strong> — the name of the chromosome or scaffold (for example
+<code class="docutils literal notranslate"><span class="pre">chr1</span></code>).</p></li>
+<li><p><strong>chromStart</strong> — the start position of the feature, counting from 0.</p></li>
+<li><p><strong>chromEnd</strong> — the end position of the feature. The feature spans the
+bases from <code class="docutils literal notranslate"><span class="pre">chromStart</span></code> up to but not including <code class="docutils literal notranslate"><span class="pre">chromEnd</span></code>.</p></li>
+</ul>
+<p>A minimal BED file looks like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>chr7 127471196       127472363
+chr7 127472363       127473530
+chr7 127473530       127474697
+</pre></div>
+</div>
+</section>
+<section id="optional-fields">
+<h2>Optional fields<a class="headerlink" href="#optional-fields" title="Link to this heading"></a></h2>
+<p>Nine further fields may follow the first three, in this fixed order:</p>
+<ul class="simple">
+<li><p><strong>name</strong> — a label for the feature.</p></li>
+<li><p><strong>score</strong> — a score between 0 and 1000, used for shading in a browser.</p></li>
+<li><p><strong>strand</strong> — <code class="docutils literal notranslate"><span class="pre">+</span></code> or <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p></li>
+<li><p><strong>thickStart</strong> — the position at which the feature starts being drawn
+thickly.</p></li>
+<li><p><strong>thickEnd</strong> — the position at which the feature stops being drawn
+thickly.</p></li>
+<li><p><strong>itemRgb</strong> — an <code class="docutils literal notranslate"><span class="pre">R,G,B</span></code> colour value for the feature.</p></li>
+<li><p><strong>blockCount</strong> — the number of blocks (exons) in the feature.</p></li>
+<li><p><strong>blockSizes</strong> — a comma-separated list of block sizes.</p></li>
+<li><p><strong>blockStarts</strong> — a comma-separated list of block start positions,
+relative to <code class="docutils literal notranslate"><span class="pre">chromStart</span></code>.</p></li>
+</ul>
+<p>A BED file using several of the optional fields:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>chr7 127471196       127472363       Pos1    0       +       127471196       127472363       255,0,0
+chr7 127472363       127473530       Pos2    0       +       127472363       127473530       255,0,0
+chr7 127473530       127474697       Neg1    0       -       127473530       127474697       0,0,255
+</pre></div>
+</div>
+</section>
+<section id="track-lines">
+<h2>Track lines<a class="headerlink" href="#track-lines" title="Link to this heading"></a></h2>
+<p>A BED file can begin with a <code class="docutils literal notranslate"><span class="pre">track</span></code> line that tells a genome browser
+how to display the features that follow:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>track name="ItemRGBDemo" description="Item RGB demonstration" itemRgb="On"
+chr7 127471196       127472363       Pos1    0       +       127471196       127472363       255,0,0
+chr7 127472363       127473530       Pos2    0       +       127472363       127473530       255,0,0
+</pre></div>
+</div>
+</section>
+<section id="bedgraph">
+<h2>BedGraph<a class="headerlink" href="#bedgraph" title="Link to this heading"></a></h2>
+<p>A closely related format, <strong>bedGraph</strong>, is used to display continuous
+data (such as coverage) along the genome. Each line gives a region and a
+single value:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>track type=bedGraph name="BedGraph Format" description="BedGraph format"
+chr19        49302000        49302300        -1.0
+chr19        49302300        49302600        -0.75
+chr19        49302600        49302900        -0.50
+</pre></div>
+</div>
+</section>
+<section id="software-that-use-bed-format">
+<h2>Software that use BED format<a class="headerlink" href="#software-that-use-bed-format" title="Link to this heading"></a></h2>
+<p>BED is understood by nearly every genome browser and interval tool. A
+very common one is <a class="reference external" href="https://bedtools.readthedocs.io/en/latest/">BEDTools</a>, a toolkit for comparing,
+merging, and manipulating genomic intervals.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sam_bam_cram_format.html" class="btn btn-neutral float-left" title="SAM, BAM and CRAM formats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vcf_format.html" class="btn btn-neutral float-right" title="VCF format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WS7W6KPMXY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WS7W6KPMXY', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
