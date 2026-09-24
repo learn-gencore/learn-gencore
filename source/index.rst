@@ -10,7 +10,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+   intro/index
    transcriptomics/index
    variant_detection/index
    epigenomics/index

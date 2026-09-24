@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Flow of file formats through a typical NGS analysis: from the sequencer through SFF, FastQ, SAM and BAM, then to pileup, VCF and GFF, and finally into a genome viewer such as IGV.">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#34495e"/>
+    </marker>
+    <style>
+      .box  { rx: 8; stroke: #34495e; stroke-width: 1.5; }
+      .lbl  { fill: #566573; font-size: 11px; }
+      .nm   { font-size: 14px; font-weight: 700; text-anchor: middle; }
+      .sub  { font-size: 10px; font-weight: 400; text-anchor: middle; }
+      .edge { stroke: #34495e; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <!-- Row 1: sequencer -> SFF -> FastQ -> SAM -> BAM -->
+  <rect class="box" x="40"  y="40" width="120" height="50" fill="#d5dbdb"/>
+  <text class="nm" x="100" y="70" fill="#2c3e50">Sequencer</text>
+
+  <rect class="box" x="220" y="40" width="120" height="50" fill="#aed6f1"/>
+  <text class="nm"  x="280" y="63" fill="#1b4f72">SFF</text>
+  <text class="sub" x="280" y="79" fill="#1b4f72">Seq / Qual</text>
+
+  <rect class="box" x="400" y="40" width="120" height="50" fill="#aed6f1"/>
+  <text class="nm" x="460" y="70" fill="#1b4f72">FastQ</text>
+
+  <rect class="box" x="580" y="40" width="120" height="50" fill="#f5b041"/>
+  <text class="nm" x="640" y="70" fill="#7e5109">SAM</text>
+
+  <rect class="box" x="760" y="40" width="120" height="50" fill="#cb4335"/>
+  <text class="nm" x="820" y="70" fill="#ffffff">BAM</text>
+
+  <!-- Row 1 edges -->
+  <line class="edge" x1="160" y1="65" x2="216" y2="65"/>
+  <text class="lbl" x="188" y="58" text-anchor="middle">Sequencing</text>
+  <line class="edge" x1="340" y1="65" x2="396" y2="65"/>
+  <text class="lbl" x="368" y="58" text-anchor="middle">Transform</text>
+  <line class="edge" x1="520" y1="65" x2="576" y2="65"/>
+  <text class="lbl" x="548" y="58" text-anchor="middle">BWA / BWASW</text>
+  <line class="edge" x1="700" y1="65" x2="756" y2="65"/>
+  <text class="lbl" x="728" y="58" text-anchor="middle">SAMtools</text>
+
+  <!-- BAM down to pileup -->
+  <line class="edge" x1="820" y1="90" x2="820" y2="176"/>
+  <text class="lbl" x="828" y="138" text-anchor="start">Samtools pileup</text>
+
+  <!-- Row 2: Pileup1 <- ... VCF (right to left) -->
+  <rect class="box" x="760" y="180" width="120" height="50" fill="#fcf3cf"/>
+  <text class="nm" x="820" y="210" fill="#7d6608">Pileup</text>
+
+  <rect class="box" x="500" y="180" width="120" height="50" fill="#f7dc6f"/>
+  <text class="nm" x="560" y="210" fill="#7d6608">Pileup</text>
+
+  <rect class="box" x="240" y="180" width="120" height="50" fill="#f4d03f"/>
+  <text class="nm" x="300" y="210" fill="#7d6608">VCF</text>
+
+  <line class="edge" x1="760" y1="205" x2="624" y2="205"/>
+  <text class="lbl" x="692" y="198" text-anchor="middle">Filtering (Samtools.pl &amp; awk)</text>
+  <line class="edge" x1="500" y1="205" x2="364" y2="205"/>
+  <text class="lbl" x="432" y="198" text-anchor="middle">Samtools pileup</text>
+
+  <!-- Pileup2 down to GFF -->
+  <line class="edge" x1="560" y1="230" x2="560" y2="316"/>
+
+  <!-- Row 3: GFF -> IGV -->
+  <rect class="box" x="500" y="320" width="120" height="50" fill="#eb984e"/>
+  <text class="nm" x="560" y="350" fill="#6e2c00">GFF</text>
+
+  <rect class="box" x="240" y="316" width="120" height="58" fill="#ffffff" stroke="#566573"/>
+  <rect x="240" y="316" width="120" height="14" rx="8" fill="#566573"/>
+  <rect x="240" y="323" width="120" height="7" fill="#566573"/>
+  <text class="nm" x="300" y="356" fill="#566573">IGV</text>
+
+  <line class="edge" x1="500" y1="345" x2="364" y2="345"/>
+  <text class="lbl" x="432" y="338" text-anchor="middle">IGV</text>
+</svg>
