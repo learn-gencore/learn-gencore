@@ -26,12 +26,16 @@
 }
 
 .footer-logos img {
-    height: 120px;
+    height: 80px;
     width: auto;
-    margin: 0;
+    margin: 0 0 12px;
 }
 
 .footer-blurb,
 .footer-blurb p {
     text-align: center;
+}
+
+.footer-blurb p {
+    font-size: 0.8em;
 }
