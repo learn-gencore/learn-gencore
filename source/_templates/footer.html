@@ -1,0 +1,15 @@
+{% extends "!footer.html" %}
+
+{% block contentinfo %}
+  <div class="footer-logos">
+    <a href="https://gencore.bio.nyu.edu/" target="_blank" rel="noopener">
+      <img src="{{ pathto('_static/gencore-logo.png', 1) }}" alt="NYU CGSB GenCore" />
+    </a>
+    <a href="https://cgsb.abudhabi.nyu.edu/" target="_blank" rel="noopener">
+      <img src="{{ pathto('_static/cgsb-logo.jpg', 1) }}" alt="NYUAD Center for Genomics and Systems Biology" />
+    </a>
+  </div>
+  <div class="footer-blurb">
+    {{ super() }}
+  </div>
+{% endblock %}
