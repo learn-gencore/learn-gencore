@@ -55,6 +55,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-data">Getting the data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#preprocessing">Preprocessing</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#index-the-reference">Index the reference</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#align-with-bwa-mem">Align with BWA-MEM</a></li>
@@ -133,7 +134,8 @@
   <section id="whole-genome-sequencing">
 <h1>Whole Genome Sequencing<a class="headerlink" href="#whole-genome-sequencing" title="Link to this heading"></a></h1>
 <p>Germline short-variant calling (SNPs and small indels) from whole-genome
-sequencing of <strong>non-model organisms</strong>, run on locally installed HPC modules.</p>
+sequencing of <strong>non-model organisms</strong>, with every tool run from a container
+image.</p>
 <p>Because non-model organisms rarely have a trusted known-variants VCF
 (dbSNP, 1000 Genomes, etc.), this pipeline departs from the standard
 Broad Best Practices in two specific ways:</p>
@@ -181,22 +183,52 @@ split into SNPs and indels, hard-filtered, and kept only if PASS.</p></li>
 </section>
 <section id="environment">
 <h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
-<p>All commands assume the following modules are loaded. Exact names depend
-on your HPC installation. Substitute the versions available to you.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
-module<span class="w"> </span>load<span class="w"> </span>bwa/&lt;version&gt;
-module<span class="w"> </span>load<span class="w"> </span>samtools/&lt;version&gt;
-module<span class="w"> </span>load<span class="w"> </span>bcftools/&lt;version&gt;
-module<span class="w"> </span>load<span class="w"> </span>gatk/4.x
-module<span class="w"> </span>load<span class="w"> </span>htslib/&lt;version&gt;<span class="w">    </span><span class="c1"># for tabix</span>
-module<span class="w"> </span>load<span class="w"> </span>snpeff/&lt;version&gt;
+<p>Each tool in this tutorial runs from a container image, so you don’t need
+to install the software yourself: you only need a container runtime. On
+NYU HPC (and most clusters) that is <strong>Apptainer</strong> (formerly Singularity);
+on your own machine you can use <strong>Docker</strong> instead (see the note at the
+end).</p>
+<p>Pull each image once (they are cached after the first pull). Substitute
+the tags for the versions available to you.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apptainer<span class="w"> </span>pull<span class="w"> </span>bwa.sif<span class="w">       </span>docker://quay.io/biocontainers/bwa:0.7.17--h5bf99c6_8
+apptainer<span class="w"> </span>pull<span class="w"> </span>samtools.sif<span class="w">  </span>docker://quay.io/biocontainers/samtools:1.24--h9dcdb79_1
+apptainer<span class="w"> </span>pull<span class="w"> </span>bcftools.sif<span class="w">  </span>docker://quay.io/biocontainers/bcftools:1.11--h7c999a4_0
+apptainer<span class="w"> </span>pull<span class="w"> </span>gatk.sif<span class="w">      </span>docker://broadinstitute/gatk:4.2.4.1
+apptainer<span class="w"> </span>pull<span class="w"> </span>htslib.sif<span class="w">    </span>docker://quay.io/biocontainers/htslib:1.19.1--h81da01d_1
+apptainer<span class="w"> </span>pull<span class="w"> </span>snpeff.sif<span class="w">    </span>docker://quay.io/biocontainers/snpeff:4.3.1k--0
 </pre></div>
 </div>
+<p>Put a function for each tool in a file, say <code class="docutils literal notranslate"><span class="pre">tools.sh</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># tools.sh</span>
+<span class="nv">BIND</span><span class="o">=</span><span class="s2">"-B /scratch -B /projects"</span><span class="w">   </span><span class="c1"># bind the paths where your data lives</span>
+bwa<span class="o">()</span><span class="w">          </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>bwa.sif<span class="w"> </span>bwa<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+samtools<span class="o">()</span><span class="w">     </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>samtools.sif<span class="w"> </span>samtools<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+bcftools<span class="o">()</span><span class="w">     </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>bcftools.sif<span class="w"> </span>bcftools<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+plot-vcfstats<span class="o">(){</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>bcftools.sif<span class="w"> </span>plot-vcfstats<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+gatk<span class="o">()</span><span class="w">         </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>gatk.sif<span class="w"> </span>gatk<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+tabix<span class="o">()</span><span class="w">        </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>htslib.sif<span class="w"> </span>tabix<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+snpEff<span class="o">()</span><span class="w">       </span><span class="o">{</span><span class="w"> </span>apptainer<span class="w"> </span><span class="nb">exec</span><span class="w"> </span><span class="nv">$BIND</span><span class="w"> </span>snpeff.sif<span class="w"> </span>snpEff<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span><span class="p">;</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+<p>Load them into your shell:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>tools.sh
+</pre></div>
+</div>
+<p>Now every command in this tutorial (<code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span> <span class="pre">...</span></code>, <code class="docutils literal notranslate"><span class="pre">gatk</span> <span class="pre">HaplotypeCaller</span>
+<span class="pre">...</span></code>, <code class="docutils literal notranslate"><span class="pre">tabix</span> <span class="pre">-p</span> <span class="pre">vcf</span> <span class="pre">...</span></code>) works exactly as written. If you run any of
+these commands inside a batch/Slurm script instead of interactively, add
+<code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">tools.sh</span></code> at the top of that script too.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code> is a drop-in faster replacement for <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> and
-produces identical alignments. If your HPC provides it, substitute
-<code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code> for <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> in the alignment step below.</p>
+<p>Using Docker instead? The tutorial commands are identical; only the
+wrapper differs. Skip the <code class="docutils literal notranslate"><span class="pre">apptainer</span> <span class="pre">pull</span></code> step and define each
+function with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code>, mounting the paths your data lives on:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bwa<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">"</span>:<span class="s2">"</span><span class="nv">$PWD</span><span class="s2">"</span><span class="w"> </span>-w<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>quay.io/biocontainers/bwa:0.7.17--h5bf99c6_8<span class="w"> </span>bwa<span class="w"> </span><span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
+<span class="o">}</span>
+</pre></div>
+</div>
 </div>
 </section>
 <section id="inputs">
@@ -212,6 +244,13 @@ each pair.</p></li>
 prefix for derived filenames. We use <code class="docutils literal notranslate"><span class="pre">sample_1</span></code> throughout.</p></li>
 </ul>
 <p>All other files in the pipeline are produced by the commands below.</p>
+</section>
+<section id="getting-the-data">
+<h2>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h2>
+<p>The example data used throughout this tutorial (a human GRCh38
+chromosome 20 subset: the reference genome and the paired-end reads) is
+available from <a class="reference external" href="https://drive.google.com/drive/folders/1CApkipw_Cs-iZYsq9yIsgAfOStvLdFIr">this shared Google Drive folder</a>.
+Download the files into your working directory to follow along.</p>
 </section>
 <section id="preprocessing">
 <h2>Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading"></a></h2>
@@ -472,9 +511,9 @@ gatk<span class="w"> </span>SelectVariants<span class="w"> </span>-R<span class=
 gatk<span class="w"> </span>MergeVcfs<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-I<span class="w"> </span>bootstrap_snps.pass.vcf<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-I<span class="w"> </span>bootstrap_indels.pass.vcf<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-O<span class="w"> </span>bootstrap_known_sites.vcf
+<span class="w">    </span>-O<span class="w"> </span>bootstrap_known_sites.vcf.gz
 
-tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>bootstrap_known_sites.vcf
+tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </span>bootstrap_known_sites.vcf.gz
 </pre></div>
 </div>
 </section>
@@ -483,7 +522,7 @@ tabix<span class="w"> </span>-p<span class="w"> </span>vcf<span class="w"> </spa
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gatk<span class="w"> </span>BaseRecalibrator<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-R<span class="w"> </span>reference.fa<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-I<span class="w"> </span>dedup_reads.bam<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--known-sites<span class="w"> </span>bootstrap_known_sites.vcf<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--known-sites<span class="w"> </span>bootstrap_known_sites.vcf.gz<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-O<span class="w"> </span>recal_data.table
 
 gatk<span class="w"> </span>ApplyBQSR<span class="w"> </span><span class="se">\</span>

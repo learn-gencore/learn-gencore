@@ -1,5 +1,5 @@
 Variant Detection & Annotation
-=============================
+==============================
 
 .. toctree::
    :maxdepth: 1
