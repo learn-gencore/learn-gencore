@@ -26,7 +26,7 @@ adapt to your own data.
 
 
 Pipeline overview
-=================
+-----------------
 
 .. figure:: /_images/denovo-workflow.png
    :alt: De novo transcriptome assembly and annotation pipeline
@@ -46,7 +46,7 @@ Pipeline overview
 
 
 Steps
-=====
+-----
 
 #. Assemble the reads into a reference transcriptome with **Trinity**.
 #. Assess the assembly: read mapping rate, contig **Nx / ExN50**, **BUSCO**
@@ -59,7 +59,7 @@ Steps
 
 
 Environment
-===========
+-----------
 
 All commands assume the following modules are loaded. Exact names and versions
 depend on your HPC installation; substitute the versions available to you.
@@ -98,7 +98,7 @@ The tools used across the workshop, with upstream documentation:
 
 
 Inputs
-======
+------
 
 Before running the pipeline you need:
 
@@ -125,7 +125,7 @@ File formats you will encounter (assumed familiar): FASTA, FASTQ, SAM, BAM.
 
 
 Getting the data
-================
+----------------
 
 We use the NYUAD HPC cluster. Connect, move to your scratch space, and copy
 the workshop data.
@@ -153,7 +153,7 @@ Connecting from Windows
 
 
 The data
-========
+--------
 
 The datasets are publicly available sequencing reads in FASTQ format,
 downloadable from the SRA under accessions ``SRR28281136``, ``SRR28281137``,
@@ -166,7 +166,7 @@ glucose, fructose, and pyruvate.
 
 
 The scripts
-===========
+-----------
 
 The data folder ships with several shell scripts:
 
@@ -183,7 +183,7 @@ The data folder ships with several shell scripts:
 
 
 Assembly with Trinity
-======================
+---------------------
 
 Most sequencing analyses begin with quality checking and trimming to remove
 low-quality bases and adapter contamination. That step is not covered here;
@@ -301,7 +301,7 @@ Or run it directly on the command line:
 
 
 Assessing the assembly quality
-==============================
+------------------------------
 
 Before annotating or quantifying, confirm the assembly is sound. We use three
 complementary angles: how well the reads map back, length/expression
@@ -519,7 +519,7 @@ Output is written to the ``QUAST`` folder.
 
 
 Annotation with Trinotate
-==========================
+-------------------------
 
 With QC passed, annotate the assembly. Broadly there are two approaches:
 
@@ -688,7 +688,7 @@ annotations.
 
 
 Expression quantification
-=========================
+-------------------------
 
 The assembly is built, assessed, and annotated. The final stage quantifies
 expression per sample and compares conditions — essentially a reference-based
@@ -834,7 +834,7 @@ Results are written to the ``deseq2`` folder.
 
 
 Visualization
-=============
+-------------
 
 With the results generated, you can bring everything together visually:
 
