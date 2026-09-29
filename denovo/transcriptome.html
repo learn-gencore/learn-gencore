@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Metagenomics" href="../metagenomics/index.html" />
-    <link rel="prev" title="Genome" href="genome.html" /> 
+    <link rel="prev" title="De novo Bacterial Genome Assembly" href="denovo_bacteria.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,50 +54,73 @@
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">De Novo</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="genome.html">Genome</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">De Novo Transcriptome Assembly &amp; Annotation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#getting-the-data">Getting the data</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#connecting-from-macos-linux">Connecting from macOS / Linux</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#connecting-from-windows">Connecting from Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html">De Novo Genome Assembly &amp; Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#steps">Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#getting-the-data">Getting the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#quality-control-and-trimming">Quality control and trimming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#assembly-with-spades">Assembly with SPAdes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#assessing-the-assembly-quality">Assessing the assembly quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#ab-initio-gene-prediction">Ab initio gene prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#combined-annotation-with-prokka">Combined annotation with Prokka</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#functional-annotation-with-eggnog-mapper">Functional annotation with eggNOG-mapper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_genome.html#visualization">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html">De novo Bacterial Genome Assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#example-dataset">Example Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-1-quality-assessment-with-fastqc">Step 1: Quality Assessment with FastQC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-2-quality-and-adapter-trimming-with-fastp">Step 2: Quality and Adapter Trimming with fastp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-3-re-assessment-of-trimmed-reads">Step 3: Re-Assessment of Trimmed Reads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-4-de-novo-assembly-with-spades">Step 4: De Novo Assembly with SPAdes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-5-assembly-quality-assessment">Step 5: Assembly Quality Assessment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-6-genome-annotation">Step 6: Genome Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-7-additional-value-added-steps">Step 7: Additional Value-Added Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#further-reading">Further Reading</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">De Novo Transcriptome Assembly &amp; Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#steps">Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-the-data">Getting the data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-from-macos-linux">Connecting from macOS / Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-from-windows">Connecting from Windows</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#the-data">The data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-scripts">The scripts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#assembly-with-trinity">Assembly with Trinity</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#slurm-arguments">SLURM arguments</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#loading-the-software-stack">Loading the software stack</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#running-the-assembly">Running the assembly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#submitting-the-assembly">Submitting the assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-data">The data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-scripts">The scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#assembly-with-trinity">Assembly with Trinity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slurm-arguments">SLURM arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading-the-software-stack">Loading the software stack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-assembly">Running the assembly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submitting-the-assembly">Submitting the assembly</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#assessing-the-assembly-quality">Assessing the assembly quality</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#assess-using-read-mapping">Assess using read mapping</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#contig-nx-and-exn50-statistics">Contig Nx and ExN50 statistics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#assessing-completeness-with-busco">Assessing completeness with BUSCO</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#detecting-mis-assemblies-with-quast">Detecting mis-assemblies with QUAST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#assessing-the-assembly-quality">Assessing the assembly quality</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#assess-using-read-mapping">Assess using read mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contig-nx-and-exn50-statistics">Contig Nx and ExN50 statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#assessing-completeness-with-busco">Assessing completeness with BUSCO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#detecting-mis-assemblies-with-quast">Detecting mis-assemblies with QUAST</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#annotation-with-trinotate">Annotation with Trinotate</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#predict-orfs-with-transdecoder">Predict ORFs with TransDecoder</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#initialize-and-load-the-trinotate-database">Initialize and load the Trinotate database</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#run-trinotate">Run Trinotate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#signalp-for-gram-positive-bacteria">SignalP for Gram-positive bacteria</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#generate-the-annotation-report">Generate the annotation report</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#annotation-with-trinotate">Annotation with Trinotate</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#predict-orfs-with-transdecoder">Predict ORFs with TransDecoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initialize-and-load-the-trinotate-database">Initialize and load the Trinotate database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-trinotate">Run Trinotate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#signalp-for-gram-positive-bacteria">SignalP for Gram-positive bacteria</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-the-annotation-report">Generate the annotation report</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#expression-quantification">Expression quantification</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#estimate-abundance-per-sample">Estimate abundance per sample</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#build-expression-matrices">Build expression matrices</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#differential-expression-with-deseq2">Differential expression with DESeq2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#expression-quantification">Expression quantification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#estimate-abundance-per-sample">Estimate abundance per sample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-expression-matrices">Build expression matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#differential-expression-with-deseq2">Differential expression with DESeq2</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#visualization">Visualization</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization">Visualization</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
@@ -130,7 +153,7 @@
            <div itemprop="articleBody">
              
   <section id="de-novo-transcriptome-assembly-annotation">
-<span id="denovo-transcriptome"></span><h1>De Novo Transcriptome Assembly &amp; Annotation<a class="headerlink" href="#de-novo-transcriptome-assembly-annotation" title="Link to this heading"></a></h1>
+<h1>De Novo Transcriptome Assembly &amp; Annotation<a class="headerlink" href="#de-novo-transcriptome-assembly-annotation" title="Link to this heading"></a></h1>
 <p>De novo assembly, quality assessment, functional annotation, and expression
 quantification of a <strong>transcriptome</strong> from paired-end short reads (Illumina),
 run on locally installed HPC modules.</p>
@@ -151,8 +174,9 @@ but every step works on any standalone machine (server, laptop, desktop)
 provided the software stack below is installed. We recommend <code class="docutils literal notranslate"><span class="pre">conda</span></code> for
 installing and maintaining bioinformatics software.</p>
 </div>
+</section>
 <section id="pipeline-overview">
-<h2>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h2>
+<h1>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h1>
 <figure class="align-center" id="id1">
 <img alt="De novo transcriptome assembly and annotation pipeline" src="_images/denovo-workflow.png" />
 <figcaption>
@@ -171,7 +195,7 @@ Graphviz enabled, this is also a natural place for a generated diagram.</p>
 </div>
 </section>
 <section id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
+<h1>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h1>
 <ol class="arabic simple">
 <li><p>Assemble the reads into a reference transcriptome with <strong>Trinity</strong>.</p></li>
 <li><p>Assess the assembly: read mapping rate, contig <strong>Nx / ExN50</strong>, <strong>BUSCO</strong>
@@ -184,7 +208,7 @@ and run differential expression with <strong>DESeq2</strong>.</p></li>
 </ol>
 </section>
 <section id="environment">
-<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<h1>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h1>
 <p>All commands assume the following modules are loaded. Exact names and versions
 depend on your HPC installation; substitute the versions available to you.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
@@ -220,7 +244,7 @@ against the version you actually have.</p>
 </ul>
 </section>
 <section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<h1>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h1>
 <p>Before running the pipeline you need:</p>
 <ul class="simple">
 <li><p><strong>Paired-end RNA-Seq reads</strong> in FASTQ format. This dataset has 6 samples
@@ -241,11 +265,11 @@ databases during the session.</p></li>
 <p>File formats you will encounter (assumed familiar): FASTA, FASTQ, SAM, BAM.</p>
 </section>
 <section id="getting-the-data">
-<h2>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h2>
+<h1>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h1>
 <p>We use the NYUAD HPC cluster. Connect, move to your scratch space, and copy
 the workshop data.</p>
 <section id="connecting-from-macos-linux">
-<h3>Connecting from macOS / Linux<a class="headerlink" href="#connecting-from-macos-linux" title="Link to this heading"></a></h3>
+<h2>Connecting from macOS / Linux<a class="headerlink" href="#connecting-from-macos-linux" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Open <strong>Terminal</strong> and run <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">NetID&#64;jubail.abudhabi.nyu.edu</span></code>. Enter your
 NYU password when prompted.</p></li>
@@ -256,7 +280,7 @@ NYU password when prompted.</p></li>
 </ol>
 </section>
 <section id="connecting-from-windows">
-<h3>Connecting from Windows<a class="headerlink" href="#connecting-from-windows" title="Link to this heading"></a></h3>
+<h2>Connecting from Windows<a class="headerlink" href="#connecting-from-windows" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Open <strong>PuTTY</strong> and set <strong>Host name</strong> = <code class="docutils literal notranslate"><span class="pre">jubail.abudhabi.nyu.edu</span></code>,
 <strong>Port</strong> = <code class="docutils literal notranslate"><span class="pre">22</span></code>, then click <strong>Open</strong>.</p></li>
@@ -269,7 +293,7 @@ NYU password when prompted.</p></li>
 </section>
 </section>
 <section id="the-data">
-<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading"></a></h2>
+<h1>The data<a class="headerlink" href="#the-data" title="Link to this heading"></a></h1>
 <p>The datasets are publicly available sequencing reads in FASTQ format,
 downloadable from the SRA under accessions <code class="docutils literal notranslate"><span class="pre">SRR28281136</span></code>, <code class="docutils literal notranslate"><span class="pre">SRR28281137</span></code>,
 <code class="docutils literal notranslate"><span class="pre">SRR28281138</span></code>, <code class="docutils literal notranslate"><span class="pre">SRR28281139</span></code>, <code class="docutils literal notranslate"><span class="pre">SRR28281140</span></code>, and <code class="docutils literal notranslate"><span class="pre">SRR28281141</span></code>.</p>
@@ -279,7 +303,7 @@ and the conditions represent bacterial growth under three carbon sources:
 glucose, fructose, and pyruvate.</p>
 </section>
 <section id="the-scripts">
-<h2>The scripts<a class="headerlink" href="#the-scripts" title="Link to this heading"></a></h2>
+<h1>The scripts<a class="headerlink" href="#the-scripts" title="Link to this heading"></a></h1>
 <p>The data folder ships with several shell scripts:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">assembly.sh</span></code> — assembles the transcriptome with Trinity.</p></li>
@@ -295,7 +319,7 @@ individual scripts exist so each stage can be run and inspected on its own.</p>
 </div>
 </section>
 <section id="assembly-with-trinity">
-<h2>Assembly with Trinity<a class="headerlink" href="#assembly-with-trinity" title="Link to this heading"></a></h2>
+<h1>Assembly with Trinity<a class="headerlink" href="#assembly-with-trinity" title="Link to this heading"></a></h1>
 <p>Most sequencing analyses begin with quality checking and trimming to remove
 low-quality bases and adapter contamination. That step is not covered here;
 see the quality-checking section of the Variant Detection &amp; Annotation
@@ -315,7 +339,7 @@ pre-built FASTA for all downstream steps. The Trinity commands are shown
 (and are commented out in <code class="docutils literal notranslate"><span class="pre">de_novo.sh</span></code>) so you can reproduce them later.</p>
 </div>
 <section id="slurm-arguments">
-<h3>SLURM arguments<a class="headerlink" href="#slurm-arguments" title="Link to this heading"></a></h3>
+<h2>SLURM arguments<a class="headerlink" href="#slurm-arguments" title="Link to this heading"></a></h2>
 <p>The first lines of the script are SLURM directives telling the scheduler where
 and how to run the job. They are ignored if you are not submitting with
 <code class="docutils literal notranslate"><span class="pre">sbatch</span></code>, so you can leave them in place when running locally.</p>
@@ -334,7 +358,7 @@ sets, run digital normalization before assembling
 (<a class="reference external" href="https://github.com/trinityrnaseq/trinityrnaseq/wiki/Trinity-Insilico-Normalization">https://github.com/trinityrnaseq/trinityrnaseq/wiki/Trinity-Insilico-Normalization</a>).</p>
 </section>
 <section id="loading-the-software-stack">
-<h3>Loading the software stack<a class="headerlink" href="#loading-the-software-stack" title="Link to this heading"></a></h3>
+<h2>Loading the software stack<a class="headerlink" href="#loading-the-software-stack" title="Link to this heading"></a></h2>
 <p>These <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code> lines make the tools available. They are specific to the
 NYUAD HPC; adapt them to your environment.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
@@ -350,7 +374,7 @@ module<span class="w"> </span>load<span class="w"> </span>hisat2/2.2.1
 </div>
 </section>
 <section id="running-the-assembly">
-<span id="denovo-running-trinity"></span><h3>Running the assembly<a class="headerlink" href="#running-the-assembly" title="Link to this heading"></a></h3>
+<span id="denovo-running-trinity"></span><h2>Running the assembly<a class="headerlink" href="#running-the-assembly" title="Link to this heading"></a></h2>
 <p>The command below runs the Trinity assembly: input reads are FASTQ
 (<code class="docutils literal notranslate"><span class="pre">--seqType</span> <span class="pre">fq</span></code>), memory capped at 100 GB, 28 CPUs, output prefixed
 <code class="docutils literal notranslate"><span class="pre">trinity_assembly</span></code>, and samples described in the tab-delimited <code class="docutils literal notranslate"><span class="pre">cond.txt</span></code>.</p>
@@ -379,7 +403,7 @@ pyruvate   pyruvate_rep2   pyr_2_1.fastq   pyr_2_2.fastq
 for per-sample abundance estimation after the assembly is built.</p>
 </section>
 <section id="submitting-the-assembly">
-<h3>Submitting the assembly<a class="headerlink" href="#submitting-the-assembly" title="Link to this heading"></a></h3>
+<h2>Submitting the assembly<a class="headerlink" href="#submitting-the-assembly" title="Link to this heading"></a></h2>
 <p>Submit the script to SLURM:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sbatch<span class="w"> </span>assembly.sh
 </pre></div>
@@ -392,12 +416,12 @@ for per-sample abundance estimation after the assembly is built.</p>
 </section>
 </section>
 <section id="assessing-the-assembly-quality">
-<h2>Assessing the assembly quality<a class="headerlink" href="#assessing-the-assembly-quality" title="Link to this heading"></a></h2>
+<h1>Assessing the assembly quality<a class="headerlink" href="#assessing-the-assembly-quality" title="Link to this heading"></a></h1>
 <p>Before annotating or quantifying, confirm the assembly is sound. We use three
 complementary angles: how well the reads map back, length/expression
 statistics, and gene-content completeness. The QC steps live in <code class="docutils literal notranslate"><span class="pre">qc.sh</span></code>.</p>
 <section id="assess-using-read-mapping">
-<h3>Assess using read mapping<a class="headerlink" href="#assess-using-read-mapping" title="Link to this heading"></a></h3>
+<h2>Assess using read mapping<a class="headerlink" href="#assess-using-read-mapping" title="Link to this heading"></a></h2>
 <p>Ideally the reads that produced the assembly should map back to it at a high
 rate. A low rate can signal insufficient coverage, contamination, poor quality,
 a complex transcriptome the assembler struggled with, or partially spliced
@@ -451,7 +475,7 @@ assembly reaches ~93%, meaning most reads are represented in the assembly.</p>
 but this is enough for an initial check.</p>
 </section>
 <section id="contig-nx-and-exn50-statistics">
-<h3>Contig Nx and ExN50 statistics<a class="headerlink" href="#contig-nx-and-exn50-statistics" title="Link to this heading"></a></h3>
+<h2>Contig Nx and ExN50 statistics<a class="headerlink" href="#contig-nx-and-exn50-statistics" title="Link to this heading"></a></h2>
 <p>Trinity ships helper scripts for length statistics. <strong>N50</strong> is the contig
 length at which 50% of the total assembly length is contained in contigs of
 that length or longer — a contiguity indicator, where higher <em>may</em> mean a
@@ -505,7 +529,7 @@ for 90% of normalized expression. See the Trinity wiki
 (<a class="reference external" href="https://github.com/trinityrnaseq/trinityrnaseq/wiki/Transcriptome-Contig-Nx-and-ExN50-stats">https://github.com/trinityrnaseq/trinityrnaseq/wiki/Transcriptome-Contig-Nx-and-ExN50-stats</a>).</p>
 </section>
 <section id="assessing-completeness-with-busco">
-<h3>Assessing completeness with BUSCO<a class="headerlink" href="#assessing-completeness-with-busco" title="Link to this heading"></a></h3>
+<h2>Assessing completeness with BUSCO<a class="headerlink" href="#assessing-completeness-with-busco" title="Link to this heading"></a></h2>
 <p><strong>BUSCO</strong> (Benchmarking Universal Single-Copy Orthologs) assesses an assembly
 by searching for conserved single-copy core genes. It works on eukaryotes and
 prokaryotes; higher scores mean a more complete assembly. Unlike the read- and
@@ -531,7 +555,7 @@ module<span class="w"> </span>load<span class="w"> </span>busco/5.2.0
 <p>Results are written to the <code class="docutils literal notranslate"><span class="pre">BUSCO</span></code> folder.</p>
 </section>
 <section id="detecting-mis-assemblies-with-quast">
-<h3>Detecting mis-assemblies with QUAST<a class="headerlink" href="#detecting-mis-assemblies-with-quast" title="Link to this heading"></a></h3>
+<h2>Detecting mis-assemblies with QUAST<a class="headerlink" href="#detecting-mis-assemblies-with-quast" title="Link to this heading"></a></h2>
 <p><strong>QUAST</strong> (Quality Assessment Tool for Genome Assemblies) adds mis-assembly
 detection on top of the length statistics. Mis-assemblies are contigs stitched
 together that should not be — often around repeats or low-complexity regions,
@@ -583,7 +607,7 @@ assembly to detect mis-assemblies and coverage.</p></li>
 </section>
 </section>
 <section id="annotation-with-trinotate">
-<h2>Annotation with Trinotate<a class="headerlink" href="#annotation-with-trinotate" title="Link to this heading"></a></h2>
+<h1>Annotation with Trinotate<a class="headerlink" href="#annotation-with-trinotate" title="Link to this heading"></a></h1>
 <p>With QC passed, annotate the assembly. Broadly there are two approaches:</p>
 <ol class="arabic simple">
 <li><p><strong>Ab initio gene finding</strong> — predicting genes from sequence alone
@@ -610,7 +634,7 @@ cp<span class="w"> </span>trinity_assembly.Trinity.fasta<span class="w"> </span>
 </pre></div>
 </div>
 <section id="predict-orfs-with-transdecoder">
-<h3>Predict ORFs with TransDecoder<a class="headerlink" href="#predict-orfs-with-transdecoder" title="Link to this heading"></a></h3>
+<h2>Predict ORFs with TransDecoder<a class="headerlink" href="#predict-orfs-with-transdecoder" title="Link to this heading"></a></h2>
 <p>Identify the longest open reading frames in the transcripts:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>TransDecoder.LongOrfs<span class="w"> </span>-t<span class="w"> </span>transcripts.fasta
 </pre></div>
@@ -643,7 +667,7 @@ hmmscan<span class="w"> </span><span class="se">\</span>
 <p>This produces <code class="docutils literal notranslate"><span class="pre">transcripts.fasta.transdecoder.{bed,cds,gff3,pep}</span></code>.</p>
 </section>
 <section id="initialize-and-load-the-trinotate-database">
-<h3>Initialize and load the Trinotate database<a class="headerlink" href="#initialize-and-load-the-trinotate-database" title="Link to this heading"></a></h3>
+<h2>Initialize and load the Trinotate database<a class="headerlink" href="#initialize-and-load-the-trinotate-database" title="Link to this heading"></a></h2>
 <p>The data folder already includes a built <code class="docutils literal notranslate"><span class="pre">myTrinotate.sqlite</span></code>. You only need
 to create it once; the command below is shown for reference (it downloads and
 builds PFAM, UniProt/SwissProt, EggNOG, etc.) and can be reused across
@@ -665,7 +689,7 @@ projects.</p>
 </div>
 </section>
 <section id="run-trinotate">
-<h3>Run Trinotate<a class="headerlink" href="#run-trinotate" title="Link to this heading"></a></h3>
+<h2>Run Trinotate<a class="headerlink" href="#run-trinotate" title="Link to this heading"></a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Trinotate<span class="w"> </span>--db<span class="w"> </span>myTrinotate.sqlite<span class="w"> </span>--CPU<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--transcript_fasta<span class="w"> </span>transcripts.fasta<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--transdecoder_pep<span class="w"> </span>transcripts.fasta.transdecoder.pep<span class="w"> </span><span class="se">\</span>
@@ -686,7 +710,7 @@ projects.</p>
 <p>Results load into the SQLite database automatically.</p>
 </section>
 <section id="signalp-for-gram-positive-bacteria">
-<h3>SignalP for Gram-positive bacteria<a class="headerlink" href="#signalp-for-gram-positive-bacteria" title="Link to this heading"></a></h3>
+<h2>SignalP for Gram-positive bacteria<a class="headerlink" href="#signalp-for-gram-positive-bacteria" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">SignalP6</span></code> predicts signal peptides and cleavage sites. Trinotate runs it in
 <em>eukaryotic</em> mode by default, which is wrong for our Gram-positive bacterium.
 Run it independently in <code class="docutils literal notranslate"><span class="pre">gram+</span></code> mode, then load the results:</p>
@@ -701,7 +725,7 @@ Trinotate<span class="w"> </span>--db<span class="w"> </span>myTrinotate.sqlite<
 </div>
 </section>
 <section id="generate-the-annotation-report">
-<h3>Generate the annotation report<a class="headerlink" href="#generate-the-annotation-report" title="Link to this heading"></a></h3>
+<h2>Generate the annotation report<a class="headerlink" href="#generate-the-annotation-report" title="Link to this heading"></a></h2>
 <p>Finally, export a tab-delimited report of all annotations.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -729,7 +753,7 @@ annotations.</p>
 </section>
 </section>
 <section id="expression-quantification">
-<h2>Expression quantification<a class="headerlink" href="#expression-quantification" title="Link to this heading"></a></h2>
+<h1>Expression quantification<a class="headerlink" href="#expression-quantification" title="Link to this heading"></a></h1>
 <p>The assembly is built, assessed, and annotated. The final stage quantifies
 expression per sample and compares conditions — essentially a reference-based
 RNA-Seq analysis using our own assembly as the reference. Trinity ships helper
@@ -763,7 +787,7 @@ module<span class="w"> </span>load<span class="w"> </span>rsem/1.3.3
 </pre></div>
 </div>
 <section id="estimate-abundance-per-sample">
-<h3>Estimate abundance per sample<a class="headerlink" href="#estimate-abundance-per-sample" title="Link to this heading"></a></h3>
+<h2>Estimate abundance per sample<a class="headerlink" href="#estimate-abundance-per-sample" title="Link to this heading"></a></h2>
 <p>A counts matrix records how much of each transcript each sample expresses.
 There are alignment-based methods (RSEM, HISAT2, Bowtie2) and alignment-free,
 k-mer methods (Kallisto, Salmon); a benchmark is here
@@ -797,7 +821,7 @@ RSEM.stat
 <code class="docutils literal notranslate"><span class="pre">RSEM.isoforms.results</span></code> — quantification at gene and transcript level.</p>
 </section>
 <section id="build-expression-matrices">
-<h3>Build expression matrices<a class="headerlink" href="#build-expression-matrices" title="Link to this heading"></a></h3>
+<h2>Build expression matrices<a class="headerlink" href="#build-expression-matrices" title="Link to this heading"></a></h2>
 <p>Combine the per-replicate results into experiment-wide matrices with
 <code class="docutils literal notranslate"><span class="pre">abundance_estimates_to_matrix.pl</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>abundance_estimates_to_matrix.pl<span class="w"> </span><span class="se">\</span>
@@ -834,7 +858,7 @@ RSEM.out.isoform.TPM.not_cross_norm.TMM_info.txt
 </div>
 </section>
 <section id="differential-expression-with-deseq2">
-<h3>Differential expression with DESeq2<a class="headerlink" href="#differential-expression-with-deseq2" title="Link to this heading"></a></h3>
+<h2>Differential expression with DESeq2<a class="headerlink" href="#differential-expression-with-deseq2" title="Link to this heading"></a></h2>
 <p>Run DGE with Trinity’s <code class="docutils literal notranslate"><span class="pre">run_DE_analysis.pl</span></code>, using DESeq2:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>bioconductor-deseq2/1.32.0
 
@@ -859,7 +883,7 @@ expressed transcripts), see
 </section>
 </section>
 <section id="visualization">
-<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h2>
+<h1>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h1>
 <p>With the results generated, you can bring everything together visually:</p>
 <ul class="simple">
 <li><p><strong>TrinotateWeb</strong> presents the assembly, annotations, and expression in one
@@ -870,13 +894,12 @@ individual transcripts.</p></li>
 <p>This concludes the workshop. For questions or comments, raise an issue on the
 workshop repository.</p>
 </section>
-</section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="genome.html" class="btn btn-neutral float-left" title="Genome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="denovo_bacteria.html" class="btn btn-neutral float-left" title="De novo Bacterial Genome Assembly" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../metagenomics/index.html" class="btn btn-neutral float-right" title="Metagenomics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -1,0 +1,862 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>De Novo Genome Assembly &amp; Annotation &mdash; Core Bioinformatics  NYUNY/NYUAD 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d8129a24" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="De novo Bacterial Genome Assembly" href="denovo_bacteria.html" />
+    <link rel="prev" title="De Novo" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Core Bioinformatics  NYUNY/NYUAD
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro/index.html">Intro to Bioinformatics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transcriptomics/index.html">Transcriptomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../variant_detection/index.html">Variant Detection &amp; Annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../epigenomics/index.html">Epigenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">De Novo</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">De Novo Genome Assembly &amp; Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#steps">Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-the-data">Getting the data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-from-macos-linux">Connecting from macOS / Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-from-windows">Connecting from Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-the-sample-data">Download the sample data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-control-and-trimming">Quality control and trimming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#inspect-raw-read-quality">Inspect raw read quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trim-with-fastp">Trim with fastp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aggregate-reports-with-multiqc">Aggregate reports with MultiQC</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#assembly-with-spades">Assembly with SPAdes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optional-downsample-very-deep-data">Optional: downsample very deep data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-the-assembly">Run the assembly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filter-very-short-low-coverage-contigs">Filter very short, low-coverage contigs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#assessing-the-assembly-quality">Assessing the assembly quality</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#contiguity-and-mis-assembly-with-quast">Contiguity and mis-assembly with QUAST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#core-gene-completeness-with-busco">Core-gene completeness with BUSCO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-mapping-coverage-check">Read-mapping coverage check</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ab-initio-gene-prediction">Ab initio gene prediction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#predict-protein-coding-genes-with-prodigal">Predict protein-coding genes with Prodigal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#find-non-coding-features">Find non-coding features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#combined-annotation-with-prokka">Combined annotation with Prokka</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functional-annotation-with-eggnog-mapper">Functional annotation with eggNOG-mapper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html">De novo Bacterial Genome Assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#example-dataset">Example Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-1-quality-assessment-with-fastqc">Step 1: Quality Assessment with FastQC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-2-quality-and-adapter-trimming-with-fastp">Step 2: Quality and Adapter Trimming with fastp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-3-re-assessment-of-trimmed-reads">Step 3: Re-Assessment of Trimmed Reads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-4-de-novo-assembly-with-spades">Step 4: De Novo Assembly with SPAdes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-5-assembly-quality-assessment">Step 5: Assembly Quality Assessment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-6-genome-annotation">Step 6: Genome Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-7-additional-value-added-steps">Step 7: Additional Value-Added Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html">De Novo Transcriptome Assembly &amp; Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#steps">Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#getting-the-data">Getting the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#the-data">The data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#the-scripts">The scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#assembly-with-trinity">Assembly with Trinity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#assessing-the-assembly-quality">Assessing the assembly quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#annotation-with-trinotate">Annotation with Trinotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#expression-quantification">Expression quantification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcriptome.html#visualization">Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../metagenomics/index.html">Metagenomics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primary_analysis/index.html">Primary Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Core Bioinformatics  NYUNY/NYUAD</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">De Novo</a></li>
+      <li class="breadcrumb-item active">De Novo Genome Assembly &amp; Annotation</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/denovo/denovo_genome.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="de-novo-genome-assembly-annotation">
+<h1>De Novo Genome Assembly &amp; Annotation<a class="headerlink" href="#de-novo-genome-assembly-annotation" title="Link to this heading"></a></h1>
+<p>De novo assembly, quality assessment, and structural + functional annotation
+of a <strong>small bacterial genome</strong> from paired-end short reads (Illumina), run on
+locally installed HPC modules.</p>
+<p>This workshop starts from raw FASTQ reads of a single bacterial isolate,
+quality-trims them, assembles them into contigs with SPAdes, checks the
+assembly with QUAST and BUSCO, predicts genes ab initio, and layers on
+functional annotation. No reference genome is assumed — the genome is built
+directly from the reads.</p>
+<p>Scope is limited to a <strong>single-isolate, short-read draft assembly</strong>. It does
+not cover hybrid (long-read) assembly, scaffolding to chromosome level,
+plasmid reconstruction as a separate track, or comparative genomics across
+strains. The aim is a reference workflow you can adapt to your own isolate.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The analysis runs on the NYUAD High Performance Computing (HPC) cluster,
+but every step works on any standalone machine (server, laptop, desktop)
+provided the software stack below is installed. We recommend <code class="docutils literal notranslate"><span class="pre">conda</span></code> for
+installing and maintaining bioinformatics software.</p>
+</div>
+</section>
+<section id="pipeline-overview">
+<h1>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h1>
+<figure class="align-center" id="id1">
+<img alt="De novo genome assembly and annotation pipeline" src="../_images/denovo-genome-workflow.png" />
+<figcaption>
+<p><span class="caption-text">The workflow. Reads are quality-trimmed and assembled once with SPAdes
+into a draft genome; that assembly is then assessed (QUAST, BUSCO, read
+mapping) and annotated (ab initio gene prediction with Prodigal, non-coding
+features with Barrnap and tRNAscan-SE, structural + functional annotation
+with Prokka, and functional enrichment with eggNOG-mapper). The assembly is
+the hub: every downstream step consumes it.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="steps">
+<h1>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h1>
+<ol class="arabic simple">
+<li><p>Quality-check and trim the reads (<strong>FastQC</strong>, <strong>fastp</strong>, <strong>MultiQC</strong>).</p></li>
+<li><p>Assemble the trimmed reads into contigs with <strong>SPAdes</strong>.</p></li>
+<li><p>Assess the assembly: contiguity and mis-assembly (<strong>QUAST</strong>), core-gene
+completeness (<strong>BUSCO</strong>), and read-mapping coverage.</p></li>
+<li><p>Predict genes ab initio with <strong>Prodigal</strong>; find non-coding features with
+<strong>Barrnap</strong> (rRNA) and <strong>tRNAscan-SE</strong> (tRNA).</p></li>
+<li><p>Produce a combined structural + functional annotation with <strong>Prokka</strong>.</p></li>
+<li><p>Add orthology-based functional annotation with <strong>eggNOG-mapper</strong>.</p></li>
+<li><p>Visualize the assembly and annotations (<strong>IGV</strong>, <strong>Artemis</strong>, <strong>Bandage</strong>).</p></li>
+</ol>
+</section>
+<section id="environment">
+<h1>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h1>
+<p>The gencore software stack is split across two module trees, <strong>gencore/2</strong> and
+<strong>gencore/3</strong>, and they <strong>cannot be loaded at the same time</strong>. Whenever the
+pipeline crosses from a tool in one tree to a tool in the other, reset the
+environment first with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3<span class="w">      </span><span class="c1"># or gencore/2</span>
+</pre></div>
+</div>
+<p>Almost every stage of this workshop runs under <strong>gencore/3</strong>. The single
+exception is standalone <strong>Prodigal</strong>, which lives in <strong>gencore/2</strong>; the ab
+initio section below shows that switch explicitly. Each section starts with the
+exact <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code> block it needs, so you can run them independently.</p>
+<p>The tools used across the workshop, the tree each is drawn from, and the
+version pinned here (substitute whatever your installation provides):</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.6%" />
+<col style="width: 27.8%" />
+<col style="width: 41.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="head"><p>Module tree</p></th>
+<th class="head"><p>Module</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FastQC</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">fastqc/0.12.1</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>fastp</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">fastp/0.24.0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>MultiQC</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">multiqc/1.28</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>SPAdes</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">spades/4.3.0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>seqkit</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">seqkit/2.10.1</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>QUAST</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">quast/5.3.0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>BUSCO</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">busco/5.8.3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>BWA</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">bwa/0.7.19</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>SAMtools</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">samtools/1.22</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Prodigal</p></td>
+<td><p><strong>gencore/2</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">prodigal/2.6.3</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Barrnap</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">barrnap/1.10.6</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>tRNAscan-SE</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">trnascan-se/2.0.13</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Prokka</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">prokka/1.14.6</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>eggNOG-mapper</p></td>
+<td><p>gencore/3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">eggnog-mapper/2.1.12</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Standard <strong>Prodigal</strong> is only in gencore/2 — gencore/3 ships
+<code class="docutils literal notranslate"><span class="pre">prodigal-gv</span></code> (a variant for viral and giant-virus genes), which is not
+what we want for a routine bacterial genome. This is the one place the
+pipeline drops back to gencore/2. Parameters can change between tool
+versions, so verify flags against the version you actually load.</p>
+</div>
+<p>The tools used across the workshop, with upstream documentation:</p>
+<ul class="simple">
+<li><p>FastQC — <a class="reference external" href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/">https://www.bioinformatics.babraham.ac.uk/projects/fastqc/</a></p></li>
+<li><p>fastp — <a class="reference external" href="https://github.com/OpenGene/fastp">https://github.com/OpenGene/fastp</a></p></li>
+<li><p>MultiQC — <a class="reference external" href="https://multiqc.info/">https://multiqc.info/</a></p></li>
+<li><p>SPAdes — <a class="reference external" href="https://github.com/ablab/spades">https://github.com/ablab/spades</a></p></li>
+<li><p>QUAST — <a class="reference external" href="https://github.com/ablab/quast">https://github.com/ablab/quast</a></p></li>
+<li><p>BUSCO — <a class="reference external" href="https://busco.ezlab.org/">https://busco.ezlab.org/</a></p></li>
+<li><p>BWA — <a class="reference external" href="https://github.com/lh3/bwa">https://github.com/lh3/bwa</a></p></li>
+<li><p>SAMtools — <a class="reference external" href="https://www.htslib.org/">https://www.htslib.org/</a></p></li>
+<li><p>Prodigal — <a class="reference external" href="https://github.com/hyattpd/Prodigal">https://github.com/hyattpd/Prodigal</a></p></li>
+<li><p>Barrnap — <a class="reference external" href="https://github.com/tseemann/barrnap">https://github.com/tseemann/barrnap</a></p></li>
+<li><p>tRNAscan-SE — <a class="reference external" href="http://lowelab.ucsc.edu/tRNAscan-SE/">http://lowelab.ucsc.edu/tRNAscan-SE/</a></p></li>
+<li><p>Prokka — <a class="reference external" href="https://github.com/tseemann/prokka">https://github.com/tseemann/prokka</a></p></li>
+<li><p>eggNOG-mapper — <a class="reference external" href="https://github.com/eggnogdb/eggnog-mapper">https://github.com/eggnogdb/eggnog-mapper</a></p></li>
+<li><p>Bandage — <a class="reference external" href="https://rrwick.github.io/Bandage/">https://rrwick.github.io/Bandage/</a></p></li>
+</ul>
+</section>
+<section id="inputs">
+<h1>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h1>
+<p>Before running the pipeline you need:</p>
+<ul class="simple">
+<li><p><strong>Paired-end sequencing reads</strong> (<code class="docutils literal notranslate"><span class="pre">sample_R1.fastq.gz</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sample_R2.fastq.gz</span></code>): gzip-compressed FASTQ, read 1 and read 2 of each
+pair, from a single bacterial isolate. This workshop uses a public
+<em>Staphylococcus aureus</em> Illumina run, <strong>ERR10035233</strong> — the download
+commands are in <a class="reference internal" href="#getting-the-data">Getting the data</a> below, so you do not need to supply your
+own reads.</p></li>
+<li><p>A <strong>sample name</strong>, used as a prefix for derived filenames. We use
+<code class="docutils literal notranslate"><span class="pre">sample</span></code> throughout.</p></li>
+<li><p>Enough coverage for a good short-read assembly. For a typical bacterium,
+aim for roughly <strong>50–100×</strong>. Much higher is not necessarily better for
+SPAdes and can be downsampled (the sample run above is deep, so an optional
+downsample step is included).</p></li>
+</ul>
+<p>All other files in the pipeline are produced by the commands below.</p>
+<p>File formats you will encounter (assumed familiar): FASTQ, FASTA, SAM, BAM,
+GFF3, GenBank (GBK).</p>
+</section>
+<section id="getting-the-data">
+<h1>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h1>
+<p>We use the NYUAD HPC cluster. Connect, move to your scratch space, and set up
+a working directory.</p>
+<section id="connecting-from-macos-linux">
+<h2>Connecting from macOS / Linux<a class="headerlink" href="#connecting-from-macos-linux" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Open <strong>Terminal</strong> and run <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">NetID&#64;jubail.abudhabi.nyu.edu</span></code>. Enter your
+NYU password when prompted.</p></li>
+<li><p>Move to your scratch directory: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">$SCRATCH</span></code>.</p></li>
+<li><p>Create and enter a working directory:
+<code class="docutils literal notranslate"><span class="pre">mkdir</span> <span class="pre">de_novo_genome</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">de_novo_genome</span></code>.</p></li>
+</ol>
+</section>
+<section id="connecting-from-windows">
+<h2>Connecting from Windows<a class="headerlink" href="#connecting-from-windows" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Open <strong>PuTTY</strong> and set <strong>Host name</strong> = <code class="docutils literal notranslate"><span class="pre">jubail.abudhabi.nyu.edu</span></code>,
+<strong>Port</strong> = <code class="docutils literal notranslate"><span class="pre">22</span></code>, then click <strong>Open</strong>.</p></li>
+<li><p>Enter your NetID and password when prompted.</p></li>
+<li><p>Move to your scratch directory: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">$SCRATCH</span></code>.</p></li>
+<li><p>Create and enter a working directory:
+<code class="docutils literal notranslate"><span class="pre">mkdir</span> <span class="pre">de_novo_genome</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">de_novo_genome</span></code>.</p></li>
+</ol>
+</section>
+<section id="download-the-sample-data">
+<h2>Download the sample data<a class="headerlink" href="#download-the-sample-data" title="Link to this heading"></a></h2>
+<p>The reads come from the European Nucleotide Archive (ENA), which serves each
+run as ready-to-download gzipped FASTQ files over HTTPS. Download read 1 and
+read 2 with <code class="docutils literal notranslate"><span class="pre">wget</span></code>, naming them with the <code class="docutils literal notranslate"><span class="pre">sample_</span></code> prefix the rest of this
+tutorial expects:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read 1 (forward)</span>
+wget<span class="w"> </span>-O<span class="w"> </span>sample_R1.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR100/033/ERR10035233/ERR10035233_1.fastq.gz
+
+<span class="c1"># Read 2 (reverse)</span>
+wget<span class="w"> </span>-O<span class="w"> </span>sample_R2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR100/033/ERR10035233/ERR10035233_2.fastq.gz
+</pre></div>
+</div>
+<p>The two files total ~500 MB. Confirm the downloads are intact by checking their
+MD5 checksums against the values ENA publishes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>md5sum<span class="w"> </span>sample_R1.fastq.gz<span class="w"> </span>sample_R2.fastq.gz
+</pre></div>
+</div>
+<p>Expected:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>68452ef86d67ce52defb1df9774e6843  sample_R1.fastq.gz
+0e9e3299709ff2e357d40107e822410a  sample_R2.fastq.gz
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">ERR10035233</span></code> is a real <em>S. aureus</em> whole-genome sequencing run, so it is
+sequenced deeply — well above the 50–100× that SPAdes needs. The optional
+downsample step in <a class="reference internal" href="#assembly-with-spades">Assembly with SPAdes</a> trims it back to a sensible depth
+for a faster assembly. To use your own isolate instead, drop your paired
+FASTQ files in as <code class="docutils literal notranslate"><span class="pre">sample_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_R2.fastq.gz</span></code> and skip
+this download.</p>
+</div>
+</section>
+</section>
+<section id="quality-control-and-trimming">
+<h1>Quality control and trimming<a class="headerlink" href="#quality-control-and-trimming" title="Link to this heading"></a></h1>
+<p>Almost all sequencing analysis begins with quality checking and trimming to
+remove low-quality bases and adapter contamination. This matters especially for
+assembly: adapter read-through and low-quality tails create false branches in
+the De Bruijn graph, so cleaning the reads first directly improves the
+assembly.</p>
+<p>This whole stage runs under gencore/3:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>fastqc/0.12.1
+module<span class="w"> </span>load<span class="w"> </span>fastp/0.24.0
+module<span class="w"> </span>load<span class="w"> </span>multiqc/1.28
+</pre></div>
+</div>
+<section id="inspect-raw-read-quality">
+<h2>Inspect raw read quality<a class="headerlink" href="#inspect-raw-read-quality" title="Link to this heading"></a></h2>
+<p>Run <strong>FastQC</strong> on both read files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>fastqc_raw
+fastqc<span class="w"> </span>-t<span class="w"> </span><span class="m">4</span><span class="w"> </span>-o<span class="w"> </span>fastqc_raw<span class="w"> </span>sample_R1.fastq.gz<span class="w"> </span>sample_R2.fastq.gz
+</pre></div>
+</div>
+<p>Open the resulting HTML reports and look at per-base quality, adapter content,
+and the per-sequence GC distribution (a single clean peak is expected for a
+pure isolate; a shoulder can indicate contamination).</p>
+</section>
+<section id="trim-with-fastp">
+<h2>Trim with fastp<a class="headerlink" href="#trim-with-fastp" title="Link to this heading"></a></h2>
+<p><strong>fastp</strong> does adapter removal and quality trimming in a single pass and
+writes its own HTML/JSON report.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fastp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>sample_R1.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-I<span class="w"> </span>sample_R2.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>sample_R1.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-O<span class="w"> </span>sample_R2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--detect_adapter_for_pe<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--qualified_quality_phred<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--length_required<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--thread<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--html<span class="w"> </span>fastp.html<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--json<span class="w"> </span>fastp.json
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--detect_adapter_for_pe</span></code> — auto-detect adapters from read overlap
+(no need to specify the adapter sequence).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--qualified_quality_phred</span> <span class="pre">20</span></code> — treat bases below Q20 as low quality.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--length_required</span> <span class="pre">50</span></code> — discard reads shorter than 50 bp after trimming.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--thread</span> <span class="pre">8</span></code> — number of worker threads.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not over-trim. Aggressive quality thresholds shorten reads and remove
+data that SPAdes’ error correction could otherwise use. Q20 with adapter
+detection is a sensible default for assembly; there is no need to trim to
+Q30.</p>
+</div>
+</section>
+<section id="aggregate-reports-with-multiqc">
+<h2>Aggregate reports with MultiQC<a class="headerlink" href="#aggregate-reports-with-multiqc" title="Link to this heading"></a></h2>
+<p>If you have several samples, <strong>MultiQC</strong> collates all the FastQC and fastp
+reports into one page:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>multiqc<span class="w"> </span>fastqc_raw<span class="w"> </span>fastp.json<span class="w"> </span>-n<span class="w"> </span>multiqc_report
+</pre></div>
+</div>
+<p>Re-run FastQC on the trimmed reads if you want a before/after comparison; the
+adapter-content and per-base-quality plots should visibly improve.</p>
+</section>
+</section>
+<section id="assembly-with-spades">
+<h1>Assembly with SPAdes<a class="headerlink" href="#assembly-with-spades" title="Link to this heading"></a></h1>
+<p><strong>SPAdes</strong> is a De Bruijn graph assembler that works well for bacterial
+isolates. It runs read error correction, then assembles across multiple k-mer
+sizes and merges the results. For an isolate genome, the <code class="docutils literal notranslate"><span class="pre">--isolate</span></code> flag
+selects settings tuned for high-coverage single-genome data.</p>
+<p>Load the assembly stack (still gencore/3):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>spades/4.3.0
+module<span class="w"> </span>load<span class="w"> </span>seqkit/2.10.1
+</pre></div>
+</div>
+<section id="optional-downsample-very-deep-data">
+<h2>Optional: downsample very deep data<a class="headerlink" href="#optional-downsample-very-deep-data" title="Link to this heading"></a></h2>
+<p>The sample run is sequenced far deeper than SPAdes needs. Excess coverage slows
+the assembly without improving it, so subsample the trimmed reads to a target
+depth (~100× here). Using the same random seed (<code class="docutils literal notranslate"><span class="pre">-s</span> <span class="pre">100</span></code>) on both files keeps
+the pairs in sync:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seqkit<span class="w"> </span>sample<span class="w"> </span>-s<span class="w"> </span><span class="m">100</span><span class="w"> </span>-p<span class="w"> </span><span class="m">0</span>.15<span class="w"> </span>sample_R1.trimmed.fastq.gz<span class="w"> </span>-o<span class="w"> </span>sample_R1.sub.fastq.gz
+seqkit<span class="w"> </span>sample<span class="w"> </span>-s<span class="w"> </span><span class="m">100</span><span class="w"> </span>-p<span class="w"> </span><span class="m">0</span>.15<span class="w"> </span>sample_R2.trimmed.fastq.gz<span class="w"> </span>-o<span class="w"> </span>sample_R2.sub.fastq.gz
+</pre></div>
+</div>
+<p>Adjust the proportion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>) to hit ~100×: coverage ≈ (total bases) /
+(genome size), and you can read the total base count from the fastp or FastQC
+report. If you downsample, use the <code class="docutils literal notranslate"><span class="pre">*.sub.fastq.gz</span></code> files as the SPAdes input
+below; otherwise use the <code class="docutils literal notranslate"><span class="pre">*.trimmed.fastq.gz</span></code> files directly.</p>
+</section>
+<section id="run-the-assembly">
+<h2>Run the assembly<a class="headerlink" href="#run-the-assembly" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spades.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--isolate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-1<span class="w"> </span>sample_R1.sub.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-2<span class="w"> </span>sample_R2.sub.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-k<span class="w"> </span><span class="m">21</span>,33,55,77<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>spades_assembly
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--isolate</span></code> — mode tuned for high-coverage isolate data. (Use
+<code class="docutils literal notranslate"><span class="pre">--careful</span></code> instead for small genomes if you want SPAdes to run
+mismatch/indel correction; do not combine the two.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-1</span></code> / <code class="docutils literal notranslate"><span class="pre">-2</span></code> — the trimmed read pairs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-k</span> <span class="pre">21,33,55,77</span></code> — the k-mer sizes to assemble across. SPAdes picks
+sensible defaults from read length if you omit this.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-t</span> <span class="pre">28</span></code> — CPU threads.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">100</span></code> — memory cap in GB.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">spades_assembly</span></code> — output directory.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A small bacterial genome is light to assemble — it typically finishes in
+minutes to an hour or two on an HPC node. If you are submitting via SLURM,
+request a single node with 28 CPUs and ~100 GB memory, mirroring the <code class="docutils literal notranslate"><span class="pre">-t</span></code>
+and <code class="docutils literal notranslate"><span class="pre">-m</span></code> values above.</p>
+</div>
+<p>The key output files in <code class="docutils literal notranslate"><span class="pre">spades_assembly/</span></code> are:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>contigs.fasta      # assembled contigs
+scaffolds.fasta    # contigs joined into scaffolds where paired-end links allow
+assembly_graph.fastg    # the assembly graph (for Bandage)
+spades.log
+</pre></div>
+</div>
+</section>
+<section id="filter-very-short-low-coverage-contigs">
+<h2>Filter very short, low-coverage contigs<a class="headerlink" href="#filter-very-short-low-coverage-contigs" title="Link to this heading"></a></h2>
+<p>Short-read assemblies accumulate tiny, low-coverage contigs that are usually
+artefacts. A common cleanup is to keep only contigs above a length threshold
+(e.g. 200–500 bp). A quick filter with <code class="docutils literal notranslate"><span class="pre">seqkit</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seqkit<span class="w"> </span>seq<span class="w"> </span>-m<span class="w"> </span><span class="m">500</span><span class="w"> </span>spades_assembly/contigs.fasta<span class="w"> </span>&gt;<span class="w"> </span>assembly.fasta
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">assembly.fasta</span></code> as the input to all downstream steps.</p>
+</section>
+</section>
+<section id="assessing-the-assembly-quality">
+<h1>Assessing the assembly quality<a class="headerlink" href="#assessing-the-assembly-quality" title="Link to this heading"></a></h1>
+<p>Before annotating, confirm the assembly is sound. We use three complementary
+angles: contiguity and mis-assembly statistics, core-gene completeness, and
+how well the reads map back. All three tools are in gencore/3, so load them
+once for the whole stage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>quast/5.3.0
+module<span class="w"> </span>load<span class="w"> </span>busco/5.8.3
+module<span class="w"> </span>load<span class="w"> </span>bwa/0.7.19
+module<span class="w"> </span>load<span class="w"> </span>samtools/1.22
+</pre></div>
+</div>
+<section id="contiguity-and-mis-assembly-with-quast">
+<h2>Contiguity and mis-assembly with QUAST<a class="headerlink" href="#contiguity-and-mis-assembly-with-quast" title="Link to this heading"></a></h2>
+<p><strong>QUAST</strong> reports the statistics you care about for a draft genome: number of
+contigs, total length, N50, largest contig, and GC content. Since this is a
+bacterium with no reference, run it reference-free.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>quast.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>QUAST<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>assembly.fasta
+</pre></div>
+</div>
+<p>Things to look for in <code class="docutils literal notranslate"><span class="pre">QUAST/report.txt</span></code>:</p>
+<ul class="simple">
+<li><p><strong>Total length</strong> should be close to the expected genome size for your
+organism (e.g. ~2.8 Mb for <em>Staphylococcus aureus</em>, ~4.6 Mb for
+<em>E. coli</em>). Substantially larger can indicate contamination; smaller can
+indicate insufficient coverage.</p></li>
+<li><p><strong># contigs</strong> — fewer is better. A few dozen to a couple hundred is typical
+for a short-read bacterial draft.</p></li>
+<li><p><strong>N50</strong> — the contig length at which 50% of the assembly is contained in
+contigs of that length or longer. Higher means a more contiguous assembly.</p></li>
+<li><p><strong>GC (%)</strong> should match the known GC content of the organism.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you have a closely related reference genome, pass it with <code class="docutils literal notranslate"><span class="pre">-r</span>
+<span class="pre">reference.fna</span></code> to additionally get mis-assembly counts, genome fraction,
+and mismatches per 100 kb. Without a reference, QUAST still reports all the
+contiguity statistics above.</p>
+</div>
+</section>
+<section id="core-gene-completeness-with-busco">
+<h2>Core-gene completeness with BUSCO<a class="headerlink" href="#core-gene-completeness-with-busco" title="Link to this heading"></a></h2>
+<p><strong>BUSCO</strong> assesses completeness by searching for conserved single-copy
+orthologs. A high proportion of <strong>complete, single-copy</strong> genes indicates a
+complete, non-redundant assembly; a high <strong>duplicated</strong> fraction can signal
+contamination or an unmerged strain mixture.</p>
+<p>Run BUSCO (already loaded with the assessment stack above) in genome mode
+against a bacterial lineage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>busco<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>assembly.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--out<span class="w"> </span>BUSCO<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>genome<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--auto-lineage-prok<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span><span class="m">28</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">genome</span></code> selects genome mode, and <code class="docutils literal notranslate"><span class="pre">--auto-lineage-prok</span></code> lets BUSCO pick
+the best prokaryotic lineage automatically. Results are written to the
+<code class="docutils literal notranslate"><span class="pre">BUSCO</span></code> folder; the short summary reports the familiar
+<code class="docutils literal notranslate"><span class="pre">C:98.5%[S:98.1%,D:0.4%]</span></code> style line.</p>
+</section>
+<section id="read-mapping-coverage-check">
+<h2>Read-mapping coverage check<a class="headerlink" href="#read-mapping-coverage-check" title="Link to this heading"></a></h2>
+<p>Mapping the trimmed reads back to the assembly confirms that the assembly is
+well-supported and reveals coverage anomalies (regions of zero coverage should
+not exist in a genome built from those reads).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bwa<span class="w"> </span>index<span class="w"> </span>assembly.fasta
+
+bwa<span class="w"> </span>mem<span class="w"> </span>-t<span class="w"> </span><span class="m">28</span><span class="w"> </span>assembly.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sample_R1.trimmed.fastq.gz<span class="w"> </span>sample_R2.trimmed.fastq.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="p">|</span><span class="w"> </span>samtools<span class="w"> </span>sort<span class="w"> </span>-@<span class="w"> </span><span class="m">28</span><span class="w"> </span>-o<span class="w"> </span>aln.sorted.bam<span class="w"> </span>-
+samtools<span class="w"> </span>index<span class="w"> </span>aln.sorted.bam
+
+samtools<span class="w"> </span>flagstat<span class="w"> </span>aln.sorted.bam<span class="w"> </span>&gt;<span class="w"> </span>mapping_stats.txt
+samtools<span class="w"> </span>depth<span class="w"> </span>-a<span class="w"> </span>aln.sorted.bam<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>awk<span class="w"> </span><span class="s1">'{sum+=$3; n++} END {print "Mean coverage:", sum/n}'</span>
+</pre></div>
+</div>
+<p>A high overall mapping rate (typically &gt;95%) and a mean coverage in the
+expected range confirm a healthy assembly.</p>
+</section>
+</section>
+<section id="ab-initio-gene-prediction">
+<h1>Ab initio gene prediction<a class="headerlink" href="#ab-initio-gene-prediction" title="Link to this heading"></a></h1>
+<p>With QC passed, annotate the genome. Bacterial gene prediction is
+well-suited to ab initio methods because genes are densely packed, mostly
+single-exon (no splicing), and have clear ribosome-binding signals.</p>
+<section id="predict-protein-coding-genes-with-prodigal">
+<h2>Predict protein-coding genes with Prodigal<a class="headerlink" href="#predict-protein-coding-genes-with-prodigal" title="Link to this heading"></a></h2>
+<p><strong>Prodigal</strong> is the standard ab initio gene finder for prokaryotes. It
+predicts coding sequences and outputs proteins, nucleotide CDS, and a GFF.</p>
+<p>This is the one step that needs <strong>gencore/2</strong>, so purge and switch trees:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/2
+module<span class="w"> </span>load<span class="w"> </span>prodigal/2.6.3
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>prodigal<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>assembly.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-a<span class="w"> </span>proteins.faa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-d<span class="w"> </span>genes.fna<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>gff<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>genes.gff<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span>single
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code> — the assembly.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-a</span> <span class="pre">proteins.faa</span></code> — predicted protein translations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">genes.fna</span></code> — predicted gene nucleotide sequences.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">gff</span> <span class="pre">-o</span> <span class="pre">genes.gff</span></code> — GFF-format coordinates.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">single</span></code> — single-genome mode (use <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">meta</span></code> for metagenomes).</p></li>
+</ul>
+</section>
+<section id="find-non-coding-features">
+<h2>Find non-coding features<a class="headerlink" href="#find-non-coding-features" title="Link to this heading"></a></h2>
+<p>Ab initio protein prediction ignores structural RNAs. Add ribosomal RNA genes
+with <strong>Barrnap</strong> and transfer RNAs with <strong>tRNAscan-SE</strong>. Both are back in
+gencore/3, so purge and switch trees again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>barrnap/1.10.6
+module<span class="w"> </span>load<span class="w"> </span>trnascan-se/2.0.13
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>barrnap<span class="w"> </span>--kingdom<span class="w"> </span>bac<span class="w"> </span>--threads<span class="w"> </span><span class="m">28</span><span class="w"> </span>assembly.fasta<span class="w"> </span>&gt;<span class="w"> </span>rRNA.gff
+
+tRNAscan-SE<span class="w"> </span>-B<span class="w"> </span>-o<span class="w"> </span>tRNA.out<span class="w"> </span>-f<span class="w"> </span>tRNA.structs<span class="w"> </span>assembly.fasta
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--kingdom</span> <span class="pre">bac</span></code> tells Barrnap to use the bacterial rRNA models, and <code class="docutils literal notranslate"><span class="pre">-B</span></code>
+puts tRNAscan-SE in bacterial mode.</p>
+</section>
+</section>
+<section id="combined-annotation-with-prokka">
+<h1>Combined annotation with Prokka<a class="headerlink" href="#combined-annotation-with-prokka" title="Link to this heading"></a></h1>
+<p>Running each tool by hand is instructive, but in practice <strong>Prokka</strong> wraps the
+whole prokaryotic annotation process into a single command: it calls Prodigal
+for CDS, Barrnap for rRNA, and tRNAscan-SE / Aragorn for tRNA, then assigns
+functional labels by searching the predicted proteins against curated
+databases. It emits standard, submission-ready files (GFF3, GenBank, FAA,
+FFN, and a summary).</p>
+<p>Prokka is in gencore/3 (the same tree the previous step left loaded, shown here
+in full so the step stands alone):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>prokka/1.14.6
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>prokka<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--outdir<span class="w"> </span>prokka<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prefix<span class="w"> </span>sample<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kingdom<span class="w"> </span>Bacteria<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--genus<span class="w"> </span>Staphylococcus<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--species<span class="w"> </span>aureus<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cpus<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--force<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>assembly.fasta
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--outdir</span> <span class="pre">prokka</span></code> / <code class="docutils literal notranslate"><span class="pre">--prefix</span> <span class="pre">sample</span></code> — output folder and filename
+prefix.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--kingdom</span> <span class="pre">Bacteria</span></code> — use the bacterial annotation mode.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--genus</span></code> / <code class="docutils literal notranslate"><span class="pre">--species</span></code> — used for labeling; supplying them also lets
+Prokka prioritize a genus-specific database if one is installed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cpus</span> <span class="pre">28</span></code> — CPU threads.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--force</span></code> — overwrite an existing output folder.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">prokka</span></code> folder contains:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sample.gff    # master annotation (all features, GFF3)
+sample.gbk    # GenBank format, for Artemis / submission
+sample.faa    # annotated protein sequences
+sample.ffn    # annotated CDS nucleotide sequences
+sample.tsv    # tab-delimited feature table with product names
+sample.txt    # summary counts (CDS, rRNA, tRNA, etc.)
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Prokka assigns product names from its bundled databases (UniProt, Pfam via
+HMMER, and others). Genes it cannot confidently label are annotated as
+<code class="docutils literal notranslate"><span class="pre">hypothetical</span> <span class="pre">protein</span></code> — a normal and expected fraction of any bacterial
+genome. The next step adds richer functional context to those.</p>
+</div>
+</section>
+<section id="functional-annotation-with-eggnog-mapper">
+<h1>Functional annotation with eggNOG-mapper<a class="headerlink" href="#functional-annotation-with-eggnog-mapper" title="Link to this heading"></a></h1>
+<p>Prokka gives you gene names and products; <strong>eggNOG-mapper</strong> adds
+orthology-based functional annotation — COG categories, GO terms, KEGG
+pathways and KOs, and EC numbers — by placing each protein into precomputed
+orthologous groups. This is what turns a list of genes into something you can
+analyze for pathway content and functional enrichment.</p>
+<p>eggNOG-mapper is in gencore/3, so it runs in the same tree as Prokka:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>all
+module<span class="w"> </span>load<span class="w"> </span>gencore/3
+module<span class="w"> </span>load<span class="w"> </span>eggnog-mapper/2.1.12
+</pre></div>
+</div>
+<p>Run it on the Prokka protein output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>emapper.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>prokka/sample.faa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>sample_eggnog<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--itype<span class="w"> </span>proteins<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cpu<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/path/to/eggnog-mapper-db
+</pre></div>
+</div>
+<p>Flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">prokka/sample.faa</span></code> — the annotated proteins from Prokka.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">sample_eggnog</span></code> — output prefix.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--itype</span> <span class="pre">proteins</span></code> — the input is protein sequences.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cpu</span> <span class="pre">28</span></code> — CPU threads.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--data_dir</span></code> — path to the downloaded eggNOG database (see the note below).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The eggNOG-mapper software is in gencore/3, but the eggNOG <strong>database</strong>
+(~50 GB) is separate and is <strong>not</strong> bundled with the module — you need to
+download it yourself before running <code class="docutils literal notranslate"><span class="pre">emapper.py</span></code>. Download the latest
+database (currently release 5.0.2) from the EMBL eggNOG server:</p>
+<p><a class="reference external" href="http://eggnog5.embl.de/download/emapperdb-5.0.2/">http://eggnog5.embl.de/download/emapperdb-5.0.2/</a></p>
+<p>Fetch it into a directory of your choice, then pass that directory to
+<code class="docutils literal notranslate"><span class="pre">--data_dir</span></code>, for example <code class="docutils literal notranslate"><span class="pre">--data_dir</span> <span class="pre">/path/to/eggnog-mapper-db</span></code>. The
+files must sit directly inside that directory. As a convenience,
+eggNOG-mapper also ships <code class="docutils literal notranslate"><span class="pre">download_eggnog_data.py</span></code>, which downloads and
+unpacks the same database for you:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>download_eggnog_data.py<span class="w"> </span>--data_dir<span class="w"> </span>/path/to/eggnog-mapper-db
+</pre></div>
+</div>
+<p>You only need to do this once; reuse the same <code class="docutils literal notranslate"><span class="pre">--data_dir</span></code> for all future
+runs.</p>
+</div>
+<p>The main output is <code class="docutils literal notranslate"><span class="pre">sample_eggnog.emapper.annotations</span></code>, a tab-delimited
+table with one row per protein giving its best orthologous group, predicted
+gene name, COG category, GO terms, KEGG KOs and pathways, and a free-text
+description. Join this back to the Prokka locus tags to build a fully
+annotated gene table for your genome.</p>
+</section>
+<section id="visualization">
+<h1>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h1>
+<p>With the assembly and annotations in hand, inspect them visually. These are
+interactive GUI tools — run them from a desktop session (or locally on your own
+machine) rather than a batch job.</p>
+<ul class="simple">
+<li><p><strong>Bandage</strong> — load <code class="docutils literal notranslate"><span class="pre">spades_assembly/assembly_graph.fastg</span></code> to view the
+assembly graph. Tangles and unresolved loops show where the assembly is
+fragmented, and separate circular components often correspond to plasmids.</p></li>
+<li><p><strong>Artemis</strong> — open <code class="docutils literal notranslate"><span class="pre">prokka/sample.gbk</span></code> to browse genes, strands, and
+products along the genome. Artemis is available as <code class="docutils literal notranslate"><span class="pre">artemis/18.2.0</span></code> in
+gencore/2.</p></li>
+<li><p><strong>IGV</strong> — load <code class="docutils literal notranslate"><span class="pre">assembly.fasta</span></code> with <code class="docutils literal notranslate"><span class="pre">aln.sorted.bam</span></code> and
+<code class="docutils literal notranslate"><span class="pre">prokka/sample.gff</span></code> to inspect read support and coverage under each
+annotated feature.</p></li>
+</ul>
+<p>This concludes the workshop. For questions or comments, raise an issue on the
+workshop repository.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="De Novo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="denovo_bacteria.html" class="btn btn-neutral float-right" title="De novo Bacterial Genome Assembly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+  <div class="footer-logos">
+    <a href="https://gencore.bio.nyu.edu/" target="_blank" rel="noopener">
+      <img src="../_static/gencore-logo.png" alt="NYU CGSB GenCore" />
+    </a>
+    <a href="https://cgsb.abudhabi.nyu.edu/" target="_blank" rel="noopener">
+      <img src="../_static/cgsb-logo.jpg" alt="NYUAD Center for Genomics and Systems Biology" />
+    </a>
+  </div>
+  <div class="footer-blurb">
+    
+    <p>&#169; Copyright 2026, Core Bioinformatics | NYUNY/NYUAD.</p>
+  </div>
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WS7W6KPMXY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WS7W6KPMXY', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

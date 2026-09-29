@@ -1,12 +1,5 @@
-.. _denovo-bacterial-assembly:
-
-=====================================================
 De novo Bacterial Genome Assembly
 =====================================================
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 2
 
 Overview
 ========
