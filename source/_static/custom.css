@@ -13,3 +13,29 @@
     margin-top: 1em;
     margin-bottom: 1.5em;
 }
+
+.footer-logos {
+    text-align: center;
+    margin: 0.3em 0;
+}
+
+.footer-logos a {
+    display: inline-block;
+    margin: 0 0.5em;
+    vertical-align: middle;
+}
+
+.footer-logos img {
+    height: 80px;
+    width: auto;
+    margin: 0 0 12px;
+}
+
+.footer-blurb,
+.footer-blurb p {
+    text-align: center;
+}
+
+.footer-blurb p {
+    font-size: 0.8em;
+}
