@@ -4,5 +4,6 @@ De Novo
 .. toctree::
    :maxdepth: 1
 
-   genome
+   denovo_genome
+   denovo_bacteria
    transcriptome
