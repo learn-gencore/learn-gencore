@@ -432,9 +432,9 @@ Keep only PASS variants and merge into a single known-sites VCF:
     gatk MergeVcfs \
         -I bootstrap_snps.pass.vcf \
         -I bootstrap_indels.pass.vcf \
-        -O bootstrap_known_sites.vcf
+        -O bootstrap_known_sites.vcf.gz
 
-    tabix -p vcf bootstrap_known_sites.vcf
+    tabix -p vcf bootstrap_known_sites.vcf.gz
 
 Step 3 - recalibrate
 ~~~~~~~~~~~~~~~~~~~~
@@ -444,7 +444,7 @@ Step 3 - recalibrate
     gatk BaseRecalibrator \
         -R reference.fa \
         -I dedup_reads.bam \
-        --known-sites bootstrap_known_sites.vcf \
+        --known-sites bootstrap_known_sites.vcf.gz \
         -O recal_data.table
 
     gatk ApplyBQSR \
