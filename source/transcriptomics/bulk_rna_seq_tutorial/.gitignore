@@ -1,0 +1,16 @@
+# Downloaded archive and raw sequencing files
+data/raw/*.tar
+data/raw/*.tar.gz
+data/raw/*.gz
+
+# Python/Jupyter state
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+.DS_Store
+
+# R session state and model objects
+.RData
+.Rhistory
+*.rds
