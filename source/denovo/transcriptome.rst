@@ -1,8 +1,5 @@
-.. _denovo-transcriptome:
-
-###########################################
 De Novo Transcriptome Assembly & Annotation
-###########################################
+===========================================
 
 De novo assembly, quality assessment, functional annotation, and expression
 quantification of a **transcriptome** from paired-end short reads (Illumina),
