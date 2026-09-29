@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>scATAC &mdash; Core Bioinformatics  NYUNY/NYUAD 1.0 documentation</title>
+  <title>Single-cell ATAC-seq analysis with PEAKVI &mdash; Core Bioinformatics  NYUNY/NYUAD 1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
@@ -53,7 +53,22 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Epigenomics</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="chipseq.html">ChIP-Seq Analysis: From Aligned BAM Files to Differential Binding &amp; Enrichment</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">scATAC</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Single-cell ATAC-seq analysis with PEAKVI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#learning-objectives">Learning objectives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-and-inputs">Dataset and inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-and-data-download">Environment and data download</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#review-cell-calling-and-fragment-structure">1. Review cell calling and fragment structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-and-interpret-per-nucleus-qc">2. Calculate and interpret per-nucleus QC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-a-peak-matrix-for-peakvi">3. Prepare a peak matrix for PEAKVI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-and-save-peakvi">4. Train and save PEAKVI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#audit-the-latent-representation">5. Audit the latent representation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-umap-and-leiden-clusters">6. Build UMAP and Leiden clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#call-candidate-cluster-associated-accessible-peaks">7. Call candidate cluster-associated accessible peaks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stopping-point-and-limitations">Stopping point and limitations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#common-pitfalls">Common pitfalls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
@@ -78,7 +93,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Epigenomics</a></li>
-      <li class="breadcrumb-item active">scATAC</li>
+      <li class="breadcrumb-item active">Single-cell ATAC-seq analysis with PEAKVI</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/epigenomics/scatac.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -88,9 +103,373 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="scatac">
-<h1>scATAC<a class="headerlink" href="#scatac" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+  <section id="single-cell-atac-seq-analysis-with-peakvi">
+<h1>Single-cell ATAC-seq analysis with PEAKVI<a class="headerlink" href="#single-cell-atac-seq-analysis-with-peakvi" title="Link to this heading"></a></h1>
+<p>This tutorial analyzes the public <a class="reference external" href="https://www.10xgenomics.com/datasets/10k-human-pbmcs-atac-v2-chromium-x-2-standard">10x Genomics 10k Human PBMCs, ATAC v2,
+Chromium X</a>
+dataset. It starts from Cell Ranger ATAC output, performs fragment-level and
+per-nucleus quality control, trains PEAKVI, and evaluates the resulting latent
+space with UMAP, Leiden clustering, technical covariates, and a
+cluster-associated accessibility example.</p>
+<p>The tutorial focuses on scATAC quality control, PEAKVI training, latent-space
+diagnostics, UMAP, and unsupervised clustering.
+It then uses the fitted PEAKVI model to call candidate marker peaks for one
+quality-reviewed cluster.</p>
+<p>The fully rendered notebook and reproducibility files are available here:</p>
+<ul class="simple">
+<li><p><a class="reference download internal" download="" href="../_downloads/7c86ac97ad606bebffd19f521da026b4/scatac_peakvi_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Rendered</span> <span class="pre">Jupyter</span> <span class="pre">notebook</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/562503ef2c8e705cf30a4507febe0b56/environment.yml"><code class="xref download docutils literal notranslate"><span class="pre">Conda</span> <span class="pre">environment</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/2bd292921e14a1cbc19196c4a9fab990/download_data.sh"><code class="xref download docutils literal notranslate"><span class="pre">Data</span> <span class="pre">download</span> <span class="pre">script</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/f46e6db8caec9fe80378a0464f44877e/prepare_fragment_metrics.sh"><code class="xref download docutils literal notranslate"><span class="pre">Fragment</span> <span class="pre">QC</span> <span class="pre">script</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/9192fd22dbe26e80bb4a5cf7c4674e0c/peakvi_workflow.py"><code class="xref download docutils literal notranslate"><span class="pre">PEAKVI</span> <span class="pre">workflow</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/6ba9edf4dfc619d0edc6b500ef2664fb/run_peakvi.py"><code class="xref download docutils literal notranslate"><span class="pre">Complete</span> <span class="pre">analysis</span> <span class="pre">runner</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/18747c6252e4abe8ce2f758ec4eaab7f/build_notebook.py"><code class="xref download docutils literal notranslate"><span class="pre">Notebook</span> <span class="pre">builder</span></code></a></p></li>
+</ul>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>By the end of this tutorial, you should be able to:</p>
+<ul class="simple">
+<li><p>identify the Cell Ranger ATAC files used for secondary analysis;</p></li>
+<li><p>interpret barcode rank, fragment periodicity, FRiP, TSS-associated fragments,
+nucleosome signal, duplicate fraction, and mitochondrial fraction;</p></li>
+<li><p>create and report QC flags from the observed dataset;</p></li>
+<li><p>preserve raw peak counts in an AnnData layer;</p></li>
+<li><p>select a peak feature set for a teaching-scale PEAKVI model;</p></li>
+<li><p>train, save, and reload PEAKVI;</p></li>
+<li><p>construct a neighbor graph, UMAP, and Leiden clusters from <code class="docutils literal notranslate"><span class="pre">X_peakvi</span></code>;</p></li>
+<li><p>audit the latent space and clusters for residual technical structure;</p></li>
+<li><p>call and interpret candidate cluster-associated accessible peaks.</p></li>
+</ul>
+</section>
+<section id="dataset-and-inputs">
+<h2>Dataset and inputs<a class="headerlink" href="#dataset-and-inputs" title="Link to this heading"></a></h2>
+<p>The example contains 10,273 nuclei from one healthy PBMC donor. Libraries were
+generated with 10x Single Cell ATAC v2 chemistry and analyzed with Cell Ranger
+ATAC 2.1.0 against GRCh38. The dataset is distributed under <a class="reference external" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+<p>The workflow uses:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">filtered_peak_bc_matrix.h5</span></code></dt><dd><p>Peak-by-barcode counts for called nuclei.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">singlecell.csv</span></code></dt><dd><p>Per-barcode Cell Ranger counts and cell-calling status. It includes
+background barcodes, so it can reconstruct a barcode-rank curve.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">peak_annotation.tsv</span></code></dt><dd><p>Positional peak annotations supplied by 10x. These are descriptive and do
+not establish regulatory peak-to-gene relationships.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fragments.tsv.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">fragments.tsv.gz.tbi</span></code></dt><dd><p>Barcoded fragments and their Tabix index. The fragment file is approximately
+2.3 GB and is used to calculate fragment periodicity and nucleosome signal.</p>
+</dd>
+</dl>
+<p>The 10x fragment specification is documented in the <a class="reference external" href="https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file">Cell Ranger ATAC fragment
+guide</a>.</p>
+</section>
+<section id="environment-and-data-download">
+<h2>Environment and data download<a class="headerlink" href="#environment-and-data-download" title="Link to this heading"></a></h2>
+<p>Create the environment and download the public inputs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>source/epigenomics/scatac_tutorial
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>gencore-scatac-peakvi
+
+scripts/download_data.sh
+scripts/prepare_fragment_metrics.sh
+</pre></div>
+</div>
+<p>The raw downloads and trained model are ignored by Git. The notebook, scripts,
+environment, and rendered figures remain versioned.</p>
+</section>
+<section id="review-cell-calling-and-fragment-structure">
+<h2>1. Review cell calling and fragment structure<a class="headerlink" href="#review-cell-calling-and-fragment-structure" title="Link to this heading"></a></h2>
+<p>Cell Ranger calls nuclei from the number of high-quality fragments associated
+with each barcode. A barcode-rank plot helps reveal whether called nuclei form
+a clear signal-rich population above the background.</p>
+<figure class="align-center" id="id1">
+<img alt="Barcode-rank curve showing called PBMC nuclei and background barcodes." src="../_images/01_barcode_rank.png" />
+<figcaption>
+<p><span class="caption-text">Barcode rank based on high-quality fragments. The matrix contains only the
+called nuclei, while <code class="docutils literal notranslate"><span class="pre">singlecell.csv</span></code> also contains background barcodes.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>ATAC fragment sizes should show a nucleosome-free component and periodic
+mono- and di-nucleosomal structure. The included preprocessing script streams
+the fragment file and records the distribution without expanding it on disk.</p>
+<figure class="align-center" id="id2">
+<img alt="PBMC ATAC fragment-length distribution with nucleosomal periodicity." src="../_images/02_fragment_length.png" />
+<figcaption>
+<p><span class="caption-text">Fragment lengths for called nuclei. Dashed lines mark 147 and 294 base
+pairs, which are used to summarize nucleosome-free and mononucleosomal
+fragments.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="calculate-and-interpret-per-nucleus-qc">
+<h2>2. Calculate and interpret per-nucleus QC<a class="headerlink" href="#calculate-and-interpret-per-nucleus-qc" title="Link to this heading"></a></h2>
+<p>The tutorial reviews these metrics jointly:</p>
+<ul class="simple">
+<li><p><strong>High-quality fragments:</strong> usable fragments passing Cell Ranger filters.</p></li>
+<li><p><strong>FRiP:</strong> peak-region fragments divided by high-quality fragments.</p></li>
+<li><p><strong>TSS fraction:</strong> fragments assigned near annotated transcription start
+sites divided by high-quality fragments.</p></li>
+<li><p><strong>Nucleosome signal:</strong> mononucleosomal fragments divided by nucleosome-free
+fragments.</p></li>
+<li><p><strong>Duplicate fraction:</strong> duplicate reads divided by total reads.</p></li>
+<li><p><strong>Mitochondrial fraction:</strong> mitochondrial reads divided by total reads.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">tss_fraction</span></code> is not the standard aggregate TSS enrichment score. The
+latter is calculated from a TSS-centered insertion profile. The names and
+formulas of QC metrics must be reported precisely.</p>
+</div>
+<p>The example uses the observed lower 1 percent tails of fragment count, FRiP,
+and TSS fraction; the upper 0.5 percent tail of fragment count; and the upper 1
+percent tail of nucleosome signal as review thresholds. These are
+dataset-specific starting points, not universal biological cutoffs.</p>
+<figure class="align-center" id="id3">
+<img alt="Distributions of PBMC scATAC quality-control metrics and review thresholds." src="../_images/03_qc_distributions.png" />
+<figcaption>
+<p><span class="caption-text">QC distributions. Dashed lines show the thresholds calculated from this
+dataset.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id4">
+<img alt="Relationships among fragment depth, FRiP, TSS fraction, and nucleosome signal." src="../_images/04_qc_relationships.png" />
+<figcaption>
+<p><span class="caption-text">Joint review of QC metrics. Flagged nuclei are shown in red. A nucleus can
+fail more than one criterion.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>QC flags are retained in <code class="docutils literal notranslate"><span class="pre">adata.obs</span></code> before filtering:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">thresholds</span> <span class="o">=</span> <span class="n">choose_qc_thresholds</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="n">add_qc_flags</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span>
+    <span class="p">[</span><span class="s2">"passed_filters"</span><span class="p">,</span> <span class="s2">"frip"</span><span class="p">,</span> <span class="s2">"tss_fraction"</span><span class="p">,</span> <span class="s2">"nucleosome_signal"</span><span class="p">,</span>
+     <span class="s2">"qc_pass"</span><span class="p">,</span> <span class="s2">"qc_reason"</span><span class="p">]</span>
+<span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This preserves the decision trail and makes before-and-after comparisons
+possible. Avoid deleting cells as soon as one metric is calculated.</p>
+</section>
+<section id="prepare-a-peak-matrix-for-peakvi">
+<h2>3. Prepare a peak matrix for PEAKVI<a class="headerlink" href="#prepare-a-peak-matrix-for-peakvi" title="Link to this heading"></a></h2>
+<p>The example keeps nuclei passing all tutorial flags and peaks detected in at
+least 20 retained nuclei. For the rendered CPU example, it then keeps the
+50,000 peaks with the largest binary accessibility variance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">peakvi_adata</span> <span class="o">=</span> <span class="n">filter_for_peakvi</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">min_cells_per_peak</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">max_peaks</span><span class="o">=</span><span class="mi">50_000</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Raw counts remain available in <code class="docutils literal notranslate"><span class="pre">peakvi_adata.layers[&quot;counts&quot;]</span></code>. Feature
+selection is a reported compute choice because it changes the model input. A
+larger GPU analysis may retain more peaks after checking memory, convergence,
+and sensitivity to the feature rule.</p>
+</section>
+<section id="train-and-save-peakvi">
+<h2>4. Train and save PEAKVI<a class="headerlink" href="#train-and-save-peakvi" title="Link to this heading"></a></h2>
+<p>PEAKVI models the probability that a genomic region is accessible in each
+nucleus while learning cell-level and region-level detection effects. It
+accepts binary or count input. This tutorial supplies unmodified Cell Ranger
+peak counts.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scvi</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">PEAKVI</span><span class="o">.</span><span class="n">setup_anndata</span><span class="p">(</span>
+    <span class="n">peakvi_adata</span><span class="p">,</span>
+    <span class="n">layer</span><span class="o">=</span><span class="s2">"counts"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">scvi</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">PEAKVI</span><span class="p">(</span>
+    <span class="n">peakvi_adata</span><span class="p">,</span>
+    <span class="n">n_latent</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"results/models/peakvi_pbmc"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">peakvi_adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">"X_peakvi"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_latent_representation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>PEAKVI is substantially faster on a GPU. The official <a class="reference external" href="https://docs.scvi-tools.org/en/latest/tutorials/notebooks/atac/PeakVI.html">scvi-tools PEAKVI guide</a>
+should be checked for current API and hardware guidance.</p>
+<figure class="align-center" id="id5">
+<img alt="PEAKVI training and validation loss across epochs." src="../_images/05_peakvi_training.png" />
+<figcaption>
+<p><span class="caption-text">PEAKVI convergence on the filtered PBMC peak matrix. Training loss alone
+does not establish that the representation is biologically meaningful.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="audit-the-latent-representation">
+<h2>5. Audit the latent representation<a class="headerlink" href="#audit-the-latent-representation" title="Link to this heading"></a></h2>
+<p>After training, correlate every latent dimension with technical metrics. This
+step asks whether a dimension still mainly follows fragment depth or another
+QC feature.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">correlations</span> <span class="o">=</span> <span class="n">latent_qc_correlations</span><span class="p">(</span><span class="n">peakvi_adata</span><span class="p">)</span>
+<span class="n">correlations</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+    <span class="s2">"correlation"</span><span class="p">,</span>
+    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">values</span><span class="p">:</span> <span class="n">values</span><span class="o">.</span><span class="n">abs</span><span class="p">(),</span>
+    <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id6">
+<img alt="Correlations between PEAKVI latent dimensions and technical QC metrics." src="../_images/06_peakvi_latent_qc.png" />
+<figcaption>
+<p><span class="caption-text">Pearson correlations between each PEAKVI dimension and four technical
+summaries. Large correlations should be investigated before downstream
+interpretation.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="build-umap-and-leiden-clusters">
+<h2>6. Build UMAP and Leiden clusters<a class="headerlink" href="#build-umap-and-leiden-clusters" title="Link to this heading"></a></h2>
+<p>The neighbor graph, UMAP, and Leiden clusters are calculated from
+<code class="docutils literal notranslate"><span class="pre">X_peakvi</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+    <span class="n">peakvi_adata</span><span class="p">,</span>
+    <span class="n">use_rep</span><span class="o">=</span><span class="s2">"X_peakvi"</span><span class="p">,</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">metric</span><span class="o">=</span><span class="s2">"cosine"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">peakvi_adata</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span>
+    <span class="n">peakvi_adata</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">key_added</span><span class="o">=</span><span class="s2">"leiden_peakvi"</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id7">
+<img alt="PEAKVI PBMC UMAP colored by Leiden cluster and QC metrics." src="../_images/07_peakvi_umap.png" />
+<figcaption>
+<p><span class="caption-text">The same PEAKVI UMAP colored by Leiden cluster, fragment depth, FRiP, and
+TSS fraction. This diagnostic makes technical gradients visible.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id8">
+<img alt="QC metrics summarized across PEAKVI Leiden clusters." src="../_images/08_peakvi_cluster_qc.png" />
+<figcaption>
+<p><span class="caption-text">QC metrics by cluster. A cluster dominated by a technical tail should be
+investigated before it is treated as biological.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="call-candidate-cluster-associated-accessible-peaks">
+<h2>7. Call candidate cluster-associated accessible peaks<a class="headerlink" href="#call-candidate-cluster-associated-accessible-peaks" title="Link to this heading"></a></h2>
+<p>PEAKVI can compare its estimated accessibility probabilities between groups
+at individual peaks. The rendered example compares cluster 0, the largest
+cluster after per-nucleus QC and review of the diagnostics above, with all
+other retained nuclei.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">da_results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">differential_accessibility</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">peakvi_adata</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">"leiden_peakvi"</span><span class="p">,</span>
+    <span class="n">group1</span><span class="o">=</span><span class="p">[</span><span class="s2">"0"</span><span class="p">],</span>
+    <span class="n">group2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"change"</span><span class="p">,</span>
+    <span class="n">delta</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">fdr_target</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">batch_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_permutation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">n_samples_overall</span><span class="o">=</span><span class="mi">5_000</span><span class="p">,</span>
+    <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">is_da_fdr</span></code> is PEAKVI’s posterior expected-FDR classification. It is not a
+donor-replicated frequentist test. In the scvi-tools implementation used here,
+<code class="docutils literal notranslate"><span class="pre">delta</span></code> is applied to a posterior log2 accessibility change calculated with
+an estimated pseudocount. It is not an absolute five-percentage-point cutoff.
+The returned <code class="docutils literal notranslate"><span class="pre">effect_size</span></code> is a separate absolute probability difference:
+estimated accessibility in the comparison group minus accessibility in the
+target group. A negative effect therefore indicates greater accessibility in
+cluster 0.</p>
+<p>The rendered comparison uses 5,000 posterior samples. At 50,000 peaks this can
+require several gigabytes of memory. A smaller setting such as 500 is useful
+for a quick preview, but thresholded calls can change and final results should
+use the documented full setting.</p>
+<p>For the compact teaching table, the workflow additionally requires an
+estimated effect of at least 0.10 toward cluster 0, an empirical effect of at
+least 0.05 in the same direction, and empirical detection in at least 5 percent
+of cluster 0 nuclei. These are transparent reporting filters rather than part
+of PEAKVI’s expected-FDR calculation.</p>
+<figure class="align-center" id="id9">
+<img alt="PEAKVI differential accessibility between cluster 0 and all other retained nuclei." src="../_images/09_peakvi_differential_accessibility.png" />
+<figcaption>
+<p><span class="caption-text">PEAKVI estimated accessibility differences for the 50,000 tested peaks.
+Among the posterior expected-FDR calls, blue points are more accessible in
+cluster 0 and orange points are more accessible in the other clusters.
+Noncalled peaks are gray. The second panel shows peaks with the largest
+estimated differences.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The nearest-gene field supplied by 10x is included to help inspect results. It
+is a positional annotation and does not demonstrate that a peak regulates that
+gene.</p>
+<p>The reference group is a heterogeneous mixture and includes clusters 15 and
+16, whose QC profiles warrant further review. The marker list is therefore
+specific to this contrast and should be checked in a sensitivity analysis that
+excludes technically concerning clusters before biological interpretation.</p>
+</section>
+<section id="stopping-point-and-limitations">
+<h2>Stopping point and limitations<a class="headerlink" href="#stopping-point-and-limitations" title="Link to this heading"></a></h2>
+<p>The output is a QC-audited PEAKVI representation and unsupervised
+clusters, plus candidate cluster-associated accessible peaks. Cluster numbers
+are not cell types, and biological annotation requires additional evidence.</p>
+<p>In the rendered run, clusters 15 and 16 are the two smallest groups and have
+lower fragment depth, FRiP, and TSS fraction than the main groups. Cluster 15
+also has an unusually high nucleosome signal. These groups remain visible to
+show why QC must be repeated after representation learning. They are candidates
+for a documented filtering sensitivity analysis before cell-type annotation,
+not evidence of rare biological populations by themselves.</p>
+<p>This dataset contains one donor. It can demonstrate QC, representation
+learning, and descriptive marker accessibility within this sample. It cannot
+estimate biological batch effects or support donor-level or condition-level
+differential accessibility. Cells are not independent biological replicates.
+Condition comparisons require independent donors and a sample-aware method,
+such as cell-type-specific pseudobulk analysis.</p>
+</section>
+<section id="common-pitfalls">
+<h2>Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Copying fixed QC thresholds from another tissue or chemistry.</p></li>
+<li><p>Treating a Cell Ranger cell call as a complete QC decision.</p></li>
+<li><p>Calling <code class="docutils literal notranslate"><span class="pre">tss_fraction</span></code> a TSS enrichment score.</p></li>
+<li><p>Removing rare nuclei because their distributions differ from abundant cells.</p></li>
+<li><p>Forgetting to record peak filtering and feature selection.</p></li>
+<li><p>Treating UMAP distances as quantitative effect sizes.</p></li>
+<li><p>Naming clusters as cell types without marker or reference evidence.</p></li>
+<li><p>Treating cluster-associated peaks as condition-level inference.</p></li>
+<li><p>Forgetting that clustering and marker discovery use the same selected peak
+matrix and are therefore partly circular.</p></li>
+<li><p>Treating a nearest-gene annotation as a validated regulatory relationship.</p></li>
+<li><p>Assuming model convergence removes all technical structure.</p></li>
+<li><p>Running a large PEAKVI model on a CPU without planning runtime and memory.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Ashuach T, Reidenbach DA, Gayoso A, Yosef N. PeakVI: a deep generative model
+for single-cell chromatin accessibility analysis. <em>Cell Reports Methods</em>
+2022. <a class="reference external" href="https://doi.org/10.1016/j.crmeth.2022.100182">doi:10.1016/j.crmeth.2022.100182</a>.</p></li>
+<li><p>Gayoso A and colleagues. A Python library for probabilistic analysis of
+single-cell omics data. <em>Nature Biotechnology</em> 2022.
+<a class="reference external" href="https://doi.org/10.1038/s41587-021-01206-w">doi:10.1038/s41587-021-01206-w</a>.</p></li>
+<li><p>10x Genomics. 10k Human PBMCs, ATAC v2, Chromium X, Cell Ranger ATAC 2.1.0,
+published March 29, 2022.</p></li>
+<li><p>Best practices for differential accessibility analysis in single-cell
+epigenomics. <em>Nature Communications</em> 2024.
+<a class="reference external" href="https://doi.org/10.1038/s41467-024-53089-5">doi:10.1038/s41467-024-53089-5</a>.</p></li>
+</ul>
+</section>
 </section>
 
 
