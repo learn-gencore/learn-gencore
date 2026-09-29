@@ -2,7 +2,8 @@ Whole Genome Sequencing
 =======================
 
 Germline short-variant calling (SNPs and small indels) from whole-genome
-sequencing of **non-model organisms**, run on locally installed HPC modules.
+sequencing of **non-model organisms**, with every tool run from a container
+image.
 
 Because non-model organisms rarely have a trusted known-variants VCF
 (dbSNP, 1000 Genomes, etc.), this pipeline departs from the standard
@@ -52,24 +53,61 @@ Steps
 Environment
 -----------
 
-All commands assume the following modules are loaded. Exact names depend
-on your HPC installation. Substitute the versions available to you.
+Each tool in this tutorial runs from a container image, so you don't need
+to install the software yourself: you only need a container runtime. On
+NYU HPC (and most clusters) that is **Apptainer** (formerly Singularity);
+on your own machine you can use **Docker** instead (see the note at the
+end).
+
+Pull each image once (they are cached after the first pull). Substitute
+the tags for the versions available to you.
 
 .. code:: bash
 
-    module purge
-    module load bwa/<version>
-    module load samtools/<version>
-    module load bcftools/<version>
-    module load gatk/4.x
-    module load htslib/<version>    # for tabix
-    module load snpeff/<version>
+    apptainer pull bwa.sif       docker://quay.io/biocontainers/bwa:0.7.17--h5bf99c6_8
+    apptainer pull samtools.sif  docker://quay.io/biocontainers/samtools:1.24--h9dcdb79_1
+    apptainer pull bcftools.sif  docker://quay.io/biocontainers/bcftools:1.11--h7c999a4_0
+    apptainer pull gatk.sif      docker://broadinstitute/gatk:4.2.4.1
+    apptainer pull htslib.sif    docker://quay.io/biocontainers/htslib:1.19.1--h81da01d_1
+    apptainer pull snpeff.sif    docker://quay.io/biocontainers/snpeff:4.3.1k--0
+
+Put a function for each tool in a file, say ``tools.sh``:
+
+.. code:: bash
+
+    # tools.sh
+    BIND="-B /scratch -B /projects"   # bind the paths where your data lives
+    bwa()          { apptainer exec $BIND bwa.sif bwa "$@"; }
+    samtools()     { apptainer exec $BIND samtools.sif samtools "$@"; }
+    bcftools()     { apptainer exec $BIND bcftools.sif bcftools "$@"; }
+    plot-vcfstats(){ apptainer exec $BIND bcftools.sif plot-vcfstats "$@"; }
+    gatk()         { apptainer exec $BIND gatk.sif gatk "$@"; }
+    tabix()        { apptainer exec $BIND htslib.sif tabix "$@"; }
+    snpEff()       { apptainer exec $BIND snpeff.sif snpEff "$@"; }
+
+Load them into your shell:
+
+.. code:: bash
+
+    source tools.sh
+
+Now every command in this tutorial (``bwa mem ...``, ``gatk HaplotypeCaller
+...``, ``tabix -p vcf ...``) works exactly as written. If you run any of
+these commands inside a batch/Slurm script instead of interactively, add
+``source tools.sh`` at the top of that script too.
 
 .. note::
 
-   ``bwa-mem2`` is a drop-in faster replacement for ``bwa mem`` and
-   produces identical alignments. If your HPC provides it, substitute
-   ``bwa-mem2 mem`` for ``bwa mem`` in the alignment step below.
+   Using Docker instead? The tutorial commands are identical; only the
+   wrapper differs. Skip the ``apptainer pull`` step and define each
+   function with ``docker run``, mounting the paths your data lives on:
+
+   .. code:: bash
+
+       bwa() {
+         docker run --rm -v "$PWD":"$PWD" -w "$PWD" \
+           quay.io/biocontainers/bwa:0.7.17--h5bf99c6_8 bwa "$@"
+       }
 
 Inputs
 ------
@@ -85,6 +123,15 @@ Before running the pipeline you need:
   prefix for derived filenames. We use ``sample_1`` throughout.
 
 All other files in the pipeline are produced by the commands below.
+
+Getting the data
+----------------
+
+The example data used throughout this tutorial (a human GRCh38
+chromosome 20 subset: the reference genome and the paired-end reads) is
+available from `this shared Google Drive folder
+<https://drive.google.com/drive/folders/1CApkipw_Cs-iZYsq9yIsgAfOStvLdFIr>`_.
+Download the files into your working directory to follow along.
 
 Preprocessing
 -------------
@@ -385,9 +432,9 @@ Keep only PASS variants and merge into a single known-sites VCF:
     gatk MergeVcfs \
         -I bootstrap_snps.pass.vcf \
         -I bootstrap_indels.pass.vcf \
-        -O bootstrap_known_sites.vcf
+        -O bootstrap_known_sites.vcf.gz
 
-    tabix -p vcf bootstrap_known_sites.vcf
+    tabix -p vcf bootstrap_known_sites.vcf.gz
 
 Step 3 - recalibrate
 ~~~~~~~~~~~~~~~~~~~~
@@ -397,7 +444,7 @@ Step 3 - recalibrate
     gatk BaseRecalibrator \
         -R reference.fa \
         -I dedup_reads.bam \
-        --known-sites bootstrap_known_sites.vcf \
+        --known-sites bootstrap_known_sites.vcf.gz \
         -O recal_data.table
 
     gatk ApplyBQSR \
