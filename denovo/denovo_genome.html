@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="De novo Bacterial Genome Assembly" href="denovo_bacteria.html" />
+    <link rel="next" title="De Novo Transcriptome Assembly &amp; Annotation" href="transcriptome.html" />
     <link rel="prev" title="De Novo" href="index.html" /> 
 </head>
 
@@ -54,56 +54,35 @@
 <li class="toctree-l1"><a class="reference internal" href="../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../programming/index.html">Programming</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">De Novo</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">De Novo Genome Assembly &amp; Annotation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#steps">Steps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-the-data">Getting the data</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">De Novo Genome Assembly &amp; Annotation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-overview">Pipeline overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-data">Getting the data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#connecting-from-macos-linux">Connecting from macOS / Linux</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#connecting-from-windows">Connecting from Windows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-the-sample-data">Download the sample data</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#quality-control-and-trimming">Quality control and trimming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quality-control-and-trimming">Quality control and trimming</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#inspect-raw-read-quality">Inspect raw read quality</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trim-with-fastp">Trim with fastp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#aggregate-reports-with-multiqc">Aggregate reports with MultiQC</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#assembly-with-spades">Assembly with SPAdes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#assembly-with-spades">Assembly with SPAdes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-downsample-very-deep-data">Optional: downsample very deep data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run-the-assembly">Run the assembly</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filter-very-short-low-coverage-contigs">Filter very short, low-coverage contigs</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#assessing-the-assembly-quality">Assessing the assembly quality</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#assessing-the-assembly-quality">Assessing the assembly quality</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#contiguity-and-mis-assembly-with-quast">Contiguity and mis-assembly with QUAST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#core-gene-completeness-with-busco">Core-gene completeness with BUSCO</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#read-mapping-coverage-check">Read-mapping coverage check</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#ab-initio-gene-prediction">Ab initio gene prediction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ab-initio-gene-prediction">Ab initio gene prediction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#predict-protein-coding-genes-with-prodigal">Predict protein-coding genes with Prodigal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#find-non-coding-features">Find non-coding features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combined-annotation-with-prokka">Combined annotation with Prokka</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functional-annotation-with-eggnog-mapper">Functional annotation with eggNOG-mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualization">Visualization</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#combined-annotation-with-prokka">Combined annotation with Prokka</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#functional-annotation-with-eggnog-mapper">Functional annotation with eggNOG-mapper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#visualization">Visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html">De novo Bacterial Genome Assembly</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#example-dataset">Example Dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-1-quality-assessment-with-fastqc">Step 1: Quality Assessment with FastQC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-2-quality-and-adapter-trimming-with-fastp">Step 2: Quality and Adapter Trimming with fastp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-3-re-assessment-of-trimmed-reads">Step 3: Re-Assessment of Trimmed Reads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-4-de-novo-assembly-with-spades">Step 4: De Novo Assembly with SPAdes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-5-assembly-quality-assessment">Step 5: Assembly Quality Assessment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-6-genome-annotation">Step 6: Genome Annotation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#step-7-additional-value-added-steps">Step 7: Additional Value-Added Steps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#summary">Summary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="denovo_bacteria.html#further-reading">Further Reading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="transcriptome.html">De Novo Transcriptome Assembly &amp; Annotation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="transcriptome.html#pipeline-overview">Pipeline overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="transcriptome.html#steps">Steps</a></li>
@@ -169,9 +148,8 @@ but every step works on any standalone machine (server, laptop, desktop)
 provided the software stack below is installed. We recommend <code class="docutils literal notranslate"><span class="pre">conda</span></code> for
 installing and maintaining bioinformatics software.</p>
 </div>
-</section>
 <section id="pipeline-overview">
-<h1>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h1>
+<h2>Pipeline overview<a class="headerlink" href="#pipeline-overview" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id1">
 <img alt="De novo genome assembly and annotation pipeline" src="../_images/denovo-genome-workflow.png" />
 <figcaption>
@@ -185,7 +163,7 @@ the hub: every downstream step consumes it.</span><a class="headerlink" href="#i
 </figure>
 </section>
 <section id="steps">
-<h1>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h1>
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Quality-check and trim the reads (<strong>FastQC</strong>, <strong>fastp</strong>, <strong>MultiQC</strong>).</p></li>
 <li><p>Assemble the trimmed reads into contigs with <strong>SPAdes</strong>.</p></li>
@@ -199,7 +177,7 @@ completeness (<strong>BUSCO</strong>), and read-mapping coverage.</p></li>
 </ol>
 </section>
 <section id="environment">
-<h1>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h1>
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
 <p>The gencore software stack is split across two module trees, <strong>gencore/2</strong> and
 <strong>gencore/3</strong>, and they <strong>cannot be loaded at the same time</strong>. Whenever the
 pipeline crosses from a tool in one tree to a tool in the other, reset the
@@ -312,7 +290,7 @@ versions, so verify flags against the version you actually load.</p>
 </ul>
 </section>
 <section id="inputs">
-<h1>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h1>
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
 <p>Before running the pipeline you need:</p>
 <ul class="simple">
 <li><p><strong>Paired-end sequencing reads</strong> (<code class="docutils literal notranslate"><span class="pre">sample_R1.fastq.gz</span></code> and
@@ -333,9 +311,10 @@ downsample step is included).</p></li>
 GFF3, GenBank (GBK).</p>
 </section>
 <section id="getting-the-data">
-<h1>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h1>
+<h2>Getting the data<a class="headerlink" href="#getting-the-data" title="Link to this heading"></a></h2>
 <p>We use the NYUAD HPC cluster. Connect, move to your scratch space, and set up
 a working directory.</p>
+</section>
 <section id="connecting-from-macos-linux">
 <h2>Connecting from macOS / Linux<a class="headerlink" href="#connecting-from-macos-linux" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
@@ -392,9 +371,8 @@ FASTQ files in as <code class="docutils literal notranslate"><span class="pre">s
 this download.</p>
 </div>
 </section>
-</section>
 <section id="quality-control-and-trimming">
-<h1>Quality control and trimming<a class="headerlink" href="#quality-control-and-trimming" title="Link to this heading"></a></h1>
+<h2>Quality control and trimming<a class="headerlink" href="#quality-control-and-trimming" title="Link to this heading"></a></h2>
 <p>Almost all sequencing analysis begins with quality checking and trimming to
 remove low-quality bases and adapter contamination. This matters especially for
 assembly: adapter read-through and low-quality tails create false branches in
@@ -408,6 +386,7 @@ module<span class="w"> </span>load<span class="w"> </span>fastp/0.24.0
 module<span class="w"> </span>load<span class="w"> </span>multiqc/1.28
 </pre></div>
 </div>
+</section>
 <section id="inspect-raw-read-quality">
 <h2>Inspect raw read quality<a class="headerlink" href="#inspect-raw-read-quality" title="Link to this heading"></a></h2>
 <p>Run <strong>FastQC</strong> on both read files:</p>
@@ -462,9 +441,8 @@ reports into one page:</p>
 <p>Re-run FastQC on the trimmed reads if you want a before/after comparison; the
 adapter-content and per-base-quality plots should visibly improve.</p>
 </section>
-</section>
 <section id="assembly-with-spades">
-<h1>Assembly with SPAdes<a class="headerlink" href="#assembly-with-spades" title="Link to this heading"></a></h1>
+<h2>Assembly with SPAdes<a class="headerlink" href="#assembly-with-spades" title="Link to this heading"></a></h2>
 <p><strong>SPAdes</strong> is a De Bruijn graph assembler that works well for bacterial
 isolates. It runs read error correction, then assembles across multiple k-mer
 sizes and merges the results. For an isolate genome, the <code class="docutils literal notranslate"><span class="pre">--isolate</span></code> flag
@@ -476,6 +454,7 @@ module<span class="w"> </span>load<span class="w"> </span>spades/4.3.0
 module<span class="w"> </span>load<span class="w"> </span>seqkit/2.10.1
 </pre></div>
 </div>
+</section>
 <section id="optional-downsample-very-deep-data">
 <h2>Optional: downsample very deep data<a class="headerlink" href="#optional-downsample-very-deep-data" title="Link to this heading"></a></h2>
 <p>The sample run is sequenced far deeper than SPAdes needs. Excess coverage slows
@@ -540,9 +519,8 @@ artefacts. A common cleanup is to keep only contigs above a length threshold
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">assembly.fasta</span></code> as the input to all downstream steps.</p>
 </section>
-</section>
 <section id="assessing-the-assembly-quality">
-<h1>Assessing the assembly quality<a class="headerlink" href="#assessing-the-assembly-quality" title="Link to this heading"></a></h1>
+<h2>Assessing the assembly quality<a class="headerlink" href="#assessing-the-assembly-quality" title="Link to this heading"></a></h2>
 <p>Before annotating, confirm the assembly is sound. We use three complementary
 angles: contiguity and mis-assembly statistics, core-gene completeness, and
 how well the reads map back. All three tools are in gencore/3, so load them
@@ -555,6 +533,7 @@ module<span class="w"> </span>load<span class="w"> </span>bwa/0.7.19
 module<span class="w"> </span>load<span class="w"> </span>samtools/1.22
 </pre></div>
 </div>
+</section>
 <section id="contiguity-and-mis-assembly-with-quast">
 <h2>Contiguity and mis-assembly with QUAST<a class="headerlink" href="#contiguity-and-mis-assembly-with-quast" title="Link to this heading"></a></h2>
 <p><strong>QUAST</strong> reports the statistics you care about for a draft genome: number of
@@ -627,12 +606,12 @@ samtools<span class="w"> </span>depth<span class="w"> </span>-a<span class="w"> 
 <p>A high overall mapping rate (typically &gt;95%) and a mean coverage in the
 expected range confirm a healthy assembly.</p>
 </section>
-</section>
 <section id="ab-initio-gene-prediction">
-<h1>Ab initio gene prediction<a class="headerlink" href="#ab-initio-gene-prediction" title="Link to this heading"></a></h1>
+<h2>Ab initio gene prediction<a class="headerlink" href="#ab-initio-gene-prediction" title="Link to this heading"></a></h2>
 <p>With QC passed, annotate the genome. Bacterial gene prediction is
 well-suited to ab initio methods because genes are densely packed, mostly
 single-exon (no splicing), and have clear ribosome-binding signals.</p>
+</section>
 <section id="predict-protein-coding-genes-with-prodigal">
 <h2>Predict protein-coding genes with Prodigal<a class="headerlink" href="#predict-protein-coding-genes-with-prodigal" title="Link to this heading"></a></h2>
 <p><strong>Prodigal</strong> is the standard ab initio gene finder for prokaryotes. It
@@ -680,9 +659,8 @@ tRNAscan-SE<span class="w"> </span>-B<span class="w"> </span>-o<span class="w"> 
 <p><code class="docutils literal notranslate"><span class="pre">--kingdom</span> <span class="pre">bac</span></code> tells Barrnap to use the bacterial rRNA models, and <code class="docutils literal notranslate"><span class="pre">-B</span></code>
 puts tRNAscan-SE in bacterial mode.</p>
 </section>
-</section>
 <section id="combined-annotation-with-prokka">
-<h1>Combined annotation with Prokka<a class="headerlink" href="#combined-annotation-with-prokka" title="Link to this heading"></a></h1>
+<h2>Combined annotation with Prokka<a class="headerlink" href="#combined-annotation-with-prokka" title="Link to this heading"></a></h2>
 <p>Running each tool by hand is instructive, but in practice <strong>Prokka</strong> wraps the
 whole prokaryotic annotation process into a single command: it calls Prodigal
 for CDS, Barrnap for rRNA, and tRNAscan-SE / Aragorn for tRNA, then assigns
@@ -735,7 +713,7 @@ genome. The next step adds richer functional context to those.</p>
 </div>
 </section>
 <section id="functional-annotation-with-eggnog-mapper">
-<h1>Functional annotation with eggNOG-mapper<a class="headerlink" href="#functional-annotation-with-eggnog-mapper" title="Link to this heading"></a></h1>
+<h2>Functional annotation with eggNOG-mapper<a class="headerlink" href="#functional-annotation-with-eggnog-mapper" title="Link to this heading"></a></h2>
 <p>Prokka gives you gene names and products; <strong>eggNOG-mapper</strong> adds
 orthology-based functional annotation — COG categories, GO terms, KEGG
 pathways and KOs, and EC numbers — by placing each protein into precomputed
@@ -789,7 +767,7 @@ description. Join this back to the Prokka locus tags to build a fully
 annotated gene table for your genome.</p>
 </section>
 <section id="visualization">
-<h1>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h1>
+<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h2>
 <p>With the assembly and annotations in hand, inspect them visually. These are
 interactive GUI tools — run them from a desktop session (or locally on your own
 machine) rather than a batch job.</p>
@@ -807,13 +785,14 @@ annotated feature.</p></li>
 <p>This concludes the workshop. For questions or comments, raise an issue on the
 workshop repository.</p>
 </section>
+</section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="De Novo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="denovo_bacteria.html" class="btn btn-neutral float-right" title="De novo Bacterial Genome Assembly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transcriptome.html" class="btn btn-neutral float-right" title="De Novo Transcriptome Assembly &amp; Annotation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
