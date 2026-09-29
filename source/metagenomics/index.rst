@@ -5,4 +5,3 @@ Metagenomics
    :maxdepth: 1
 
    shotgun
-   amplicon
