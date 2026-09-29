@@ -1,0 +1,14 @@
+name: bulk-rnaseq-tutorial
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - jupyterlab
+  - ipykernel
+  - r-base=4.5
+  - bioconductor-deseq2=1.50.2
