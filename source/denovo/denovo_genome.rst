@@ -25,7 +25,7 @@ strains. The aim is a reference workflow you can adapt to your own isolate.
 
 
 Pipeline overview
-=================
+-----------------
 
 .. figure:: /img/denovo/denovo-genome-workflow.png
    :alt: De novo genome assembly and annotation pipeline
@@ -40,7 +40,7 @@ Pipeline overview
 
 
 Steps
-=====
+-----
 
 #. Quality-check and trim the reads (**FastQC**, **fastp**, **MultiQC**).
 #. Assemble the trimmed reads into contigs with **SPAdes**.
@@ -54,7 +54,7 @@ Steps
 
 
 Environment
-===========
+-----------
 
 The gencore software stack is split across two module trees, **gencore/2** and
 **gencore/3**, and they **cannot be loaded at the same time**. Whenever the
@@ -151,7 +151,7 @@ The tools used across the workshop, with upstream documentation:
 
 
 Inputs
-======
+------
 
 Before running the pipeline you need:
 
@@ -177,7 +177,7 @@ GFF3, GenBank (GBK).
 
 
 Getting the data
-================
+----------------
 
 We use the NYUAD HPC cluster. Connect, move to your scratch space, and set up
 a working directory.
@@ -244,7 +244,7 @@ Expected:
 
 
 Quality control and trimming
-=============================
+----------------------------
 
 Almost all sequencing analysis begins with quality checking and trimming to
 remove low-quality bases and adapter contamination. This matters especially for
@@ -326,7 +326,7 @@ adapter-content and per-base-quality plots should visibly improve.
 
 
 Assembly with SPAdes
-====================
+--------------------
 
 **SPAdes** is a De Bruijn graph assembler that works well for bacterial
 isolates. It runs read error correction, then assembles across multiple k-mer
@@ -417,7 +417,7 @@ Use ``assembly.fasta`` as the input to all downstream steps.
 
 
 Assessing the assembly quality
-==============================
+-----------------------------
 
 Before annotating, confirm the assembly is sound. We use three complementary
 angles: contiguity and mis-assembly statistics, core-gene completeness, and
@@ -516,7 +516,7 @@ expected range confirm a healthy assembly.
 
 
 Ab initio gene prediction
-=========================
+-------------------------
 
 With QC passed, annotate the genome. Bacterial gene prediction is
 well-suited to ab initio methods because genes are densely packed, mostly
@@ -579,7 +579,7 @@ puts tRNAscan-SE in bacterial mode.
 
 
 Combined annotation with Prokka
-===============================
+-------------------------------
 
 Running each tool by hand is instructive, but in practice **Prokka** wraps the
 whole prokaryotic annotation process into a single command: it calls Prodigal
@@ -639,7 +639,8 @@ The ``prokka`` folder contains:
 
 
 Functional annotation with eggNOG-mapper
-========================================
+----------------------------------------
+
 
 Prokka gives you gene names and products; **eggNOG-mapper** adds
 orthology-based functional annotation — COG categories, GO terms, KEGG
@@ -704,7 +705,7 @@ annotated gene table for your genome.
 
 
 Visualization
-=============
+-------------
 
 With the assembly and annotations in hand, inspect them visually. These are
 interactive GUI tools — run them from a desktop session (or locally on your own
