@@ -1,0 +1,24 @@
+name: gencore-scatac-peakvi
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - jupyterlab=4.5.3
+  - nbconvert=7.17.0
+  - curl
+  - gzip
+  - gawk
+  - python-igraph=1.0.0
+  - leidenalg=0.11.0
+  - pip:
+      - anndata==0.12.10
+      - scanpy==1.11.5
+      - scvi-tools==1.4.2
+      - numpy==2.4.3
+      - pandas==2.3.3
+      - scipy==1.17.1
+      - matplotlib==3.10.8
+      - seaborn==0.13.2
+      - scikit-learn==1.8.0
+      - h5py==3.16.0

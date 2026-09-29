@@ -12,3 +12,10 @@ __pycache__/
 venv/
 .env
 .venv/
+
+# Downloaded and generated scATAC tutorial data
+source/epigenomics/scatac_tutorial/data/raw/*
+!source/epigenomics/scatac_tutorial/data/raw/README.md
+source/epigenomics/scatac_tutorial/data/processed/*
+!source/epigenomics/scatac_tutorial/data/processed/README.md
+source/epigenomics/scatac_tutorial/results/
