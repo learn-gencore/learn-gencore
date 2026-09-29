@@ -49,7 +49,25 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intro/index.html">Intro to Bioinformatics</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Transcriptomics</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Bulk RNA-seq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Bulk RNA-seq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#learning-objectives">Learning objectives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-and-publication">Dataset and publication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#companion-notebook-and-files">Companion notebook and files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#check-the-study-design-and-inputs">1. Check the study design and inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#count-level-quality-control">2. Count-level quality control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filter-and-normalize-counts">3. Filter and normalize counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pca-and-variance-diagnostics">4. PCA and variance diagnostics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#estimate-and-handle-batch-effects">5. Estimate and handle batch effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#test-planned-differential-expression-contrasts">6. Test planned differential-expression contrasts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#reading-the-rescue-contrasts">Reading the rescue contrasts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#common-pitfalls">7. Common pitfalls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommended-reporting-checklist">8. Recommended reporting checklist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-summary">Workflow summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-references">Key references</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="single_cell_rna_seq.html">Single-cell RNA-seq analysis with Scanpy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="multiome.html">Multiome</a></li>
 <li class="toctree-l2"><a class="reference internal" href="over_representation_analysis.html">Over-representation analysis</a></li>
@@ -92,7 +110,511 @@
              
   <section id="bulk-rna-seq">
 <h1>Bulk RNA-seq<a class="headerlink" href="#bulk-rna-seq" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+<p>This tutorial walks through a sample-level bulk RNA-seq analysis using a public
+mouse embryonic stem cell dataset. It introduces the decisions behind quality
+control, normalization, variance and batch diagnostics, and differential gene
+expression. The worked analysis uses Bioconductor DESeq2; Python is used for the
+figures in the companion notebook.</p>
+<p>The goal is to understand what each step can tell you, what it cannot tell
+you, and which parts of the analysis depend on the experimental design.</p>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>By the end of this tutorial, you should be able to:</p>
+<ul class="simple">
+<li><p>Inspect a count matrix and verify that its sample columns match the metadata.</p></li>
+<li><p>Distinguish read-level quality control from count-level sample checks.</p></li>
+<li><p>Identify libraries with unusual depth or expression distributions.</p></li>
+<li><p>Filter low-information genes using a stated, design-aware rule.</p></li>
+<li><p>Use DESeq2 size factors for count-model normalization and transformed values
+for visualization.</p></li>
+<li><p>Read RLE, sample-correlation, PCA, mean-variance, and dispersion plots.</p></li>
+<li><p>Decide when batch or block terms belong in the model and recognize
+confounding.</p></li>
+<li><p>Interpret effect sizes and adjusted p-values for planned contrasts.</p></li>
+<li><p>Report analysis choices, caveats, and replicate-level results.</p></li>
+</ul>
+</section>
+<section id="dataset-and-publication">
+<h2>Dataset and publication<a class="headerlink" href="#dataset-and-publication" title="Link to this heading"></a></h2>
+<p>The example uses mouse embryonic stem cells at Day 0, comparing wild type
+(WT), beta-actin knockout (KO), and nuclear-localization-signal rescue (NLS).</p>
+<ul class="simple">
+<li><p>NCBI GEO series GSE327304:
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327304">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327304</a></p></li>
+<li><p>GEO supplementary count archive:
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE327304&amp;format=file">https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE327304&amp;format=file</a></p></li>
+<li><p>Linked manuscript/preprint:
+<a class="reference external" href="https://doi.org/10.64898/2026.04.15.718829">https://doi.org/10.64898/2026.04.15.718829</a></p></li>
+<li><p>bioRxiv full text:
+<a class="reference external" href="https://www.biorxiv.org/content/10.64898/2026.04.15.718829v1.full">https://www.biorxiv.org/content/10.64898/2026.04.15.718829v1.full</a></p></li>
+</ul>
+<p>The companion project contains a gene-by-sample integer count matrix assembled
+from the 12 Day 0 count files currently listed in GEO, with four libraries for
+each condition. These are processed gene counts, not FASTQ files.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>GEO currently lists four Day 0 libraries per condition, while the linked
+manuscript methods appear to describe three biological RNA-seq replicates.
+This tutorial uses the 12 GEO count files and is a reproducible reanalysis
+of that public matrix. Reconcile the sample subset and replicate structure
+with the study records before treating these results as a reproduction of
+a manuscript analysis. The notebook includes all 12 samples so the issue is
+visible and reviewable.</p>
+</div>
+<p>The GEO count files support sample-level count diagnostics and downstream
+count-based analysis. They cannot provide per-base sequencing quality,
+adapter content, strandedness, mapping rates, or gene-body coverage. If raw
+reads are available, inspect them with FastQC and MultiQC and use a documented
+quantification workflow such as nf-core/rnaseq.</p>
+</section>
+<section id="companion-notebook-and-files">
+<h2>Companion notebook and files<a class="headerlink" href="#companion-notebook-and-files" title="Link to this heading"></a></h2>
+<p>The branch includes an executed Jupyter notebook, the processed count matrix,
+sample manifest, environment file, and scripts used by the notebook. Download
+the notebook here:</p>
+<p><a class="reference download internal" download="" href="../_downloads/22423a1cc73c27c20aeebea4255c3e32/bulk_rnaseq_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Bulk</span> <span class="pre">RNA-seq</span> <span class="pre">tutorial</span> <span class="pre">notebook</span></code></a></p>
+<p>The notebook uses these accompanying files, which can also be downloaded individually:</p>
+<p><a class="reference download internal" download="" href="../_downloads/7617423f6e892265fda9373b70d82401/environment.yml"><code class="xref download docutils literal notranslate"><span class="pre">Environment</span> <span class="pre">specification</span></code></a>
+<a class="reference download internal" download="" href="../_downloads/0c18be2b859c82c848a39fb293b8df3e/GSE327304_D0_raw_counts.tsv"><code class="xref download docutils literal notranslate"><span class="pre">Processed</span> <span class="pre">GEO</span> <span class="pre">count</span> <span class="pre">matrix</span></code></a>
+<a class="reference download internal" download="" href="../_downloads/3d8272e4b24b27c6e735c93240a7cc13/GSE327304_D0_sample_manifest.csv"><code class="xref download docutils literal notranslate"><span class="pre">Sample</span> <span class="pre">manifest</span></code></a></p>
+<p>From a clone of this repository, run the notebook from its project directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>source/transcriptomics/bulk_rna_seq_tutorial
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>bulk-rnaseq-tutorial
+jupyter<span class="w"> </span>lab<span class="w"> </span>notebooks/bulk_rnaseq_tutorial.ipynb
+</pre></div>
+</div>
+<p>The environment uses R with Bioconductor DESeq2 for model fitting and Python
+for data checks and plots. The notebook displays generated plots and summary
+tables, and saves detailed outputs under its results directory.</p>
+</section>
+<section id="check-the-study-design-and-inputs">
+<h2>1. Check the study design and inputs<a class="headerlink" href="#check-the-study-design-and-inputs" title="Link to this heading"></a></h2>
+<p>The experimental unit is the biological sample, not the number of reads or
+genes. Before fitting a model, verify the condition, replicate, and any known
+batch annotations against the GEO records and the experimental plan.</p>
+<p>The count matrix and manifest are bundled with the companion project. Match
+columns and rows by sample accession rather than relying on their original
+order.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">count_tab</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.delim</span><span class="p">(</span>
+<span class="w">  </span><span class="s">'data/processed/GSE327304_D0_raw_counts.tsv'</span><span class="p">,</span>
+<span class="w">  </span><span class="n">check.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span>
+<span class="p">)</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">count_tab</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">count_tab</span><span class="o">$</span><span class="n">gene_id</span>
+<span class="n">count_tab</span><span class="o">$</span><span class="n">gene_id</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kc">NULL</span>
+<span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.matrix</span><span class="p">(</span><span class="n">count_tab</span><span class="p">)</span>
+<span class="nf">storage.mode</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">'integer'</span>
+
+<span class="n">samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span>
+<span class="w">  </span><span class="s">'data/metadata/GSE327304_D0_sample_manifest.csv'</span><span class="p">,</span>
+<span class="w">  </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span>
+<span class="p">)</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">samples</span><span class="o">$</span><span class="n">sample_id</span>
+<span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span><span class="w"> </span><span class="n">drop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">]</span>
+
+<span class="nf">stopifnot</span><span class="p">(</span><span class="nf">identical</span><span class="p">(</span><span class="nf">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">),</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">samples</span><span class="p">)))</span>
+<span class="nf">stopifnot</span><span class="p">(</span><span class="nf">all</span><span class="p">(</span><span class="n">counts</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="m">0L</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Inspect the design before choosing terms. In the worked analysis, replicate
+labels R1-R4 are used as a block only if they represent genuinely matched
+biological blocks across WT, KO, and NLS. A sequencing lane or technical split
+is not a biological replicate.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span><span class="o">$</span><span class="n">condition</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">relevel</span><span class="p">(</span>
+<span class="w">  </span><span class="nf">factor</span><span class="p">(</span><span class="n">samples</span><span class="o">$</span><span class="n">condition</span><span class="p">,</span><span class="w"> </span><span class="n">levels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">'WT'</span><span class="p">,</span><span class="w"> </span><span class="s">'KO'</span><span class="p">,</span><span class="w"> </span><span class="s">'NLS'</span><span class="p">)),</span>
+<span class="w">  </span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'WT'</span>
+<span class="p">)</span>
+<span class="n">samples</span><span class="o">$</span><span class="n">replicate</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="n">samples</span><span class="o">$</span><span class="n">replicate</span><span class="p">)</span>
+
+<span class="n">design_matrix</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">model.matrix</span><span class="p">(</span>
+<span class="w">  </span><span class="o">~</span><span class="w"> </span><span class="n">replicate</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">condition</span><span class="p">,</span>
+<span class="w">  </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span>
+<span class="p">)</span>
+<span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nf">qr</span><span class="p">(</span><span class="n">design_matrix</span><span class="p">)</span><span class="o">$</span><span class="n">rank</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nf">ncol</span><span class="p">(</span><span class="n">design_matrix</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nf">stop</span><span class="p">(</span><span class="s">'Design is not full rank. Check confounding and factor levels.'</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If replicate labels do not identify shared blocks, use a design that reflects
+the actual experiment, for example condition alone for independent groups.
+Never add a term only because it improves a plot.</p>
+</section>
+<section id="count-level-quality-control">
+<h2>2. Count-level quality control<a class="headerlink" href="#count-level-quality-control" title="Link to this heading"></a></h2>
+<p>Start by checking total assigned counts and the number of detected genes for
+each library. Review these together with the sample manifest. An unusually
+shallow library may need investigation, but depth alone is not a reason to
+discard a sample.</p>
+<figure class="align-default" id="id1">
+<img alt="Bar plots of assigned counts and detected genes for the 12 GEO libraries." src="../_images/sample_qc.png" />
+<figcaption>
+<p><span class="caption-text">Per-library assigned counts and detected genes. These are first-pass
+diagnostics and should be interpreted with the sample records.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Compare count distributions before and after simple library-size scaling.
+This display is exploratory only. The DESeq2 model later estimates its own
+median-of-ratios size factors.</p>
+<figure class="align-default" id="id2">
+<img alt="Gene count distributions before and after library-size scaling." src="../_images/count_distributions.png" />
+<figcaption>
+<p><span class="caption-text">Count distributions show both library-depth differences and the strong
+right-skew and zero inflation typical of gene-level counts.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>A sample-correlation heatmap gives a broad view of similarity. High
+correlation is common because many genes do not change. Pair it with PCA,
+count distributions, and metadata to look for sample swaps, outliers, or
+unexpected grouping.</p>
+<figure class="align-default" id="id3">
+<img alt="Sample correlation heatmap across the 12 Day 0 libraries." src="../_images/sample_correlation.png" />
+<figcaption>
+<p><span class="caption-text">Correlation is a diagnostic view. It is not a test of differential
+expression and does not prove that a sample is correctly labelled.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The RLE plot compares each sample’s normalized log expression with each
+gene’s across-sample median. Similar centers and spreads are generally
+expected after normalization. A shift can flag composition differences,
+technical structure, or sample problems; do not force all distributions to
+look identical.</p>
+<figure class="align-default" id="id4">
+<img alt="Relative log expression distributions after size-factor normalization." src="../_images/rle.png" />
+<figcaption>
+<p><span class="caption-text">RLE is useful alongside other diagnostics. Strong global shifts may also
+reflect biology or assumptions behind relative normalization.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="filter-and-normalize-counts">
+<h2>3. Filter and normalize counts<a class="headerlink" href="#filter-and-normalize-counts" title="Link to this heading"></a></h2>
+<p>Remove genes with too little information to support reliable dispersion
+estimation. The worked rule retains genes with at least 10 counts in at least
+four libraries. This is a transparent example, not a universal threshold.
+For other designs, consider a design-aware filter such as
+edgeR::filterByExpr and keep the original matrix unchanged.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">keep</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowSums</span><span class="p">(</span><span class="n">counts</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="m">10L</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="m">4L</span>
+<span class="n">counts_filtered</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[</span><span class="n">keep</span><span class="p">,</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">drop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>DESeq2 estimates median-of-ratios size factors to account for relative library
+composition. The negative-binomial model is fit to filtered raw integer
+counts. Use a variance-stabilizing transformation (VST) for PCA, correlation,
+and display, not as input to the count test.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">DESeqDataSetFromMatrix</span><span class="p">(</span>
+<span class="w">  </span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_filtered</span><span class="p">,</span>
+<span class="w">  </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="p">,</span>
+<span class="w">  </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">replicate</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">condition</span>
+<span class="p">)</span>
+<span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">DESeq</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span>
+<span class="n">vsd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">vst</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">blind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the replicate block is unsupported by the experimental records, change the
+design before running DESeq2. Normalization is not the same as transformation:
+size factors adjust counts for modeling, while VST values make the mean-
+variance relationship more suitable for exploratory plots.</p>
+</section>
+<section id="pca-and-variance-diagnostics">
+<h2>4. PCA and variance diagnostics<a class="headerlink" href="#pca-and-variance-diagnostics" title="Link to this heading"></a></h2>
+<p>PCA summarizes sample-to-sample expression variation. Color samples by
+condition and mark known design variables such as replicate, batch, lane, or
+processing date. Check whether the leading PCs associate with condition,
+technical factors, or count-level QC. A PC that separates groups is not
+automatically a batch effect; it may reflect biology, technical variation,
+or both.</p>
+<figure class="align-default" id="id5">
+<img alt="PCA of VST counts with a scree plot of variance explained." src="../_images/pca_and_scree.png" />
+<figcaption>
+<p><span class="caption-text">In this run, PC1 explains 54.6% and PC2 explains 27.5% of the displayed
+variance. Condition separates strongly along PC1, while KO libraries also
+spread along PC2. Investigate that pattern with sample annotations and
+replicate-level QC before assigning a cause.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>A scree plot reports the fraction of variance captured by each component.
+With 12 libraries, treat the plot as descriptive. PCA helps prioritize
+follow-up checks; it is not a hypothesis test and cannot by itself identify
+which covariate caused the separation.</p>
+<p>The mean-variance plot illustrates why raw counts need a count model. Absolute
+variance rises with expression level, while the model estimates gene-wise
+dispersion and shrinks noisy estimates toward a fitted trend.</p>
+<figure class="align-default" id="id6">
+<img alt="Mean and variance of normalized counts across genes." src="../_images/mean_variance.png" />
+<figcaption>
+<p><span class="caption-text">Across-sample variance increases with mean expression, motivating
+mean-dependent dispersion modeling.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id7">
+<img alt="DESeq2 gene-wise and fitted dispersion estimates by mean expression." src="../_images/dispersion_trend.png" />
+<figcaption>
+<p><span class="caption-text">DESeq2 estimates dispersion from biological replicate variation, then
+moderates gene-wise estimates using the fitted mean-dispersion trend.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>For experiments with enough independent samples and measured covariates,
+variance-partitioning methods can estimate how much expression variability is
+associated with each source. A simple model might include condition, donor,
+and sequencing batch. Do not use a complex variance-partitioning model with
+too few samples or a rank-deficient design; the 12-library example is too
+small to estimate many sources reliably.</p>
+</section>
+<section id="estimate-and-handle-batch-effects">
+<h2>5. Estimate and handle batch effects<a class="headerlink" href="#estimate-and-handle-batch-effects" title="Link to this heading"></a></h2>
+<p>First make a sample sheet that records known technical variables, such as
+library preparation batch, sequencing run, lane, operator, and processing
+date. Compare those variables with condition and replicate in PCA, correlation
+plots, and count-level QC.</p>
+<p>If a known batch is estimable independently of condition, include it in the
+count model:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">design</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">sequencing_batch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">condition</span>
+<span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">DESeq</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For matched or repeated-measures samples, include the supported subject or
+block term as well:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">design</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">donor</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sequencing_batch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">condition</span>
+</pre></div>
+</div>
+<p>A design matrix with perfect batch-condition confounding cannot estimate
+separate batch and condition effects. More samples or a redesigned experiment
+may be needed. Do not try to fix perfect confounding by applying a correction
+to the expression matrix.</p>
+<p>For exploratory displays, remove a known batch from transformed values only
+when the target biology is preserved and the result is clearly labelled as
+adjusted. Batch adjustment is not part of the DESeq2 count test. Hidden-factor
+methods such as SVA or RUV also require that the biology of interest be
+protected in the model and that the number of factors be justified.</p>
+</section>
+<section id="test-planned-differential-expression-contrasts">
+<h2>6. Test planned differential-expression contrasts<a class="headerlink" href="#test-planned-differential-expression-contrasts" title="Link to this heading"></a></h2>
+<p>The worked analysis compares KO with WT, NLS with KO, and NLS with WT. The
+log2 fold change is the tested condition relative to its reference. Report
+effect sizes with adjusted p-values and inspect the individual libraries.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">res_KO_vs_WT</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span>
+<span class="w">  </span><span class="n">dds</span><span class="p">,</span>
+<span class="w">  </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">'condition'</span><span class="p">,</span><span class="w"> </span><span class="s">'KO'</span><span class="p">,</span><span class="w"> </span><span class="s">'WT'</span><span class="p">),</span>
+<span class="w">  </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span>
+<span class="p">)</span>
+<span class="n">res_NLS_vs_KO</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span>
+<span class="w">  </span><span class="n">dds</span><span class="p">,</span>
+<span class="w">  </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">'condition'</span><span class="p">,</span><span class="w"> </span><span class="s">'NLS'</span><span class="p">,</span><span class="w"> </span><span class="s">'KO'</span><span class="p">),</span>
+<span class="w">  </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span>
+<span class="p">)</span>
+<span class="n">res_NLS_vs_WT</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span>
+<span class="w">  </span><span class="n">dds</span><span class="p">,</span>
+<span class="w">  </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">'condition'</span><span class="p">,</span><span class="w"> </span><span class="s">'NLS'</span><span class="p">,</span><span class="w"> </span><span class="s">'WT'</span><span class="p">),</span>
+<span class="w">  </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Use Benjamini-Hochberg adjusted p-values to control the false discovery rate.
+Keep all tested genes in the output, including genes whose adjusted p-value is
+missing because they were filtered or could not be tested. Pair statistical
+evidence with the size and uncertainty of the estimated effect. A small
+p-value is not a measure of biological importance.</p>
+<p>The companion run retained 16,539 genes for testing. Its FDR &lt; 0.05 summary is:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Contrast</p></th>
+<th class="head"><p>Tested genes</p></th>
+<th class="head"><p>FDR &lt; 0.05</p></th>
+<th class="head"><p>FDR &lt; 0.10</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>KO vs WT</p></td>
+<td><p>16,539</p></td>
+<td><p>6,966</p></td>
+<td><p>8,030</p></td>
+</tr>
+<tr class="row-odd"><td><p>NLS vs KO</p></td>
+<td><p>16,539</p></td>
+<td><p>3,970</p></td>
+<td><p>4,989</p></td>
+</tr>
+<tr class="row-even"><td><p>NLS vs WT</p></td>
+<td><p>16,539</p></td>
+<td><p>4,282</p></td>
+<td><p>5,146</p></td>
+</tr>
+</tbody>
+</table>
+<p>These values summarize the current public GEO sample set and the stated
+blocking model. Reconcile the replicate annotations before treating them as
+the study’s definitive result.</p>
+<p>MA plots show fold change against mean abundance and help reveal unstable
+low-count estimates. Volcano plots show effect size against statistical
+evidence. Color marks FDR &lt; 0.05 in this worked example; it does not encode
+biological importance.</p>
+<figure class="align-default" id="id8">
+<img alt="MA plots and volcano plots for the three planned DESeq2 contrasts." src="../_images/differential_expression_ma_volcano.png" />
+<figcaption>
+<p><span class="caption-text">MA and volcano plots for KO vs WT, NLS vs KO, and NLS vs WT. Review
+log2 fold changes and adjusted p-values in the complete result tables.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Plot individual normalized expression values for selected genes rather than
+showing only group means. Replicate-level plots reveal variability that an
+average can hide.</p>
+<figure class="align-default" id="id9">
+<img alt="Variance-stabilized expression for selected genes across all samples." src="../_images/selected_gene_vst.png" />
+<figcaption>
+<p><span class="caption-text">Selected-gene expression is shown for every library. Gene-level patterns
+motivate follow-up experiments; they do not establish direct regulation.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id10">
+<img alt="Heatmap of selected genes across the 12 libraries." src="../_images/selected_gene_heatmap.png" />
+<figcaption>
+<p><span class="caption-text">Heatmap colors are scaled by gene for visual comparison. Read the sample
+labels and replicate variation; row scaling does not compare absolute
+expression between genes.</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="reading-the-rescue-contrasts">
+<h3>Reading the rescue contrasts<a class="headerlink" href="#reading-the-rescue-contrasts" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>KO vs WT describes the expression difference associated with the
+perturbation.</p></li>
+<li><p>NLS vs KO describes how the rescue condition differs from KO.</p></li>
+<li><p>NLS vs WT describes residual differences between the rescue and WT.</p></li>
+</ul>
+<p>A significant NLS-vs-KO result alone does not establish complete rescue. A
+small NLS-vs-WT difference can be compatible with rescue, but interpretation
+also depends on confidence intervals, power, replicate variation, the design,
+and independent measurements. RNA-seq alone does not show direct regulation.</p>
+</section>
+</section>
+<section id="common-pitfalls">
+<h2>7. Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 66.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pitfall</p></th>
+<th class="head"><p>Better practice</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Using TPM or FPKM as input to DESeq2.</p></td>
+<td><p>Fit the count model to raw integer counts or a supported estimated-
+count import such as tximport.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Treating normalization and transformation as interchangeable.</p></td>
+<td><p>Use size factors for the count model and VST values for exploratory
+plots.</p></td>
+</tr>
+<tr class="row-even"><td><p>Mismatching count columns and metadata rows.</p></td>
+<td><p>Match by sample accession and stop if sample names or order differ.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Treating technical lanes as biological replicates.</p></td>
+<td><p>Identify the experimental unit; merge or model technical structure
+according to the design.</p></td>
+</tr>
+<tr class="row-even"><td><p>Adding every available variable to the design.</p></td>
+<td><p>Check rank, residual degrees of freedom, and confounding first.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Calling a PCA split a batch effect.</p></td>
+<td><p>Compare PCs against condition, known batches, replicates, and QC
+metrics.</p></td>
+</tr>
+<tr class="row-even"><td><p>Removing a batch from the expression matrix before testing.</p></td>
+<td><p>Include known estimable batch terms in the count model. Label adjusted
+transformed values as visualization-only.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Removing an outlier because it weakens significance.</p></td>
+<td><p>Investigate sample records and independent QC evidence, then document
+a prespecified exclusion rationale.</p></td>
+</tr>
+<tr class="row-even"><td><p>Filtering genes based on which contrast looks interesting.</p></td>
+<td><p>Use a stated expression filter independent of the observed result.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Interpreting non-significance as no effect.</p></td>
+<td><p>Report the effect estimate and uncertainty; account for limited power.</p></td>
+</tr>
+<tr class="row-even"><td><p>Treating RNA-seq as an isoform or splicing analysis.</p></td>
+<td><p>Use transcript-level or splice-aware tools for those questions.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Inferring absolute global RNA changes from relative counts.</p></td>
+<td><p>Use spike-ins or another absolute reference when global RNA content is
+the question.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="recommended-reporting-checklist">
+<h2>8. Recommended reporting checklist<a class="headerlink" href="#recommended-reporting-checklist" title="Link to this heading"></a></h2>
+<p>For a reproducible report, record:</p>
+<ul class="simple">
+<li><p>Dataset accession and publication link.</p></li>
+<li><p>Genome and gene-annotation version used to generate the counts.</p></li>
+<li><p>Sample IDs, experimental units, condition, replicate, and known technical
+covariates.</p></li>
+<li><p>Any sample exclusions and the independent evidence supporting them.</p></li>
+<li><p>The filtering threshold and number of genes retained.</p></li>
+<li><p>DESeq2 design formula, contrast direction, package version, and FDR
+procedure.</p></li>
+<li><p>Sample-level QC, RLE, PCA/scree, mean-variance, and dispersion plots.</p></li>
+<li><p>Effect sizes, confidence intervals where available, adjusted p-values, and
+the full tested-gene tables.</p></li>
+<li><p>Whether analyses use processed counts or raw reads, and which read-level
+QC steps were available.</p></li>
+<li><p>Any mismatch between GEO sample annotations and the publication methods.</p></li>
+</ul>
+</section>
+<section id="workflow-summary">
+<h2>Workflow summary<a class="headerlink" href="#workflow-summary" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GEO</span> <span class="n">raw</span><span class="o">-</span><span class="n">count</span> <span class="n">files</span> <span class="ow">and</span> <span class="n">sample</span> <span class="n">metadata</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="k">match</span> <span class="n">sample</span> <span class="n">IDs</span> <span class="ow">and</span> <span class="n">verify</span> <span class="n">design</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="n">count</span><span class="o">-</span><span class="n">level</span> <span class="n">sample</span> <span class="n">QC</span> <span class="ow">and</span> <span class="n">low</span><span class="o">-</span><span class="n">count</span> <span class="n">filtering</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="n">DESeq2</span> <span class="n">size</span> <span class="n">factors</span> <span class="ow">and</span> <span class="n">negative</span><span class="o">-</span><span class="n">binomial</span> <span class="n">model</span>
+   <span class="o">|</span>
+   <span class="o">+--&gt;</span> <span class="n">VST</span> <span class="k">for</span> <span class="n">RLE</span><span class="p">,</span> <span class="n">PCA</span><span class="p">,</span> <span class="n">correlation</span><span class="p">,</span> <span class="ow">and</span> <span class="n">figures</span>
+   <span class="o">|</span>
+   <span class="o">+--&gt;</span> <span class="n">planned</span> <span class="n">contrasts</span> <span class="ow">and</span> <span class="n">FDR</span><span class="o">-</span><span class="n">adjusted</span> <span class="n">gene</span> <span class="n">tables</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="n">interpret</span> <span class="n">effect</span> <span class="n">sizes</span> <span class="k">with</span> <span class="n">replicate</span> <span class="n">variation</span> <span class="ow">and</span> <span class="n">study</span> <span class="n">context</span>
+</pre></div>
+</div>
+</section>
+<section id="key-references">
+<h2>Key references<a class="headerlink" href="#key-references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>GEO GSE327304:
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327304">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327304</a></p></li>
+<li><p>Linked bioRxiv manuscript/preprint:
+<a class="reference external" href="https://www.biorxiv.org/content/10.64898/2026.04.15.718829v1.full">https://www.biorxiv.org/content/10.64898/2026.04.15.718829v1.full</a></p></li>
+<li><p>DESeq2 vignette:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html</a></p></li>
+<li><p>tximport vignette:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/tximport/inst/doc/tximport.html">https://bioconductor.org/packages/release/bioc/vignettes/tximport/inst/doc/tximport.html</a></p></li>
+<li><p>edgeR User’s Guide:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf">https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf</a></p></li>
+<li><p>limma User’s Guide:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf">https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf</a></p></li>
+<li><p>variancePartition/DREAM vignette:
+<a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/dream.html">https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/dream.html</a></p></li>
+<li><p>nf-core/rnaseq documentation:
+<a class="reference external" href="https://nf-co.re/rnaseq/3.27.0">https://nf-co.re/rnaseq/3.27.0</a></p></li>
+</ul>
+</section>
 </section>
 
 
