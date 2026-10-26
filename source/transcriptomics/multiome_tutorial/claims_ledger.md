@@ -53,6 +53,7 @@ Code references: `wf` = `scripts/multiome_workflow.py`, `run` =
 | 3,000 genes, MT and MTRNR2L excluded; MTRNR2L copies track the mitochondrial fraction | `wf:select_rna_features`; `results/model_genes.tsv`; `results/depth_group_gene_mito_link.tsv` | Feature rule; the MTRNR2L–mitochondrial association | That isolation quality is the cause ("likely" on the page). That exclusion is optimal. Supporting history: a first run that kept MT genes split CD14 monocytes by MT transcripts (Wilcoxon top genes all MT-*), and a second run that kept MTRNR2L12 still listed it among model genes |
 | 64,305 peaks detected in ≥30 of 2,718 nuclei; 30,000 kept | `results/run_manifest.json` (`n_peaks_detected_min_cells`); `wf:select_atac_features`; printed in notebook section 6 | Feature counts | — |
 | First LSI component r = 0.99 with log10 fragments; dropped | `results/lsi_depth_correlations.tsv` (component 1: 0.992) | Depth association of LSI 1 | — |
+| Resolution 0.8 is a fixed choice, set before looking at the results and not tuned | `run:parse_args` default `--resolution 0.8`; no resolution sweep was run for the main clusterings (only `wf:resolution_check` for the two small groups) | How the setting was chosen | That 0.8 is optimal; cluster counts and ARI depend on it |
 | 14 RNA-only and 10 ATAC-only clusters (resolution 0.8, 20 neighbors, cosine) | `results/cell_metadata.tsv.gz` (`leiden_rna`, `leiden_atac`); `wf:build_embedding_graph` | Cluster counts at these settings | Cluster counts at other settings |
 
 ## 5. MultiVI

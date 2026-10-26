@@ -291,7 +291,10 @@ baseline is TF-IDF followed by latent semantic indexing (LSI, 30 components) on
 the same peaks. The first LSI component correlates 0.99 with log10 fragment
 count, so it is dropped as a depth axis. The same neighbor graph (20 neighbors,
 cosine distance), UMAP, and Leiden settings (resolution 0.8) are used for every
-representation. They give 14 RNA-only clusters and 10 ATAC-only clusters.
+representation. Resolution 0.8 is a fixed choice, set before looking at the
+results and not tuned, and the same value can give different numbers of
+clusters on different representations. Here it gives 14 RNA-only clusters and
+10 ATAC-only clusters.
 
 .. figure:: ../img/transcriptomics/multiome/06_single_modality_baselines.png
    :alt: RNA-only and ATAC-only UMAPs colored by their own clusters and depth.
