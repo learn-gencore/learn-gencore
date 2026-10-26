@@ -19,3 +19,10 @@ source/epigenomics/scatac_tutorial/data/raw/*
 source/epigenomics/scatac_tutorial/data/processed/*
 !source/epigenomics/scatac_tutorial/data/processed/README.md
 source/epigenomics/scatac_tutorial/results/
+
+# Downloaded and generated multiome tutorial data
+source/transcriptomics/multiome_tutorial/data/raw/*
+!source/transcriptomics/multiome_tutorial/data/raw/README.md
+source/transcriptomics/multiome_tutorial/data/processed/*
+!source/transcriptomics/multiome_tutorial/data/processed/README.md
+source/transcriptomics/multiome_tutorial/results/
