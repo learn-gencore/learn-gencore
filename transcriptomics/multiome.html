@@ -6,12 +6,12 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Multiome &mdash; Core Bioinformatics  NYUNY/NYUAD 1.0 documentation</title>
+  <title>Single-cell multiome analysis with MultiVI &mdash; Core Bioinformatics  NYUNY/NYUAD 1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
       <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
-      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d8129a24" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a52a3802" />
 
   
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
@@ -51,7 +51,25 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Transcriptomics</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="bulk_rna_seq.html">Bulk RNA-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="single_cell_rna_seq.html">Single-cell RNA-seq analysis with Scanpy</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Multiome</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Single-cell multiome analysis with MultiVI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#learning-objectives">Learning objectives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-and-inputs">Dataset and inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-and-data-download">Environment and data download</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cell-ranger-arc-calls-nuclei-from-both-measurements">1. Cell Ranger ARC calls nuclei from both measurements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rna-and-chromatin-quality-are-judged-separately">2. RNA and chromatin quality are judged separately</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#most-nuclei-contribute-both-measurements-nuclei-with-poor-rna-often-keep-usable-chromatin">3. Most nuclei contribute both measurements; nuclei with poor RNA often keep usable chromatin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#features-for-the-model-and-a-baseline-for-each-measurement">4. Features for the model, and a baseline for each measurement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multivi-is-trained-on-raw-counts-after-a-missing-modality-check">5. MultiVI is trained on raw counts after a missing-modality check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#one-latent-dimension-tracks-atac-depth-within-cell-types">6. One latent dimension tracks ATAC depth within cell types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rna-markers-name-six-broad-populations-chromatin-agrees-most-clearly-for-b-cells-and-plasmacytoid-dcs">7. RNA markers name six broad populations; chromatin agrees most clearly for B cells and plasmacytoid DCs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clustered-separately-rna-and-chromatin-agree-on-lineages-and-t-cell-states">8. Clustered separately, RNA and chromatin agree on lineages and T-cell states</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-joint-clustering-adds-divisions-that-differ-in-chromatin-depth-and-merges-two-small-groups">9. The joint clustering adds divisions that differ in chromatin depth and merges two small groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#going-further">Going further</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stopping-point-and-limitations">Stopping point and limitations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#common-pitfalls">Common pitfalls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="over_representation_analysis.html">Over-representation analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gene_set_enrichment_analysis.html">Gene set enrichment analysis</a></li>
 </ul>
@@ -80,7 +98,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Transcriptomics</a></li>
-      <li class="breadcrumb-item active">Multiome</li>
+      <li class="breadcrumb-item active">Single-cell multiome analysis with MultiVI</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/learn-gencore/learn-gencore/blob/main/source/transcriptomics/multiome.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -90,9 +108,783 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="multiome">
-<h1>Multiome<a class="headerlink" href="#multiome" title="Link to this heading"></a></h1>
-<p>Work in progress</p>
+  <section id="single-cell-multiome-analysis-with-multivi">
+<h1>Single-cell multiome analysis with MultiVI<a class="headerlink" href="#single-cell-multiome-analysis-with-multivi" title="Link to this heading"></a></h1>
+<p>Immune cells in blood differ in the genes they express and in which regulatory
+regions of their chromatin are open. A single-cell multiome experiment measures
+both in the same nucleus. This tutorial uses a public sample of peripheral
+blood mononuclear cells (PBMCs) from one healthy donor to ask which cell
+identities each measurement shows on its own, and what a model that combines
+them adds.</p>
+<p>In this paired sample, the joint MultiVI clustering adds no clearly new cell
+state. Its two candidates, divisions of CD4 T cells that differ in markers as
+well as in chromatin depth, need confirmation. MultiVI is designed for a
+different use: it places both measurements in one coordinate system, so that
+nuclei measured in only one modality can be placed in it too. Its clusters need
+the same depth and marker checks as any single-measurement clustering.</p>
+<p>The evidence, from 2,718 nuclei:</p>
+<ul class="simple">
+<li><p>Clustered separately, RNA and chromatin each largely keep together the six
+broad populations named in the joint analysis, and each separates naive CD4,
+naive CD8, and memory CD4 T cells.</p></li>
+<li><p>The clearest extra division made by the joint model follows chromatin depth.
+CD14 monocytes split into groups with about three-fold different ATAC
+fragment counts and no detectable expression difference other than two
+mitochondrial-derived transcripts.</p></li>
+<li><p>The joint clustering merges two small groups that RNA alone keeps apart: 38
+nuclei with conventional dendritic cell (DC) markers and 27 with regulatory
+T-cell markers.</p></li>
+<li><p>The monocyte split and the two merges recur across four training seeds,
+although individual joint clusters vary.</p></li>
+</ul>
+<p>The fully rendered notebook and reproducibility files are available here:</p>
+<ul class="simple">
+<li><p><a class="reference download internal" download="" href="../_downloads/fa8f37edc6306eb1cf282222a94fa57c/multiome_multivi_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Rendered</span> <span class="pre">Jupyter</span> <span class="pre">notebook</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/a55434168d220306fe08510685a0e8ff/environment.yml"><code class="xref download docutils literal notranslate"><span class="pre">Conda</span> <span class="pre">environment</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/5429e45472dac271da1e3ea10fa83e68/download_data.sh"><code class="xref download docutils literal notranslate"><span class="pre">Data</span> <span class="pre">download</span> <span class="pre">script</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/6bdbba0d282c22dbdcd1bc1fa2746af8/prepare_fragment_metrics.sh"><code class="xref download docutils literal notranslate"><span class="pre">Fragment</span> <span class="pre">QC</span> <span class="pre">script</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/4be0a1b6c581ec366b18bf3d5aa7e8cc/multiome_workflow.py"><code class="xref download docutils literal notranslate"><span class="pre">Multiome</span> <span class="pre">workflow</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/d790a99c6b3bcfef6ab3478be4e6c278/run_multivi.py"><code class="xref download docutils literal notranslate"><span class="pre">Complete</span> <span class="pre">analysis</span> <span class="pre">runner</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/9226e4ef80334cc510145063e9b495ca/seed_check.py"><code class="xref download docutils literal notranslate"><span class="pre">Seed</span> <span class="pre">check</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/59521df0e567c48575d5d6e56316ba2c/build_notebook.py"><code class="xref download docutils literal notranslate"><span class="pre">Notebook</span> <span class="pre">builder</span></code></a></p></li>
+</ul>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>By the end of this tutorial, you should be able to:</p>
+<ul class="simple">
+<li><p>identify the Cell Ranger ARC files used for secondary multiome analysis;</p></li>
+<li><p>calculate RNA and ATAC quality metrics separately for the same nuclei;</p></li>
+<li><p>summarize which nuclei have usable RNA, usable ATAC, both, or neither;</p></li>
+<li><p>keep raw counts for modeling and normalized values for plots;</p></li>
+<li><p>build an RNA-only and an ATAC-only baseline for comparison;</p></li>
+<li><p>register a MuData object and train, save, and reload paired MultiVI;</p></li>
+<li><p>audit the joint representation against technical covariates;</p></li>
+<li><p>compare what RNA, ATAC, and the joint model each resolve in the same nuclei;</p></li>
+<li><p>keep observed expression, observed accessibility, and model output apart.</p></li>
+</ul>
+</section>
+<section id="dataset-and-inputs">
+<h2>Dataset and inputs<a class="headerlink" href="#dataset-and-inputs" title="Link to this heading"></a></h2>
+<p>The example is the 10x Genomics <a class="reference external" href="https://www.10xgenomics.com/datasets/pbmc-from-a-healthy-donor-no-cell-sorting-3-k-1-standard-2-0-0">PBMC from a healthy donor, no cell sorting
+(3k)</a>
+multiome dataset. Gene expression and chromatin accessibility were measured in
+the same 3,009 called nuclei and processed by 10x with Cell Ranger ARC 2.0.0
+against GRCh38 (reference <code class="docutils literal notranslate"><span class="pre">2020-A</span></code>). Cell Ranger ARC called 81,156 accessible
+peaks.</p>
+<p>The workflow uses:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">filtered_feature_bc_matrix.h5</span></code></dt><dd><p>Gene and peak counts for called nuclei in one matrix. <code class="docutils literal notranslate"><span class="pre">feature_types</span></code>
+separates <code class="docutils literal notranslate"><span class="pre">Gene</span> <span class="pre">Expression</span></code> from <code class="docutils literal notranslate"><span class="pre">Peaks</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">per_barcode_metrics.csv</span></code></dt><dd><p>RNA and ATAC metrics for every barcode, including background barcodes. In
+this ARC 2.0.0 output <code class="docutils literal notranslate"><span class="pre">gex_umis_count</span></code> is zero for every barcode; exonic
+plus intronic UMIs equal the matrix totals and are used instead.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">atac_peak_annotation.tsv</span></code></dt><dd><p>Positional peak annotations supplied by 10x. A peak is labelled a promoter
+peak for a gene by position, which does not establish that it regulates
+that gene.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">atac_fragments.tsv.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">atac_fragments.tsv.gz.tbi</span></code></dt><dd><p>Barcoded fragments and their Tabix index, about 540 MB, used for fragment
+periodicity and nucleosome signal.</p>
+</dd>
+</dl>
+</section>
+<section id="environment-and-data-download">
+<h2>Environment and data download<a class="headerlink" href="#environment-and-data-download" title="Link to this heading"></a></h2>
+<p>Create the environment, download the public inputs, and run the analysis:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>source/transcriptomics/multiome_tutorial
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>gencore-multiome-multivi
+
+scripts/download_data.sh
+scripts/prepare_fragment_metrics.sh
+python<span class="w"> </span>scripts/run_multivi.py
+</pre></div>
+</div>
+<p>The raw downloads and trained model are ignored by Git. The notebook, scripts,
+environment, and rendered figures remain versioned. The rendered model trained
+on one CPU thread at about 1.9 seconds per epoch.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The scripts and notebook set <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=1</span></code> and import Scanpy before
+scvi-tools. On macOS the PyTorch and scikit-learn wheels each bundle an
+OpenMP runtime. In this environment, MultiVI training stalled after Scanpy’s
+neighbor and UMAP steps unless OpenMP was limited to one thread, and
+importing scvi-tools (and with it PyTorch) before Scanpy made numba’s
+parallel QC code crash.</p>
+</div>
+</section>
+<section id="cell-ranger-arc-calls-nuclei-from-both-measurements">
+<h2>1. Cell Ranger ARC calls nuclei from both measurements<a class="headerlink" href="#cell-ranger-arc-calls-nuclei-from-both-measurements" title="Link to this heading"></a></h2>
+<p>Cell Ranger ARC separates nuclei from empty droplets using RNA UMIs and ATAC
+fragments together. Most of the 3,009 called nuclei sit well above the
+background barcodes on both axes, but a few are low on one of them: 14 have
+fewer than 100 RNA UMIs, and the lowest has 29 ATAC fragments. They are kept for now, because
+the next steps judge each measurement separately.</p>
+<figure class="align-center" id="id1">
+<img alt="RNA UMIs against ATAC fragments for every barcode, with called nuclei highlighted." src="../_images/01_joint_cell_calling.png" />
+<figcaption>
+<p><span class="caption-text">RNA UMIs against ATAC fragments for every barcode in
+<code class="docutils literal notranslate"><span class="pre">per_barcode_metrics.csv</span></code>. Called nuclei are blue; background barcodes are
+grey.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The fragment-length distribution of called nuclei has a large nucleosome-free
+component below 147 bp and a mono-nucleosomal component between 147 and 294 bp,
+with only a weak shoulder above 300 bp. The roughly 10 bp oscillations follow
+the helical turn of DNA.</p>
+<figure class="align-center" id="id2">
+<img alt="ATAC fragment-length distribution with nucleosome-free and mono-nucleosomal components." src="../_images/02_fragment_length1.png" />
+<figcaption>
+<p><span class="caption-text">Fragment lengths for called nuclei. Dashed lines mark 147 and 294 bp.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rna</span><span class="p">,</span> <span class="n">atac</span><span class="p">,</span> <span class="n">barcode_metrics</span> <span class="o">=</span> <span class="n">load_multiome_dataset</span><span class="p">(</span><span class="n">raw_dir</span><span class="p">,</span> <span class="n">processed_dir</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">rna</span><span class="o">.</span><span class="n">obs_names</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">atac</span><span class="o">.</span><span class="n">obs_names</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="rna-and-chromatin-quality-are-judged-separately">
+<h2>2. RNA and chromatin quality are judged separately<a class="headerlink" href="#rna-and-chromatin-quality-are-judged-separately" title="Link to this heading"></a></h2>
+<p>Each measurement gets its own review flags, so a nucleus can pass in one and
+fail in the other:</p>
+<ul class="simple">
+<li><p><strong>RNA:</strong> UMIs, detected genes, and the percentage of mitochondrial UMIs.
+Scrublet scores each droplet for RNA doublets. The intronic UMI fraction is
+shown for reference; its median of 0.43 reflects unspliced nuclear RNA, which
+Cell Ranger ARC counts.</p></li>
+<li><p><strong>ATAC:</strong> high-quality fragments, the fraction of fragments in peaks (FRiP),
+the fraction of fragments near transcription start sites (TSS fraction), and
+nucleosome signal (mono-nucleosomal over nucleosome-free fragments).</p></li>
+</ul>
+<p>The thresholds reuse the starting rules of the two single-measurement
+tutorials: the 2.5th percentile for RNA depth and detected genes and the
+97.5th for mitochondrial UMIs, as in the scRNA tutorial; the 1st percentile for
+FRiP and TSS fraction, the 99th for nucleosome signal, and the 99.5th for
+upper depth, as in the scATAC tutorial. Here the 99.5th percentile is used for
+upper depth in both modalities, and ATAC depth uses the same 2.5th percentile
+floor as RNA depth. They are review thresholds for this dataset, not universal
+cutoffs.</p>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Review thresholds calculated from this dataset</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Flag when</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>RNA UMIs</p></td>
+<td><p>below 480 or above 9,880</p></td>
+</tr>
+<tr class="row-odd"><td><p>Detected genes</p></td>
+<td><p>below 250</p></td>
+</tr>
+<tr class="row-even"><td><p>Mitochondrial UMIs</p></td>
+<td><p>above 27.5%</p></td>
+</tr>
+<tr class="row-odd"><td><p>ATAC fragments</p></td>
+<td><p>below 470 or above 49,790</p></td>
+</tr>
+<tr class="row-even"><td><p>FRiP</p></td>
+<td><p>below 0.32</p></td>
+</tr>
+<tr class="row-odd"><td><p>TSS fraction</p></td>
+<td><p>below 0.26</p></td>
+</tr>
+<tr class="row-even"><td><p>Nucleosome signal</p></td>
+<td><p>above 1.26</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">tss_fraction</span></code> is the fraction of fragments near annotated TSSs. It is not
+the TSS enrichment score, which is calculated from a TSS-centered insertion
+profile.</p>
+</div>
+<figure class="align-center" id="id4">
+<img alt="Distributions of RNA quality metrics with review thresholds." src="../_images/03_rna_qc.png" />
+<figcaption>
+<p><span class="caption-text">RNA quality metrics with the thresholds above (dashed lines). The UMI
+distribution has a small low-depth tail: 77 called nuclei have fewer than
+500 UMIs.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id5">
+<img alt="Distributions of ATAC quality metrics with review thresholds." src="../_images/04_atac_qc.png" />
+<figcaption>
+<p><span class="caption-text">ATAC quality metrics with the thresholds above.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">score_doublets</span><span class="p">(</span><span class="n">rna</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
+<span class="n">thresholds</span> <span class="o">=</span> <span class="n">choose_qc_thresholds</span><span class="p">(</span><span class="n">rna</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+<span class="n">add_qc_flags</span><span class="p">(</span><span class="n">rna</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="most-nuclei-contribute-both-measurements-nuclei-with-poor-rna-often-keep-usable-chromatin">
+<h2>3. Most nuclei contribute both measurements; nuclei with poor RNA often keep usable chromatin<a class="headerlink" href="#most-nuclei-contribute-both-measurements-nuclei-with-poor-rna-often-keep-usable-chromatin" title="Link to this heading"></a></h2>
+<p>Combining the flags gives four groups. Scrublet predicted 74 doublets. A
+doublet droplet holds two nuclei, so these are excluded from the paired model
+whatever their per-modality flags.</p>
+<table class="docutils align-default" id="id6">
+<caption><span class="caption-text">Which measurements each called nucleus can contribute</span><a class="headerlink" href="#id6" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Group</p></th>
+<th class="head"><p>Nuclei</p></th>
+<th class="head"><p>Of which predicted doublets</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Both pass</p></td>
+<td><p>2,785</p></td>
+<td><p>67</p></td>
+</tr>
+<tr class="row-odd"><td><p>RNA only</p></td>
+<td><p>102</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>ATAC only</p></td>
+<td><p>103</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>Neither</p></td>
+<td><p>19</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The paired model uses the 2,718 nuclei that pass both and are not predicted
+doublets.</p>
+<p>The ATAC-only nuclei have a distinctive RNA profile. Their median is 320 UMIs,
+32% of them mitochondrial, with an intronic fraction of 0.17 against 0.43 for
+all called nuclei. Their chromatin is not worse than that of nuclei passing
+both (median FRiP 0.72 against 0.67; TSS fraction 0.59 against 0.56), although
+their median fragment count is lower (4,431 against 10,153). This combination
+suggests nuclei whose own RNA was lost or diluted during isolation, rather than
+empty droplets. The RNA-only nuclei show the reverse: typical RNA
+(median 2,891 UMIs) but a median of 345 ATAC fragments.</p>
+<p>These nuclei are not used here, but their flags are kept. An analysis that
+mixes paired and single-modality nuclei could use the measurement that passed.</p>
+<figure class="align-center" id="id7">
+<img alt="Joint QC summary showing nuclei that pass both, RNA only, ATAC only, or neither." src="../_images/05_joint_qc.png" />
+<figcaption>
+<p><span class="caption-text">Left: depth in each measurement, colored by which measurements pass;
+predicted doublets are circled. Middle: RNA mitochondrial fraction against
+ATAC TSS fraction. Right: counts per group.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">retention_table</span><span class="p">(</span><span class="n">rna</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+<span class="n">rna_paired</span><span class="p">,</span> <span class="n">atac_paired</span> <span class="o">=</span> <span class="n">subset_paired</span><span class="p">(</span><span class="n">rna</span><span class="p">,</span> <span class="n">atac</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="features-for-the-model-and-a-baseline-for-each-measurement">
+<h2>4. Features for the model, and a baseline for each measurement<a class="headerlink" href="#features-for-the-model-and-a-baseline-for-each-measurement" title="Link to this heading"></a></h2>
+<p>The model and the baselines use the same features:</p>
+<ul class="simple">
+<li><p><strong>Genes:</strong> the 3,000 most variable genes by the Seurat v3 rule on raw counts.
+Mitochondrial genes and their nuclear <code class="docutils literal notranslate"><span class="pre">MTRNR2L</span></code> copies are excluded first.
+Mitochondrial transcripts are not nuclear expression, and the <code class="docutils literal notranslate"><span class="pre">MTRNR2L</span></code>
+copies track each nucleus’s mitochondrial fraction here (section 9). How much
+of either a nucleus carries likely depends on how cleanly it was isolated.</p></li>
+<li><p><strong>Peaks:</strong> 64,305 peaks are detected in at least 30 of the 2,718 nuclei. The
+30,000 of them with the largest binary accessibility variance are kept.
+Feature selection is a reported choice because it changes what the model can
+represent.</p></li>
+</ul>
+<p>Two baselines show what each measurement resolves without the other. The RNA
+baseline is PCA (30 components) on scaled, log-normalized expression. The ATAC
+baseline is TF-IDF followed by latent semantic indexing (LSI, 30 components) on
+the same peaks. The first LSI component correlates 0.99 with log10 fragment
+count, so it is dropped as a depth axis. The same neighbor graph (20 neighbors,
+cosine distance), UMAP, and Leiden settings (resolution 0.8) are used for every
+representation. Resolution 0.8 is a fixed choice, set before looking at the
+results and not tuned, and the same value can give different numbers of
+clusters on different representations. Here it gives 14 RNA-only clusters and
+10 ATAC-only clusters.</p>
+<figure class="align-center" id="id8">
+<img alt="RNA-only and ATAC-only UMAPs colored by their own clusters and depth." src="../_images/06_single_modality_baselines.png" />
+<figcaption>
+<p><span class="caption-text">RNA-only (top) and ATAC-only (bottom) embeddings of the same nuclei, colored
+by their own Leiden clusters and by depth.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">genes</span> <span class="o">=</span> <span class="n">select_rna_features</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">3_000</span><span class="p">)</span>
+<span class="n">peaks</span> <span class="o">=</span> <span class="n">select_atac_features</span><span class="p">(</span><span class="n">atac_paired</span><span class="p">,</span> <span class="n">min_cells_per_peak</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">max_peaks</span><span class="o">=</span><span class="mi">30_000</span><span class="p">)</span>
+<span class="n">normalize_rna</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">)</span>
+<span class="n">container</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">"X_pca_rna"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rna_baseline</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="n">genes</span><span class="p">)</span>
+<span class="n">container</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">"X_lsi_atac"</span><span class="p">],</span> <span class="n">lsi_depth</span> <span class="o">=</span> <span class="n">atac_baseline</span><span class="p">(</span><span class="n">atac_paired</span><span class="p">,</span> <span class="n">peaks</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multivi-is-trained-on-raw-counts-after-a-missing-modality-check">
+<h2>5. MultiVI is trained on raw counts after a missing-modality check<a class="headerlink" href="#multivi-is-trained-on-raw-counts-after-a-missing-modality-check" title="Link to this heading"></a></h2>
+<p>MultiVI learns one latent representation per nucleus from both measurements.
+It treats a nucleus whose counts in a modality sum to zero as unmeasured in
+that modality. Every nucleus here was measured in both, so after feature
+selection each must still have counts in both. None has zero counts. The
+minimum is 60 RNA UMIs across the 3,000 genes and 479 ATAC counts across the
+30,000 peaks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mdata</span> <span class="o">=</span> <span class="n">build_multivi_input</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="n">atac_paired</span><span class="p">,</span> <span class="n">genes</span><span class="p">,</span> <span class="n">peaks</span><span class="p">)</span>
+<span class="n">check_observed_libraries</span><span class="p">(</span><span class="n">mdata</span><span class="p">)</span>
+
+<span class="n">scvi</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">MULTIVI</span><span class="o">.</span><span class="n">setup_mudata</span><span class="p">(</span>
+    <span class="n">mdata</span><span class="p">,</span>
+    <span class="n">modalities</span><span class="o">=</span><span class="p">{</span><span class="s2">"rna_layer"</span><span class="p">:</span> <span class="s2">"rna"</span><span class="p">,</span> <span class="s2">"atac_layer"</span><span class="p">:</span> <span class="s2">"atac"</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">scvi</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">MULTIVI</span><span class="p">(</span>
+    <span class="n">mdata</span><span class="p">,</span>
+    <span class="n">n_genes</span><span class="o">=</span><span class="n">mdata</span><span class="p">[</span><span class="s2">"rna"</span><span class="p">]</span><span class="o">.</span><span class="n">n_vars</span><span class="p">,</span>
+    <span class="n">n_regions</span><span class="o">=</span><span class="n">mdata</span><span class="p">[</span><span class="s2">"atac"</span><span class="p">]</span><span class="o">.</span><span class="n">n_vars</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mdata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">"X_multivi"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_latent_representation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>All nuclei come from one paired sample, so no <code class="docutils literal notranslate"><span class="pre">batch_key</span></code> is passed. When
+paired and single-modality nuclei are combined, the scvi-tools MultiVI tutorial
+asks for the main <code class="docutils literal notranslate"><span class="pre">batch_key</span></code> to be the modality, with other batches passed as
+<code class="docutils literal notranslate"><span class="pre">categorical_covariate_keys</span></code>. The scvi-tools defaults gave 128 hidden units
+and 11 latent dimensions. Early stopping on the validation reconstruction loss
+(patience 50 epochs) ended training at epoch 377; the best validation
+reconstruction loss was at epoch 327.</p>
+<figure class="align-center" id="id9">
+<img alt="MultiVI training and validation reconstruction loss across epochs." src="../_images/07_multivi_training.png" />
+<figcaption>
+<p><span class="caption-text">MultiVI convergence. Training loss alone does not show that the
+representation is biologically meaningful.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="one-latent-dimension-tracks-atac-depth-within-cell-types">
+<h2>6. One latent dimension tracks ATAC depth within cell types<a class="headerlink" href="#one-latent-dimension-tracks-atac-depth-within-cell-types" title="Link to this heading"></a></h2>
+<p>We correlated each latent dimension with RNA and ATAC quality metrics. Across
+all nuclei, the strongest association is between dimension 3 and TSS fraction
+(Pearson r = -0.70), and dimensions 3 and 6 correlate with RNA depth (|r|
+about 0.5). Much of this reflects cell type: monocytes have more RNA UMIs and a
+lower TSS fraction than lymphocytes. After removing each population’s mean from
+both variables, dimension 3 keeps r = -0.42 with TSS fraction, but its
+correlation with RNA depth falls to 0.10. Dimension 9 is the one that tracks
+ATAC depth and quality among nuclei of the same type (r = -0.54 with log10
+fragments, 0.48 with TSS fraction, and 0.45 with FRiP). Clusters therefore need
+to be checked against ATAC depth before they are interpreted.</p>
+<figure class="align-center" id="id10">
+<img alt="Correlations between MultiVI latent dimensions and QC metrics." src="../_images/08_multivi_latent_qc.png" />
+<figcaption>
+<p><span class="caption-text">Pearson correlations between each MultiVI dimension and RNA and ATAC QC
+metrics.</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id11">
+<img alt="MultiVI UMAP colored by Leiden cluster and QC metrics." src="../_images/09_multivi_umap.png" />
+<figcaption>
+<p><span class="caption-text">The joint UMAP colored by Leiden cluster (17 clusters) and by QC metrics.
+ATAC depth varies within the monocyte region (left), which section 9
+examines.</span><a class="headerlink" href="#id11" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id12">
+<img alt="QC metrics summarized by MultiVI cluster." src="../_images/10_multivi_cluster_qc.png" />
+<figcaption>
+<p><span class="caption-text">QC metrics by joint cluster.</span><a class="headerlink" href="#id12" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="rna-markers-name-six-broad-populations-chromatin-agrees-most-clearly-for-b-cells-and-plasmacytoid-dcs">
+<h2>7. RNA markers name six broad populations; chromatin agrees most clearly for B cells and plasmacytoid DCs<a class="headerlink" href="#rna-markers-name-six-broad-populations-chromatin-agrees-most-clearly-for-b-cells-and-plasmacytoid-dcs" title="Link to this heading"></a></h2>
+<p>Each joint cluster is scored with several markers per broad PBMC population on
+observed, log-normalized RNA. A cluster takes the best-scoring population when
+that score is at least 0.3 and leads the runner-up by at least 0.2; otherwise it
+stays <code class="docutils literal notranslate"><span class="pre">Unresolved</span></code>. All 17 joint clusters met this rule: 1,074 T cells, 902
+CD14 monocytes, 342 NK cells, 269 B cells, 102 FCGR3A monocytes, and 29
+plasmacytoid dendritic cells (pDCs).
+The labels are provisional names supported by marker evidence. Section 9 shows
+two small groups that this rule cannot see.</p>
+<p>Accessibility was not used to assign the labels, although it did shape the
+joint clusters that were labelled. The ATAC panel below shows, for the same
+marker genes, the fraction of nuclei with at least one fragment in a peak that
+10x annotates as the gene’s promoter.</p>
+<figure class="align-center" id="id13">
+<img alt="Dot plots of observed RNA detection and observed promoter accessibility for marker genes by population." src="../_images/11_marker_evidence.png" />
+<figcaption>
+<p><span class="caption-text">Left: fraction of nuclei with UMIs for each marker. Right: fraction with a
+fragment in the gene’s annotated promoter peaks (x: no annotated promoter
+peak). The panels use different color scales.</span><a class="headerlink" href="#id13" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Promoter accessibility is sparse in single nuclei, so its values are lower
+than RNA detection, and it supports the labels unevenly:</p>
+<ul class="simple">
+<li><p><strong>B cells:</strong> MS4A1 and CD79A promoters are accessible in 44% and 42% of B
+cells and in at most 5% of any other population.</p></li>
+<li><p><strong>pDCs:</strong> the CLEC4C promoter is accessible in 31% of pDCs and in at most 6%
+elsewhere.</p></li>
+<li><p><strong>T and NK cells:</strong> CD3D, CD3E, and CD3G promoters reach 12–14% in T cells
+against at most 9% elsewhere; the NKG7 promoter reaches 35% in NK cells, but
+also 24% in pDCs.</p></li>
+<li><p><strong>Monocytes:</strong> accessibility is low at all four CD14 monocyte marker
+promoters (at most 14% in any population). LYZ and VCAN promoters are
+accessible in 7–14% of monocytes and in at most 1% of other populations;
+CD14 and FCN1 promoters barely differ between populations.</p></li>
+</ul>
+<p>To look beyond promoters, the next figure shows, for each population, the
+marker locus whose most population-specific peak within 20 kb of the TSS
+differs most from every other population. The table
+<code class="docutils literal notranslate"><span class="pre">marker_locus_specificity</span></code> in the results reports this value for every
+marker, including those not shown. Among the loci shown, the most specific are
+MS4A1 (B cells, 0.40), IL7R (T cells, 0.22), and CLEC4C (pDCs, 0.19). The
+monocyte markers reach at most 0.05. For the two monocyte loci shown, VCAN and
+MS4A7, at most 16% of the population’s nuclei have a fragment in the most
+specific peak, which caps how specific it can be.</p>
+<figure class="align-center" id="id14">
+<img alt="Peak-level accessibility by population at six marker loci." src="../_images/14_marker_loci.png" />
+<figcaption>
+<p><span class="caption-text">Fraction of nuclei in each population with a fragment in each peak within
+20 kb of a marker gene’s annotated TSS. One locus per population, chosen by
+the specificity rule above.</span><a class="headerlink" href="#id14" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Monocytes are nevertheless separated in the chromatin-only clustering (section
+8). This suggests that their chromatin differences from other populations lie
+mostly outside these marker loci; this tutorial does not test where.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="n">score_populations</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="s2">"leiden_multivi"</span><span class="p">)</span>
+<span class="n">assignment</span> <span class="o">=</span> <span class="n">assign_populations</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">min_score</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">evidence</span> <span class="o">=</span> <span class="n">marker_evidence</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="n">atac_paired</span><span class="p">,</span> <span class="s2">"population"</span><span class="p">,</span> <span class="n">gene_order</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="clustered-separately-rna-and-chromatin-agree-on-lineages-and-t-cell-states">
+<h2>8. Clustered separately, RNA and chromatin agree on lineages and T-cell states<a class="headerlink" href="#clustered-separately-rna-and-chromatin-agree-on-lineages-and-t-cell-states" title="Link to this heading"></a></h2>
+<p>Coloring all three embeddings with the same labels shows which populations each
+measurement separates on its own. The populations were defined from joint
+clusters, so this asks whether each single-measurement clustering keeps them
+together and apart. It is not an independent accuracy test.</p>
+<figure class="align-center" id="id15">
+<img alt="RNA-only, ATAC-only, and MultiVI UMAPs colored by the same population labels." src="../_images/12_embedding_comparison.png" />
+<figcaption>
+<p><span class="caption-text">The same nuclei and labels in three separately computed embeddings. Compare
+which nuclei group together, not positions; the UMAPs are separate
+coordinate systems.</span><a class="headerlink" href="#id15" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id16">
+<img alt="Heatmaps showing how each population is distributed across RNA-only and ATAC-only clusters." src="../_images/13_cluster_agreement.png" />
+<figcaption>
+<p><span class="caption-text">Fraction of each population in each RNA-only (left) and ATAC-only (right)
+cluster. Values below 0.05 are not printed.</span><a class="headerlink" href="#id16" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The RNA-only and ATAC-only clusterings agree with each other more than either
+agrees with the joint clustering: the adjusted Rand index (ARI) is 0.65 between
+them, against 0.58 (joint vs RNA-only) and 0.45 (joint vs ATAC-only). The ARI
+is also lowered when one clustering simply has more clusters, and the joint
+clustering has the most (17, against 14 and 10).</p>
+<p>Where they differ:</p>
+<ul class="simple">
+<li><p><strong>B cells:</strong> RNA splits them into two clusters (142 and 126 nuclei); chromatin
+keeps 267 of 269 together.</p></li>
+<li><p><strong>FCGR3A monocytes:</strong> RNA keeps 101 of 102 in their own cluster; chromatin
+places 26 of them with CD14 monocytes.</p></li>
+<li><p><strong>NK cells:</strong> both split them into two main groups (RNA 206 and 101;
+chromatin 221 and 104).</p></li>
+<li><p><strong>pDCs:</strong> both keep them in their own cluster (29 of 29 in RNA, 28 of 29 in
+chromatin).</p></li>
+</ul>
+<p>Within T cells, the T-cell state markers show the same three groups in each
+measurement: a naive CD4 group (CD4 detected in 29–30% of nuclei and CCR7 in
+64%), a naive CD8 group (CD8A in 52–55%, CCR7 in 71%), and a memory CD4 group
+(CD4 in 32–34%, CCR7 in 29%). The RNA-only clustering has one more T-cell
+cluster, of 27 nuclei with regulatory T-cell markers (section 9).</p>
+<table class="wrap-table docutils align-default" id="id17">
+<caption><span class="caption-text">T-cell state markers in the RNA-only and ATAC-only clusters (fraction of nuclei with UMIs)</span><a class="headerlink" href="#id17" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cluster</p></th>
+<th class="head"><p>Nuclei</p></th>
+<th class="head"><p>CD4</p></th>
+<th class="head"><p>CD8A</p></th>
+<th class="head"><p>CCR7</p></th>
+<th class="head"><p>FOXP3</p></th>
+<th class="head"><p>IL2RA</p></th>
+<th class="head"><p>RTKN2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>RNA 1, naive CD4</p></td>
+<td><p>365</p></td>
+<td><p>0.29</p></td>
+<td><p>0.01</p></td>
+<td><p>0.64</p></td>
+<td><p>0.00</p></td>
+<td><p>0.02</p></td>
+<td><p>0.02</p></td>
+</tr>
+<tr class="row-odd"><td><p>RNA 2, naive CD8</p></td>
+<td><p>346</p></td>
+<td><p>0.02</p></td>
+<td><p>0.55</p></td>
+<td><p>0.71</p></td>
+<td><p>0.00</p></td>
+<td><p>0.00</p></td>
+<td><p>0.00</p></td>
+</tr>
+<tr class="row-even"><td><p>RNA 4, memory CD4</p></td>
+<td><p>317</p></td>
+<td><p>0.34</p></td>
+<td><p>0.03</p></td>
+<td><p>0.29</p></td>
+<td><p>0.02</p></td>
+<td><p>0.16</p></td>
+<td><p>0.04</p></td>
+</tr>
+<tr class="row-odd"><td><p>RNA 13, regulatory T-like</p></td>
+<td><p>27</p></td>
+<td><p>0.19</p></td>
+<td><p>0.00</p></td>
+<td><p>0.19</p></td>
+<td><p>0.41</p></td>
+<td><p>0.59</p></td>
+<td><p>0.74</p></td>
+</tr>
+<tr class="row-even"><td><p>ATAC 3, naive CD4</p></td>
+<td><p>351</p></td>
+<td><p>0.30</p></td>
+<td><p>0.03</p></td>
+<td><p>0.64</p></td>
+<td><p>0.00</p></td>
+<td><p>0.03</p></td>
+<td><p>0.03</p></td>
+</tr>
+<tr class="row-odd"><td><p>ATAC 1, naive CD8</p></td>
+<td><p>350</p></td>
+<td><p>0.02</p></td>
+<td><p>0.52</p></td>
+<td><p>0.71</p></td>
+<td><p>0.00</p></td>
+<td><p>0.00</p></td>
+<td><p>0.01</p></td>
+</tr>
+<tr class="row-even"><td><p>ATAC 2, memory CD4</p></td>
+<td><p>355</p></td>
+<td><p>0.32</p></td>
+<td><p>0.02</p></td>
+<td><p>0.29</p></td>
+<td><p>0.05</p></td>
+<td><p>0.19</p></td>
+<td><p>0.09</p></td>
+</tr>
+</tbody>
+</table>
+<p>The table counts only nuclei labelled T cells. Detection fractions are low for
+some well-known markers, such as CD4, because single-nucleus RNA is sparse.</p>
+</section>
+<section id="the-joint-clustering-adds-divisions-that-differ-in-chromatin-depth-and-merges-two-small-groups">
+<h2>9. The joint clustering adds divisions that differ in chromatin depth and merges two small groups<a class="headerlink" href="#the-joint-clustering-adds-divisions-that-differ-in-chromatin-depth-and-merges-two-small-groups" title="Link to this heading"></a></h2>
+<p>The joint clustering has more clusters than either single-measurement
+clustering. The marker checks below use observed RNA.</p>
+<p><strong>T-cell divisions.</strong> The joint model splits each of the three T-cell groups
+in two, and in each case the two clusters differ in median ATAC fragment count.
+Both single-measurement clusterings place most nuclei of each pair in the same
+cluster.</p>
+<ul class="simple">
+<li><p><strong>Naive CD8</strong> (clusters 5 and 11): 11,845 against 7,044 fragments (1.7-fold),
+with similar detection of the T-cell state markers in the panel; the largest
+difference is CD8B (0.66 against 0.52).</p></li>
+<li><p><strong>Naive CD4</strong> (clusters 3 and 13): 11,295 against 8,029 fragments
+(1.4-fold). Cluster 13 also has lower CCR7 detection (0.48 against 0.70) and
+higher IKZF2 (0.16 against 0.03), IL2RA (0.09 against 0.01), and RTKN2 (0.09
+against 0.01), and holds 5 of the 27 regulatory T-like nuclei described
+below.</p></li>
+<li><p><strong>Memory CD4</strong> (clusters 4 and 7): 10,510 against 13,936 fragments
+(1.3-fold). Cluster 7 has lower CCR7 (0.20 against 0.39) and higher GZMK
+(0.10 against 0.01) and CCL5 (0.16 against 0.03), consistent with a more
+effector-like memory state.</p></li>
+</ul>
+<p>The two CD4 divisions are the candidates for states that the joint model
+resolves and the single measurements do not. They differ in depth as well as in
+markers, and no gene-wide comparison was run for them, so they need
+confirmation.</p>
+<p><strong>A candidate doublet cluster.</strong> One joint T-cell cluster of 60 nuclei
+includes nuclei with CD4 detected (17%) and nuclei with CD8A detected (37%). It
+has the highest median ATAC fragment count of any T-cell cluster (19,640) and
+the highest median doublet score among them (0.081). It is a candidate for
+residual doublets that Scrublet did not flag.</p>
+<p><strong>A depth split in CD14 monocytes.</strong> The joint model divides CD14 monocytes
+into two lower-depth clusters and two higher-depth clusters:</p>
+<table class="wrap-table docutils align-default" id="id18">
+<caption><span class="caption-text">CD14 monocyte joint clusters (medians)</span><a class="headerlink" href="#id18" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Joint cluster</p></th>
+<th class="head"><p>Nuclei</p></th>
+<th class="head"><p>ATAC fragments</p></th>
+<th class="head"><p>FRiP</p></th>
+<th class="head"><p>TSS fraction</p></th>
+<th class="head"><p>Mitochondrial UMIs (%)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>344</p></td>
+<td><p>4,183</p></td>
+<td><p>0.74</p></td>
+<td><p>0.52</p></td>
+<td><p>11.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>244</p></td>
+<td><p>4,224</p></td>
+<td><p>0.75</p></td>
+<td><p>0.52</p></td>
+<td><p>14.7</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>168</p></td>
+<td><p>13,739</p></td>
+<td><p>0.66</p></td>
+<td><p>0.47</p></td>
+<td><p>12.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>146</p></td>
+<td><p>14,281</p></td>
+<td><p>0.65</p></td>
+<td><p>0.46</p></td>
+<td><p>4.0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Neither single-measurement clustering follows this division. The two RNA-only
+monocyte clusters each contain lower- and higher-depth nuclei in similar
+proportions, and the ATAC-only clustering, whose depth component was dropped,
+places 842 of the 864 monocytes compared below in one cluster. Observed RNA
+was compared between the lower-depth and higher-depth groups (Wilcoxon test,
+mitochondrial genes excluded, DC-like nuclei left out). Only two genes differ
+at adjusted p &lt; 0.05, MTRNR2L12 and MTRNR2L8, both higher in the lower-depth
+group. They are nuclear copies of the mitochondrial MT-RNR2 gene, and their
+share of each nucleus’s UMIs correlates with its mitochondrial fraction
+(Spearman ρ = 0.63 and 0.37 across the 2,718 nuclei). The groups also differ
+in FRiP and TSS fraction (table). Because the evidence is the absence of an
+expression difference, we treat this division provisionally as most likely
+technical rather than as two monocyte states. Refitting with ATAC depth as a
+covariate, or comparing after downsampling fragments, would test whether it
+disappears.</p>
+<p><strong>Two small groups merged.</strong> RNA-only cluster 10 holds 38 nuclei with
+conventional DC markers (FCER1A and CD1C detected in 76% of them, CLEC10A in
+74%). ATAC-only cluster 8 contains 32 of these 38 nuclei, and they make up 86%
+of it. The joint clustering places all 38 in joint cluster 6, where they make
+up 23% of a cluster labelled CD14 monocytes. Likewise, the 27 nuclei of the
+RNA-only regulatory T-like cluster are spread over joint CD4 T-cell clusters;
+the ATAC-only clustering does not separate them either. Raising the joint
+clustering resolution from 0.8 to 3.0 (17 to 41 clusters) changes this only
+partly. From resolution 1.6 upward, all 38 DC-like nuclei share one joint
+cluster, but they make up only about half of it (52–54%). The regulatory T-like
+nuclei never make up more than 34% of a joint cluster. In the joint
+representation, these small groups sit close to their larger neighbors.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">depth_group</span> <span class="o">=</span> <span class="n">split_population_by_depth</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="s2">"CD14 monocytes"</span><span class="p">)</span>
+<span class="n">monocyte_de</span> <span class="o">=</span> <span class="n">compare_rna_groups</span><span class="p">(</span><span class="n">rna_paired</span><span class="p">,</span> <span class="n">monocyte_groups</span><span class="p">)</span>
+<span class="n">small_groups</span> <span class="o">=</span> <span class="n">small_group_masks</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">dc_tables</span><span class="p">[</span><span class="s2">"leiden_rna"</span><span class="p">],</span> <span class="n">t_states_rna</span><span class="p">)</span>
+<span class="n">resolution_check</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">small_groups</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>The monocyte split and the merges recur across training seeds; the joint
+clusters do not.</strong> <code class="docutils literal notranslate"><span class="pre">scripts/seed_check.py</span></code> retrained the same model input
+with three other seeds (23, 42, and 101; 215 to 353 epochs) and clustered each
+with the same graph settings. The joint clusters change between seeds: 17 to 20
+clusters, with ARI 0.44 to 0.66 against the main run. The following recur in
+all four seeds:</p>
+<ul class="simple">
+<li><p>CD14 monocytes fall into four or five joint clusters of at least 50 nuclei,
+whose median fragment counts span 3.4- to 4.2-fold.</p></li>
+<li><p>At resolution 0.8, the DC-like nuclei make up at most 27% of any joint
+cluster, and the regulatory T-like nuclei at most 19%.</p></li>
+<li><p>The joint clustering agrees less with each single-measurement clustering (ARI
+0.36 to 0.58 with RNA-only, 0.31 to 0.45 with ATAC-only) than those two agree
+with each other (0.65).</p></li>
+</ul>
+<p>Individual joint clusters, such as the T-cell divisions, should therefore not
+be reported from a single training run.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/seed_check.py<span class="w"> </span>--seed<span class="w"> </span><span class="m">23</span>
+python<span class="w"> </span>scripts/seed_check.py<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span>
+python<span class="w"> </span>scripts/seed_check.py<span class="w"> </span>--seed<span class="w"> </span><span class="m">101</span>
+python<span class="w"> </span>scripts/seed_check.py<span class="w"> </span>--combine
+</pre></div>
+</div>
+</section>
+<section id="going-further">
+<h2>Going further<a class="headerlink" href="#going-further" title="Link to this heading"></a></h2>
+<p><strong>Which peaks distinguish a cluster.</strong> The <a class="reference internal" href="../epigenomics/scatac.html"><span class="doc">scATAC tutorial</span></a> calls candidate cluster-associated peaks with
+PEAKVI’s <code class="docutils literal notranslate"><span class="pre">differential_accessibility</span></code> and explains how to read its posterior
+expected FDR and effect sizes. MultiVI offers the same call on the joint model
+(<code class="docutils literal notranslate"><span class="pre">model.differential_accessibility</span></code>), and <code class="docutils literal notranslate"><span class="pre">model.differential_expression</span></code>
+for genes. Before comparing joint clusters from this tutorial, check that they
+do not differ mainly in ATAC depth (section 9). A comparison between the two
+CD14 monocyte depth groups, for example, would be confounded with depth.</p>
+<p><strong>Several samples or technologies.</strong> This sample has one donor and one
+library, so no <code class="docutils literal notranslate"><span class="pre">batch_key</span></code> is used. The MultiVI paper (Ashuach et al. 2023,
+“Integration of independent studies”) combined three PBMC studies: paired
+multiome, ATAC-only from several batches, and RNA-only from several
+technologies. Run without accounting for study or technology, its latent space
+separated cells by sample in the accessibility data and by technology in the
+expression data. The paper reports that configuring MultiVI to correct for both
+removed this structure while preserving cell types. With several samples,
+follow the <code class="docutils literal notranslate"><span class="pre">batch_key</span></code> guidance in section 5, then check the joint clusters
+against sample, depth, and markers as done here.</p>
+</section>
+<section id="stopping-point-and-limitations">
+<h2>Stopping point and limitations<a class="headerlink" href="#stopping-point-and-limitations" title="Link to this heading"></a></h2>
+<p>The output is a QC-audited paired object, an RNA-only, an ATAC-only, and a
+joint representation of the same nuclei, provisional broad labels, and a
+record of where the three representations agree and differ. Per-nucleus
+identity columns (<code class="docutils literal notranslate"><span class="pre">cell_id</span></code>, <code class="docutils literal notranslate"><span class="pre">modality_status</span></code>, <code class="docutils literal notranslate"><span class="pre">has_rna</span></code>, <code class="docutils literal notranslate"><span class="pre">has_atac</span></code>)
+and per-modality QC flags are saved with the results, so the same nuclei can be
+used in an analysis that hides one measurement and checks predictions against
+it.</p>
+<p>This dataset contains one donor. It supports QC, representation learning, and
+descriptive comparisons within this sample. It cannot estimate donor or
+condition effects, and nuclei are not independent biological replicates.
+Ambient RNA was not assessed. Common ambient-RNA methods estimate the
+background from the raw matrix with its empty droplets, which this tutorial
+does not download.</p>
+</section>
+<section id="common-pitfalls">
+<h2>Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Applying one QC rule to both measurements, or filtering a nucleus out because
+one measurement failed when the other is usable.</p></li>
+<li><p>Passing normalized or log-transformed matrices to MultiVI instead of counts.</p></li>
+<li><p>Selecting features after which a paired nucleus has zero counts in a
+modality, so that MultiVI treats it as unmeasured.</p></li>
+<li><p>Including mitochondrial-derived genes in the modeled genes of nuclear RNA.</p></li>
+<li><p>Reading the joint UMAP as more trustworthy than single-measurement views
+without checking its clusters against depth and markers.</p></li>
+<li><p>Assuming that small populations visible in one measurement survive in the
+joint clustering.</p></li>
+<li><p>Treating promoter accessibility as evidence that a peak regulates the nearest
+gene.</p></li>
+<li><p>Calling clusters cell types without marker evidence, or treating cluster
+markers as condition-level inference.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Ashuach T, Gabitto MI, Koodli RV, Saldi GA, Jordan MI, Yosef N. MultiVI: deep
+generative model for the integration of multimodal data. <em>Nature Methods</em>
+2023. <a class="reference external" href="https://doi.org/10.1038/s41592-023-01909-9">doi:10.1038/s41592-023-01909-9</a>.</p></li>
+<li><p>Gayoso A and colleagues. A Python library for probabilistic analysis of
+single-cell omics data. <em>Nature Biotechnology</em> 2022.
+<a class="reference external" href="https://doi.org/10.1038/s41587-021-01206-w">doi:10.1038/s41587-021-01206-w</a>.</p></li>
+<li><p>Bredikhin D, Kats I, Stegle O. MUON: multimodal omics analysis framework.
+<em>Genome Biology</em> 2022. <a class="reference external" href="https://doi.org/10.1186/s13059-021-02577-8">doi:10.1186/s13059-021-02577-8</a>.</p></li>
+<li><p>Wolock SL, Lopez R, Klein AM. Scrublet: computational identification of cell
+doublets in single-cell transcriptomic data. <em>Cell Systems</em> 2019.
+<a class="reference external" href="https://doi.org/10.1016/j.cels.2018.11.005">doi:10.1016/j.cels.2018.11.005</a>.</p></li>
+<li><p>Wolf FA, Angerer P, Theis FJ. SCANPY: large-scale single-cell gene expression
+data analysis. <em>Genome Biology</em> 2018. <a class="reference external" href="https://doi.org/10.1186/s13059-017-1382-0">doi:10.1186/s13059-017-1382-0</a>.</p></li>
+<li><p>10x Genomics. PBMC from a healthy donor, no cell sorting (3k), Cell Ranger
+ARC 2.0.0.</p></li>
+</ul>
+</section>
 </section>
 
 

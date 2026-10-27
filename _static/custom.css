@@ -14,6 +14,12 @@
     margin-bottom: 1.5em;
 }
 
+/* Tables marked ":class: wrap-table" may wrap long cells instead of scrolling. */
+.rst-content table.docutils.wrap-table td,
+.rst-content table.docutils.wrap-table th {
+    white-space: normal;
+}
+
 .footer-logos {
     text-align: center;
     margin: 0.3em 0;
